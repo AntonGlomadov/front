@@ -1,10 +1,25 @@
 package com.haberturm.hitchhikingapp.ui.home
 
+import androidx.compose.foundation.background
+import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.viewinterop.AndroidView
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.google.android.libraries.maps.CameraUpdateFactory
+import com.google.android.libraries.maps.MapView
+import com.google.android.libraries.maps.model.LatLng
+import com.google.android.libraries.maps.model.MarkerOptions
+import com.google.maps.android.ktx.awaitMap
+import com.haberturm.hitchhikingapp.ui.home.map.rememberMapViewWithLifecycle
 
 import com.haberturm.hitchhikingapp.ui.nav.NavRoute
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
 
 const val KEY_CONTENT_PAGE_INDEX = "CONTENT_PAGE_INDEX"
 
@@ -33,7 +48,32 @@ object HomeRoute : NavRoute<HomeViewModel> {
 
 }
 
+private lateinit var mapView: MapView
+
 @Composable
-private fun Home(){
-    Text(text = "Home Page")
+private fun Home() {
+    mapView = rememberMapViewWithLifecycle()
+    Column(
+        modifier = Modifier
+            .fillMaxSize()
+            .background(Color.White)
+    ) {
+        AndroidView(
+            { mapView }
+        ) { mapView ->
+            CoroutineScope(Dispatchers.Main).launch {
+                val map = mapView.awaitMap()
+                map.uiSettings.isZoomControlsEnabled = true
+
+                val destination = LatLng(54.6944, 20.4981)
+                map.moveCamera(CameraUpdateFactory.newLatLngZoom(destination, 6f))
+                val markerOptions =  MarkerOptions()
+                        .title("Static location")
+                        .position(destination)
+                map.addMarker(markerOptions)
+            }
+        }
+
+    }
+
 }
