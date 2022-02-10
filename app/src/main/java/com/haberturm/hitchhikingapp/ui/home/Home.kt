@@ -14,6 +14,7 @@ import com.google.android.libraries.maps.MapView
 import com.google.android.libraries.maps.model.LatLng
 import com.google.android.libraries.maps.model.MarkerOptions
 import com.google.maps.android.ktx.awaitMap
+import com.haberturm.hitchhikingapp.ui.home.map.MapView
 import com.haberturm.hitchhikingapp.ui.home.map.rememberMapViewWithLifecycle
 
 import com.haberturm.hitchhikingapp.ui.nav.NavRoute
@@ -48,32 +49,15 @@ object HomeRoute : NavRoute<HomeViewModel> {
 
 }
 
-private lateinit var mapView: MapView
+
 
 @Composable
 private fun Home() {
-    mapView = rememberMapViewWithLifecycle()
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
     ) {
-        AndroidView(
-            { mapView }
-        ) { mapView ->
-            CoroutineScope(Dispatchers.Main).launch {
-                val map = mapView.awaitMap()
-                map.uiSettings.isZoomControlsEnabled = true
-
-                val destination = LatLng(54.6944, 20.4981)
-                map.moveCamera(CameraUpdateFactory.newLatLngZoom(destination, 6f))
-                val markerOptions =  MarkerOptions()
-                        .title("Static location")
-                        .position(destination)
-                map.addMarker(markerOptions)
-            }
-        }
-
+        MapView(latitude = 54.6944, longitude = 20.4981)
     }
-
 }
