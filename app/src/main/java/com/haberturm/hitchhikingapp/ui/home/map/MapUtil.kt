@@ -8,9 +8,11 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.accompanist.permissions.MultiplePermissionsState
 import com.google.android.libraries.maps.MapView
 
-
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
 fun rememberMapViewWithLifecycle(): MapView {
     val context = LocalContext.current
@@ -19,9 +21,12 @@ fun rememberMapViewWithLifecycle(): MapView {
             id = com.google.maps.android.ktx.R.id.map_frame
         }
     }
+    val permissionsState = GetPermissions()
+
+    permissionsState.checkPermissions()
 
     // Makes MapView follow the lifecycle of this composable
-    val lifecycleObserver = rememberMapLifecycleObserver(mapView)
+    val lifecycleObserver = rememberMapLifecycleObserver(mapView, permissionsState)
     val lifecycle = LocalLifecycleOwner.current.lifecycle
     DisposableEffect(lifecycle) {
         lifecycle.addObserver(lifecycleObserver)
@@ -29,17 +34,20 @@ fun rememberMapViewWithLifecycle(): MapView {
             lifecycle.removeObserver(lifecycleObserver)
         }
     }
-
     return mapView
 }
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
-fun rememberMapLifecycleObserver(mapView: MapView): LifecycleEventObserver =
+fun rememberMapLifecycleObserver(mapView: MapView, permissionsState: MultiplePermissionsState): LifecycleEventObserver =
     remember(mapView) {
         LifecycleEventObserver { _, event ->
             when (event) {
                 Lifecycle.Event.ON_CREATE -> mapView.onCreate(Bundle())
-                Lifecycle.Event.ON_START -> mapView.onStart()
+                Lifecycle.Event.ON_START -> {
+                    permissionsState.launchMultiplePermissionRequest() //ask for permission
+                    mapView.onStart()
+                }
                 Lifecycle.Event.ON_RESUME -> mapView.onResume()
                 Lifecycle.Event.ON_PAUSE -> mapView.onPause()
                 Lifecycle.Event.ON_STOP -> mapView.onStop()

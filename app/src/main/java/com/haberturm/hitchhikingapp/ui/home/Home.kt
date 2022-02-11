@@ -50,7 +50,6 @@ object HomeRoute : NavRoute<HomeViewModel> {
 }
 
 
-
 @Composable
 private fun Home() {
     Column(
