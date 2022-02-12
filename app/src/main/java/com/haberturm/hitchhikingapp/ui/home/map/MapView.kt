@@ -1,5 +1,6 @@
 package com.haberturm.hitchhikingapp.ui.home.map
 
+import android.annotation.SuppressLint
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.viewinterop.AndroidView
 import com.google.android.libraries.maps.CameraUpdateFactory
@@ -18,6 +19,7 @@ fun MapView(latitude: Double, longitude: Double) {
     MapViewContainer(mapView, latitude, longitude)
 }
 
+@SuppressLint("MissingPermission")
 @Composable
 private fun MapViewContainer(
     mapView: MapView,
@@ -29,14 +31,14 @@ private fun MapViewContainer(
     ) { mapView ->
         CoroutineScope(Dispatchers.Main).launch {
             val map = mapView.awaitMap()
-            map.uiSettings.isZoomControlsEnabled = true
+            map.uiSettings.apply {
+                isZoomControlsEnabled = true
+                isMyLocationButtonEnabled = true
+            }
+            map.isMyLocationEnabled = true
             //val destination = LatLng(54.6944, 20.4981)
             val destination = LatLng(latitude, longitude)
-            map.moveCamera(CameraUpdateFactory.newLatLngZoom(destination, 6f))
-            val markerOptions =  MarkerOptions()
-                .title("Static location")
-                .position(destination)
-            map.addMarker(markerOptions)
+            map.moveCamera(CameraUpdateFactory.newLatLngZoom(destination, 15f))
         }
     }
 }

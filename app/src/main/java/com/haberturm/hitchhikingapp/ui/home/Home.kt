@@ -1,26 +1,28 @@
 package com.haberturm.hitchhikingapp.ui.home
 
+import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
+import androidx.compose.runtime.currentCompositionLocalContext
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.google.android.libraries.maps.CameraUpdateFactory
-import com.google.android.libraries.maps.MapView
-import com.google.android.libraries.maps.model.LatLng
-import com.google.android.libraries.maps.model.MarkerOptions
-import com.google.maps.android.ktx.awaitMap
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.viewmodel.compose.viewModel
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.android.gms.maps.CameraUpdateFactory
+import com.google.android.gms.maps.model.LatLng
+import com.haberturm.hitchhikingapp.ui.home.map.GetPermissions
 import com.haberturm.hitchhikingapp.ui.home.map.MapView
-import com.haberturm.hitchhikingapp.ui.home.map.rememberMapViewWithLifecycle
-
+import com.haberturm.hitchhikingapp.ui.home.map.MyPermissionState
+import com.haberturm.hitchhikingapp.ui.home.map.checkPermissions
 import com.haberturm.hitchhikingapp.ui.nav.NavRoute
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 const val KEY_CONTENT_PAGE_INDEX = "CONTENT_PAGE_INDEX"
 
@@ -42,7 +44,7 @@ object HomeRoute : NavRoute<HomeViewModel> {
         navArgument(KEY_CONTENT_PAGE_INDEX) { type = NavType.IntType })
     */
     @Composable
-    override fun Content(viewModel: HomeViewModel) = Home()
+    override fun Content(viewModel: HomeViewModel) = Home(viewModel)
 
     @Composable
     override fun viewModel(): HomeViewModel = hiltViewModel()
@@ -50,13 +52,42 @@ object HomeRoute : NavRoute<HomeViewModel> {
 }
 
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
-private fun Home() {
+private fun Home(
+    viewModel: HomeViewModel
+) {
+    val permissions = GetPermissions()
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(
+        key1 = lifecycleOwner,
+        effect = {
+            val observer = LifecycleEventObserver { _, event ->
+                if(event == Lifecycle.Event.ON_START) {
+                    permissions.launchMultiplePermissionRequest()
+                }
+            }
+            lifecycleOwner.lifecycle.addObserver(observer)
+
+            onDispose {
+                lifecycleOwner.lifecycle.removeObserver(observer)
+            }
+        }
+    )
+
+    //TODO: handle recomposition
+    val userLocationPermissionState = permissions.checkPermissions()
+    if (userLocationPermissionState == MyPermissionState.HasPermission){
+        viewModel.getUserLocation(LocalContext.current)
+    }else{
+        //TODO add proper error handler
+    }
+
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
     ) {
-        MapView(latitude = 54.6944, longitude = 20.4981)
+        MapView(viewModel.latitude, viewModel.longitude )
     }
 }
