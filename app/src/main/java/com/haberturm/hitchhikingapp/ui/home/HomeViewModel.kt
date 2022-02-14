@@ -12,13 +12,10 @@ import com.google.android.gms.location.LocationServices
 import com.haberturm.hitchhikingapp.ui.nav.RouteNavigator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import javax.inject.Inject
-import com.google.android.gms.location.FusedLocationProviderClient
-import com.google.android.gms.tasks.Task
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val routeNavigator: RouteNavigator,
-    //@ApplicationContext private val context: Context
 ) : ViewModel(), RouteNavigator by routeNavigator  {
     var latitude by mutableStateOf<Double>(54.6944)  //TODO its will be better to show loading screen then the fake location
         private set

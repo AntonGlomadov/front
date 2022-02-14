@@ -1,12 +1,10 @@
 package com.haberturm.hitchhikingapp.ui.home
 
-import android.util.Log
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
-import androidx.compose.runtime.currentCompositionLocalContext
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
@@ -14,10 +12,7 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.android.gms.maps.model.LatLng
 import com.haberturm.hitchhikingapp.ui.home.map.GetPermissions
 import com.haberturm.hitchhikingapp.ui.home.map.MapView
 import com.haberturm.hitchhikingapp.ui.home.map.MyPermissionState
@@ -77,17 +72,23 @@ private fun Home(
 
     //TODO: handle recomposition
     val userLocationPermissionState = permissions.checkPermissions()
+    var locationPermissionGranted:Boolean = false
     if (userLocationPermissionState == MyPermissionState.HasPermission){
         viewModel.getUserLocation(LocalContext.current)
+        locationPermissionGranted = true
+
     }else{
+        viewModel.getUserLocation(LocalContext.current)
+
         //TODO add proper error handler
     }
-
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
     ) {
-        MapView(viewModel.latitude, viewModel.longitude )
+        MapView(viewModel.latitude, viewModel.longitude, locationPermissionGranted )
     }
+
+
 }
