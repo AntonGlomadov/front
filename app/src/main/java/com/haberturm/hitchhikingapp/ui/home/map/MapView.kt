@@ -1,47 +1,51 @@
 package com.haberturm.hitchhikingapp.ui.home.map
 
-import android.annotation.SuppressLint
-import androidx.compose.runtime.Composable
-import androidx.compose.ui.viewinterop.AndroidView
-import com.google.android.libraries.maps.CameraUpdateFactory
-import com.google.android.libraries.maps.MapView
-import com.google.android.libraries.maps.model.LatLng
-import com.google.maps.android.ktx.awaitMap
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
+import android.util.Log
+import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import com.google.android.gms.maps.GoogleMapOptions
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.*
 
 
 @Composable
-fun MapView(latitude: Double, longitude: Double, locationPermissionGranted: Boolean) {
-    val mapView = rememberMapViewWithLifecycle()
-    MapViewContainer(mapView, latitude, longitude, locationPermissionGranted)
-}
-
-@SuppressLint("MissingPermission")
-@Composable
-private fun MapViewContainer(
-    mapView: MapView,
+fun GoogleMapView(
     latitude: Double,
     longitude: Double,
-    locationPermissionGranted: Boolean
+    locationPermissionGranted: Boolean,
+    modifier: Modifier,
+    onMapLoaded: () -> Unit,
 ) {
-    AndroidView(
-        { mapView }
-    ) { mapView ->
-        CoroutineScope(Dispatchers.Main).launch {
-            val map = mapView.awaitMap()
-            if(locationPermissionGranted){
-                map.uiSettings.isMyLocationButtonEnabled = true
-                map.isMyLocationEnabled = true
-            }
-            map.uiSettings.apply {
-                isZoomControlsEnabled = true
-            }
-
-            //val destination = LatLng(54.6944, 20.4981)
-            val destination = LatLng(latitude, longitude)
-            map.moveCamera(CameraUpdateFactory.newLatLngZoom(destination, 15f))
+    val location = LatLng(latitude, longitude)
+    Log.i("LOCATION", "${location}")
+    // Observing and controlling the camera's state can be done with a CameraPositionState
+    val cameraPositionState = rememberCameraPositionState {
+        position = CameraPosition.fromLatLngZoom(location, 16f)
+    }
+    var mapProperties = if (locationPermissionGranted) {
+        remember {
+            mutableStateOf(MapProperties(mapType = MapType.NORMAL, isMyLocationEnabled = true))
         }
+    } else {
+        remember {
+            mutableStateOf(MapProperties(mapType = MapType.NORMAL))
+        }
+    }
+    var uiSettings by remember { mutableStateOf(MapUiSettings(compassEnabled = false, myLocationButtonEnabled = true)) }
+    GoogleMap(
+        modifier = modifier,
+        cameraPositionState = cameraPositionState,
+        properties = mapProperties.value,
+        uiSettings = uiSettings,
+        onMapLoaded = onMapLoaded,
+        googleMapOptionsFactory = {
+            GoogleMapOptions().camera(CameraPosition.fromLatLngZoom(location, 16f))
+        },
+        onPOIClick = {
+            Log.d("TAG", "POI clicked: ${it.name}")
+        }
+    ) {
+        cameraPositionState.move(com.google.android.gms.maps.CameraUpdateFactory.newLatLngZoom(location,16f)) //TODO check all zoom bugs (mb save zoom value)
     }
 }

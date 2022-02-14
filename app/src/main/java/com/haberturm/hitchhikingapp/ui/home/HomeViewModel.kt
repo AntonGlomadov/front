@@ -17,9 +17,9 @@ import javax.inject.Inject
 class HomeViewModel @Inject constructor(
     private val routeNavigator: RouteNavigator,
 ) : ViewModel(), RouteNavigator by routeNavigator  {
-    var latitude by mutableStateOf<Double>(54.6944)  //TODO its will be better to show loading screen then the fake location
+    var latitude by mutableStateOf<Double>(1.35)  //TODO its will be better to show loading screen then the fake location
         private set
-    var longitude by mutableStateOf<Double>(20.4981)
+    var longitude by mutableStateOf<Double>(103.87)
         private set
 
     @SuppressLint("MissingPermission")
