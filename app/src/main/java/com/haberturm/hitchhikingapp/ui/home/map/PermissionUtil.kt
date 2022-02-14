@@ -40,7 +40,8 @@ fun PermissionState.isPermanentlyDenied(): Boolean {
 @Composable
 fun MultiplePermissionsState.checkPermissions(): MyPermissionState { // fix it for multiple permission
     var locationPermissionState: MyPermissionState? = null
-
+    //TODO if permission denied app will show Kaliningrad. Its better show a permanent err screen
+    //TODO alert dialog doesn't survive screen rotation
     permissions.forEach { perm ->
         when (perm.permission) {
             Manifest.permission.ACCESS_FINE_LOCATION -> {
@@ -78,7 +79,7 @@ fun MultiplePermissionsState.checkPermissions(): MyPermissionState { // fix it f
                             text = stringResource(R.string.LocationRationaleText),
                             button1Text = stringResource(R.string.LocationRationaleButton1),
                             button2Text = stringResource(R.string.LocationRationaleButton2),
-                            {}
+                            {} //TODO intent to app settings
 
                         )
                         locationPermissionState = MyPermissionState.PermanentlyDenied

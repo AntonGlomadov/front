@@ -41,22 +41,29 @@ fun ErrorAlertDialog(
                     modifier = Modifier.padding(all = 8.dp),
                     horizontalArrangement = Arrangement.Center
                 ) {
-                    Button(
-                        onClick = {
-                            buttonFunction()
+                    if (button1Text.isNotEmpty()) {
+                        Button(
+                            onClick = {
+                                buttonFunction()
+                            },
+                            Modifier.fillMaxWidth()
+                        ) {
+                            Text(text = button1Text)
                         }
-                    ) {
-                        Text(text = button1Text)
                     }
-                    Button(
-                        onClick = {
-                            openDialog.value = false
+                    if (button2Text.isNotEmpty()) {
+                        Button(
+                            onClick = {
+                                openDialog.value = false
+                            },
+                        ) {
+                            Text(text = button2Text)
                         }
-                    ) {
-                        Text(text = button2Text)
                     }
                 }
-            }
+            },
+            modifier = Modifier.wrapContentHeight()
+
         )
     }
 

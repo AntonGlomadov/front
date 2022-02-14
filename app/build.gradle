@@ -77,4 +77,9 @@ dependencies {
 
     //permission
     implementation "com.google.accompanist:accompanist-permissions:0.21.1-beta"
+
+    implementation 'com.google.maps.android:maps-compose:1.0.1'
+
+    // Make sure to also include the latest version of the Maps SDK for Android
+    implementation 'com.google.android.gms:play-services-maps:18.0.2'
 }

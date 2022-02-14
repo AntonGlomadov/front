@@ -1,23 +1,35 @@
 package com.haberturm.hitchhikingapp.ui.home
 
+import android.Manifest
+import android.util.Log
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.EnterTransition
+import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.DisposableEffect
+import androidx.compose.foundation.layout.wrapContentSize
+import androidx.compose.material.CircularProgressIndicator
+import androidx.compose.material.MaterialTheme
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.google.android.gms.maps.GoogleMapOptions
+import com.google.android.gms.maps.model.CameraPosition
+import com.google.maps.android.compose.*
+import com.haberturm.hitchhikingapp.R
 import com.haberturm.hitchhikingapp.ui.home.map.GetPermissions
-import com.haberturm.hitchhikingapp.ui.home.map.MapView
-import com.haberturm.hitchhikingapp.ui.home.map.MyPermissionState
-import com.haberturm.hitchhikingapp.ui.home.map.checkPermissions
+import com.haberturm.hitchhikingapp.ui.home.map.isPermanentlyDenied
 import com.haberturm.hitchhikingapp.ui.nav.NavRoute
+import com.haberturm.hitchhikingapp.ui.views.ErrorAlertDialog
+import com.haberturm.hitchhikingapp.ui.home.map.*
+
 
 const val KEY_CONTENT_PAGE_INDEX = "CONTENT_PAGE_INDEX"
 
@@ -47,7 +59,10 @@ object HomeRoute : NavRoute<HomeViewModel> {
 }
 
 
-@OptIn(ExperimentalPermissionsApi::class)
+@OptIn(
+    ExperimentalPermissionsApi::class,
+    androidx.compose.animation.ExperimentalAnimationApi::class
+)
 @Composable
 private fun Home(
     viewModel: HomeViewModel
@@ -58,7 +73,7 @@ private fun Home(
         key1 = lifecycleOwner,
         effect = {
             val observer = LifecycleEventObserver { _, event ->
-                if(event == Lifecycle.Event.ON_START) {
+                if (event == Lifecycle.Event.ON_START) {
                     permissions.launchMultiplePermissionRequest()
                 }
             }
@@ -70,25 +85,92 @@ private fun Home(
         }
     )
 
+
     //TODO: handle recomposition
-    val userLocationPermissionState = permissions.checkPermissions()
-    var locationPermissionGranted:Boolean = false
-    if (userLocationPermissionState == MyPermissionState.HasPermission){
-        viewModel.getUserLocation(LocalContext.current)
-        locationPermissionGranted = true
+    //val userLocationPermissionState = permissions.checkPermissions()
+    var locationPermissionGranted by remember { mutableStateOf(false) }
+    permissions.permissions.forEach { perm ->
+        when (perm.permission) {
+            Manifest.permission.ACCESS_FINE_LOCATION -> {
+                when {
+                    perm.hasPermission -> {
+                        var isMapLoaded by remember { mutableStateOf(false) }
+                        viewModel.getUserLocation(LocalContext.current)
 
-    }else{
-        viewModel.getUserLocation(LocalContext.current)
+                        Box(Modifier.fillMaxSize()) {
+                            GoogleMapView(
+                                viewModel.latitude,
+                                viewModel.longitude,
+                                locationPermissionGranted,
+                                modifier = Modifier.matchParentSize(),
+                                onMapLoaded = {
+                                    isMapLoaded = true
+                                },
 
-        //TODO add proper error handler
+                                )
+                            if (!isMapLoaded) {
+                                AnimatedVisibility(
+                                    modifier = Modifier
+                                        .matchParentSize(),
+                                    visible = !isMapLoaded,
+                                    enter = EnterTransition.None,
+                                    exit = fadeOut()
+                                ) {
+                                    CircularProgressIndicator(
+                                        modifier = Modifier
+                                            .background(MaterialTheme.colors.background)
+                                            .wrapContentSize()
+                                    )
+                                }
+                            }
+                        }
+                        locationPermissionGranted = true
+
+
+                    }
+                    perm.shouldShowRationale -> {
+                        ErrorAlertDialog(
+                            title = stringResource(R.string.LocationRationaleTitle),
+                            text = stringResource(R.string.LocationRationaleText),
+                            button1Text = stringResource(R.string.LocationRationaleButton1),
+                            button2Text = stringResource(R.string.LocationRationaleButton2),
+                            { perm.launchPermissionRequest() }
+                        )
+                        locationPermissionGranted = false
+
+                    }
+                    perm.isPermanentlyDenied() -> {
+//                        Box(Modifier.fillMaxSize()) {
+//                            Text(text = "Location permission denied")
+//                        }
+                        //TODO think about what to show when permanent denied
+                        ErrorAlertDialog(
+                            title = stringResource(R.string.LocationPermanentTitle),
+                            text = stringResource(R.string.LocationRationaleText),
+                            button1Text = stringResource(R.string.LocationRationaleButton1),
+                            button2Text = "",//stringResource(R.string.LocationRationaleButton2),
+                            {}
+
+                        )
+                        locationPermissionGranted = false
+                    }
+                }
+            }
+        }
     }
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .background(Color.White)
-    ) {
-        MapView(viewModel.latitude, viewModel.longitude, locationPermissionGranted )
-    }
+
+//    if (userLocationPermissionState == MyPermissionState.HasPermission) {
+//        viewModel.getUserLocation(LocalContext.current)
+//        locationPermissionGranted = true
+//
+//    } else {
+//        viewModel.getUserLocation(LocalContext.current)
+//
+//        //TODO add proper error handler
+//    }
 
 
 }
+
+
+
