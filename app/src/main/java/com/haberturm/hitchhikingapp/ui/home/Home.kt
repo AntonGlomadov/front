@@ -3,23 +3,21 @@ package com.haberturm.hitchhikingapp.ui.home
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.viewinterop.AndroidView
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.google.android.libraries.maps.CameraUpdateFactory
-import com.google.android.libraries.maps.MapView
-import com.google.android.libraries.maps.model.LatLng
-import com.google.android.libraries.maps.model.MarkerOptions
-import com.google.maps.android.ktx.awaitMap
-import com.haberturm.hitchhikingapp.ui.home.map.rememberMapViewWithLifecycle
-
+import androidx.lifecycle.Lifecycle
+import androidx.lifecycle.LifecycleEventObserver
+import com.google.accompanist.permissions.ExperimentalPermissionsApi
+import com.haberturm.hitchhikingapp.ui.home.map.GetPermissions
+import com.haberturm.hitchhikingapp.ui.home.map.MapView
+import com.haberturm.hitchhikingapp.ui.home.map.MyPermissionState
+import com.haberturm.hitchhikingapp.ui.home.map.checkPermissions
 import com.haberturm.hitchhikingapp.ui.nav.NavRoute
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.launch
 
 const val KEY_CONTENT_PAGE_INDEX = "CONTENT_PAGE_INDEX"
 
@@ -41,39 +39,56 @@ object HomeRoute : NavRoute<HomeViewModel> {
         navArgument(KEY_CONTENT_PAGE_INDEX) { type = NavType.IntType })
     */
     @Composable
-    override fun Content(viewModel: HomeViewModel) = Home()
+    override fun Content(viewModel: HomeViewModel) = Home(viewModel)
 
     @Composable
     override fun viewModel(): HomeViewModel = hiltViewModel()
 
 }
 
-private lateinit var mapView: MapView
 
+@OptIn(ExperimentalPermissionsApi::class)
 @Composable
-private fun Home() {
-    mapView = rememberMapViewWithLifecycle()
+private fun Home(
+    viewModel: HomeViewModel
+) {
+    val permissions = GetPermissions()
+    val lifecycleOwner = LocalLifecycleOwner.current
+    DisposableEffect(
+        key1 = lifecycleOwner,
+        effect = {
+            val observer = LifecycleEventObserver { _, event ->
+                if(event == Lifecycle.Event.ON_START) {
+                    permissions.launchMultiplePermissionRequest()
+                }
+            }
+            lifecycleOwner.lifecycle.addObserver(observer)
+
+            onDispose {
+                lifecycleOwner.lifecycle.removeObserver(observer)
+            }
+        }
+    )
+
+    //TODO: handle recomposition
+    val userLocationPermissionState = permissions.checkPermissions()
+    var locationPermissionGranted:Boolean = false
+    if (userLocationPermissionState == MyPermissionState.HasPermission){
+        viewModel.getUserLocation(LocalContext.current)
+        locationPermissionGranted = true
+
+    }else{
+        viewModel.getUserLocation(LocalContext.current)
+
+        //TODO add proper error handler
+    }
     Column(
         modifier = Modifier
             .fillMaxSize()
             .background(Color.White)
     ) {
-        AndroidView(
-            { mapView }
-        ) { mapView ->
-            CoroutineScope(Dispatchers.Main).launch {
-                val map = mapView.awaitMap()
-                map.uiSettings.isZoomControlsEnabled = true
-
-                val destination = LatLng(54.6944, 20.4981)
-                map.moveCamera(CameraUpdateFactory.newLatLngZoom(destination, 6f))
-                val markerOptions =  MarkerOptions()
-                        .title("Static location")
-                        .position(destination)
-                map.addMarker(markerOptions)
-            }
-        }
-
+        MapView(viewModel.latitude, viewModel.longitude, locationPermissionGranted )
     }
+
 
 }
