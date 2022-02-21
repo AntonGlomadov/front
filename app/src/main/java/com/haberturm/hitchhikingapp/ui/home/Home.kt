@@ -29,6 +29,7 @@ import com.haberturm.hitchhikingapp.ui.home.map.isPermanentlyDenied
 import com.haberturm.hitchhikingapp.ui.nav.NavRoute
 import com.haberturm.hitchhikingapp.ui.views.ErrorAlertDialog
 import com.haberturm.hitchhikingapp.ui.home.map.*
+import user.userdb.UserEntity
 
 
 const val KEY_CONTENT_PAGE_INDEX = "CONTENT_PAGE_INDEX"
@@ -96,11 +97,15 @@ private fun Home(
                     perm.hasPermission -> {
                         var isMapLoaded by remember { mutableStateOf(false) }
                         viewModel.getUserLocation(LocalContext.current)
+                        val userLocation = viewModel.location.collectAsState(
+                            initial = UserEntity(0,1.35,103.87) //TODO: weak
+                        ).value
+
 
                         Box(Modifier.fillMaxSize()) {
                             GoogleMapView(
-                                viewModel.latitude,
-                                viewModel.longitude,
+                                userLocation.latitude,
+                                userLocation.longitude,
                                 locationPermissionGranted,
                                 modifier = Modifier.matchParentSize(),
                                 onMapLoaded = {
