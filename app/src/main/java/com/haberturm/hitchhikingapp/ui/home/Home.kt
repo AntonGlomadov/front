@@ -144,6 +144,7 @@ private fun Home(
 //                            Text(text = "Location permission denied")
 //                        }
                         //TODO think about what to show when permanent denied
+                        //TODO !CRITICAL! "permanent denied" dialog shows before permission ask
                         ErrorAlertDialog(
                             title = stringResource(R.string.LocationPermanentTitle),
                             text = stringResource(R.string.LocationRationaleText),

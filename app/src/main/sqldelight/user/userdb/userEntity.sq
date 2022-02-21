@@ -1,0 +1,15 @@
+CREATE TABLE userEntity (
+    id INTEGER NOT NULL PRIMARY KEY,
+    latitude REAL,
+    longitude REAL
+);
+
+getUserLocation:
+SELECT *
+FROM userEntity
+WHERE id = :id;
+
+insertUser:
+INSERT OR REPLACE
+INTO userEntity
+VALUES (?,?,?);
