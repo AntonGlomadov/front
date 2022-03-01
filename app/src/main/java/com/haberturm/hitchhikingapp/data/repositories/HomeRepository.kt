@@ -7,7 +7,7 @@ import user.userdb.UserEntity
 
 interface HomeRepository {
     suspend fun getUserLocationWithApi(context: Context, coroutineScope: CoroutineScope)
-    suspend fun getUserLocation(): Flow<UserEntity>
+    fun getUserLocation(): Flow<UserEntity>
     suspend fun insertUser(id: Long?, latitude: Double, longitude: Double)
     val homeRepositoryEvent: Flow<HomeRepositoryEvent>
 

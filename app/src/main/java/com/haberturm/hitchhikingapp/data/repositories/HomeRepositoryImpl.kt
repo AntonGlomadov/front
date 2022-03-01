@@ -35,7 +35,7 @@ class HomeRepositoryImpl(
                     async {
                         insertUser(0,lastKnownLocation.latitude, lastKnownLocation.longitude)
                     }.await()
-                    _homeRepositoryEvent.send(HomeRepositoryEvent.UserLocationStatus(isDone = true))
+
                 }
             } else {
               //TODO handle err
@@ -45,11 +45,12 @@ class HomeRepositoryImpl(
     }
 
     //TODO mb make following function private
-    override suspend fun getUserLocation(): Flow<UserEntity> {
+    override fun getUserLocation(): Flow<UserEntity> {
         return userDataSource.getUserLocation()
     }
 
     override suspend fun insertUser(id: Long?, latitude: Double, longitude: Double) {
         userDataSource.insertUser(id, latitude, longitude)
+        _homeRepositoryEvent.send(HomeRepositoryEvent.UserLocationStatus(isDone = true))
     }
 }

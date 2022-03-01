@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.TextField
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -20,15 +21,13 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.android.gms.maps.GoogleMapOptions
-import com.google.android.gms.maps.model.CameraPosition
-import com.google.maps.android.compose.*
 import com.haberturm.hitchhikingapp.R
 import com.haberturm.hitchhikingapp.ui.home.map.GetPermissions
 import com.haberturm.hitchhikingapp.ui.home.map.isPermanentlyDenied
 import com.haberturm.hitchhikingapp.ui.nav.NavRoute
 import com.haberturm.hitchhikingapp.ui.views.ErrorAlertDialog
 import com.haberturm.hitchhikingapp.ui.home.map.*
+import kotlinx.coroutines.flow.collect
 import user.userdb.UserEntity
 
 
@@ -86,38 +85,44 @@ private fun Home(
         }
     )
 
+    var isMapAndLocLoaded by remember { mutableStateOf(false) }
+    LaunchedEffect(key1 = true) {
+        viewModel.userLocationStatus.collect { event ->
+            if (event.isLocationReady && event.isMapReady) {
+                isMapAndLocLoaded = true
+            }
+        }
+    }
 
-    //TODO: handle recomposition
-    //val userLocationPermissionState = permissions.checkPermissions()
+
     var locationPermissionGranted by remember { mutableStateOf(false) }
-    permissions.permissions.forEach { perm ->
-        when (perm.permission) {
-            Manifest.permission.ACCESS_FINE_LOCATION -> {
-                when {
-                    perm.hasPermission -> {
-                        var isMapLoaded by remember { mutableStateOf(false) }
-                        viewModel.getUserLocation(LocalContext.current)
-                        val userLocation = viewModel.location.collectAsState(
-                            initial = UserEntity(0,1.35,103.87) //TODO: weak
-                        ).value
-
-
-                        Box(Modifier.fillMaxSize()) {
+    Box(Modifier.fillMaxSize()) {
+        TextField(value = "Поиск города", onValueChange = {/*TODO make request*/})
+        permissions.permissions.forEach { perm ->
+            when (perm.permission) {
+                Manifest.permission.ACCESS_FINE_LOCATION -> {
+                    when {
+                        perm.hasPermission -> {
+                            viewModel.getUserLocation(LocalContext.current)
+                            val userLocation = viewModel.location.collectAsState(
+                                initial = UserEntity(0, 1.35, 103.87) //TODO: weak
+                            ).value
                             GoogleMapView(
                                 userLocation.latitude,
                                 userLocation.longitude,
                                 locationPermissionGranted,
                                 modifier = Modifier.matchParentSize(),
                                 onMapLoaded = {
-                                    isMapLoaded = true
+                                    viewModel.onEvent(HomeEvent.MapReady)
+                                    //isMapLoaded = true
                                 },
-
-                                )
-                            if (!isMapLoaded) {
+                                viewModel
+                            )
+                            if (!isMapAndLocLoaded && !locationPermissionGranted) {
                                 AnimatedVisibility(
                                     modifier = Modifier
                                         .matchParentSize(),
-                                    visible = !isMapLoaded,
+                                    visible = !isMapAndLocLoaded,
                                     enter = EnterTransition.None,
                                     exit = fadeOut()
                                 ) {
@@ -128,54 +133,46 @@ private fun Home(
                                     )
                                 }
                             }
+                            locationPermissionGranted = true
+
+
                         }
-                        locationPermissionGranted = true
+                        perm.shouldShowRationale -> {
+                            ErrorAlertDialog(
+                                title = stringResource(R.string.LocationRationaleTitle),
+                                text = stringResource(R.string.LocationRationaleText),
+                                button1Text = stringResource(R.string.LocationRationaleButton1),
+                                button2Text = stringResource(R.string.LocationRationaleButton2),
+                                { perm.launchPermissionRequest() }
+                            )
+                            locationPermissionGranted = false
 
+                        }
+                        perm.isPermanentlyDenied() -> {
+                            //                        Box(Modifier.fillMaxSize()) {
+                            //                            Text(text = "Location permission denied")
+                            //                        }
+                            //TODO think about what to show when permanent denied
+                            //TODO !CRITICAL! "permanent denied" dialog shows before permission ask
+                            //TODO: fix states to handle this(now states works not as expected)
 
-                    }
-                    perm.shouldShowRationale -> {
-                        ErrorAlertDialog(
-                            title = stringResource(R.string.LocationRationaleTitle),
-                            text = stringResource(R.string.LocationRationaleText),
-                            button1Text = stringResource(R.string.LocationRationaleButton1),
-                            button2Text = stringResource(R.string.LocationRationaleButton2),
-                            { perm.launchPermissionRequest() }
-                        )
-                        locationPermissionGranted = false
+                            ErrorAlertDialog(
+                                title = stringResource(R.string.LocationPermanentTitle),
+                                text = stringResource(R.string.LocationRationaleText),
+                                button1Text = stringResource(R.string.LocationRationaleButton1),
+                                button2Text = "",//stringResource(R.string.LocationRationaleButton2),
+                                {}
 
-                    }
-                    perm.isPermanentlyDenied() -> {
-//                        Box(Modifier.fillMaxSize()) {
-//                            Text(text = "Location permission denied")
-//                        }
-                        //TODO think about what to show when permanent denied
-                        //TODO !CRITICAL! "permanent denied" dialog shows before permission ask
-                        ErrorAlertDialog(
-                            title = stringResource(R.string.LocationPermanentTitle),
-                            text = stringResource(R.string.LocationRationaleText),
-                            button1Text = stringResource(R.string.LocationRationaleButton1),
-                            button2Text = "",//stringResource(R.string.LocationRationaleButton2),
-                            {}
-
-                        )
-                        locationPermissionGranted = false
+                            )
+                            locationPermissionGranted = false
+                        }
                     }
                 }
             }
         }
+
+
     }
-
-//    if (userLocationPermissionState == MyPermissionState.HasPermission) {
-//        viewModel.getUserLocation(LocalContext.current)
-//        locationPermissionGranted = true
-//
-//    } else {
-//        viewModel.getUserLocation(LocalContext.current)
-//
-//        //TODO add proper error handler
-//    }
-
-
 }
 
 
