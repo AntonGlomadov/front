@@ -6,6 +6,10 @@ import android.util.Log
 import com.google.android.gms.location.LocationServices
 import com.haberturm.hitchhikingapp.data.database.UserDataSource
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.async
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import user.userdb.UserEntity
 
@@ -14,16 +18,24 @@ class HomeRepositoryImpl(
 ) : HomeRepository {
 
 
+    private val _homeRepositoryEvent =  Channel<HomeRepositoryEvent>()
+    override val homeRepositoryEvent = _homeRepositoryEvent.receiveAsFlow()
+
+
+
     @SuppressLint("MissingPermission")
     override suspend fun getUserLocationWithApi(context: Context, coroutineScope: CoroutineScope) {
         val fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
         val locationResult = fusedLocationProviderClient.lastLocation
-
+        _homeRepositoryEvent.send(HomeRepositoryEvent.UserLocationStatus(isDone = false))
         locationResult.addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 val lastKnownLocation = task.result
                 coroutineScope.launch {
-                    insertUser(0,lastKnownLocation.latitude, lastKnownLocation.longitude)
+                    async {
+                        insertUser(0,lastKnownLocation.latitude, lastKnownLocation.longitude)
+                    }.await()
+
                 }
             } else {
               //TODO handle err
@@ -33,11 +45,12 @@ class HomeRepositoryImpl(
     }
 
     //TODO mb make following function private
-    override suspend fun getUserLocation(id: Long): UserEntity? {
-        return userDataSource.getUserLocation(id)
+    override fun getUserLocation(): Flow<UserEntity> {
+        return userDataSource.getUserLocation()
     }
 
     override suspend fun insertUser(id: Long?, latitude: Double, longitude: Double) {
         userDataSource.insertUser(id, latitude, longitude)
+        _homeRepositoryEvent.send(HomeRepositoryEvent.UserLocationStatus(isDone = true))
     }
 }

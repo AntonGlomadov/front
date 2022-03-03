@@ -1,13 +1,12 @@
 CREATE TABLE userEntity (
     id INTEGER NOT NULL PRIMARY KEY,
-    latitude REAL,
-    longitude REAL
+    latitude REAL NOT NULL,
+    longitude REAL NOT NULL
 );
 
 getUserLocation:
 SELECT *
-FROM userEntity
-WHERE id = :id;
+FROM userEntity;
 
 insertUser:
 INSERT OR REPLACE

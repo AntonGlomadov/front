@@ -1,9 +1,10 @@
 package com.haberturm.hitchhikingapp.data.database
 
+import kotlinx.coroutines.flow.Flow
 import user.userdb.UserEntity
 
 interface UserDataSource {
-    suspend fun getUserLocation(id: Long): UserEntity?
+    fun getUserLocation(): Flow<UserEntity>
     suspend fun insertUser(id: Long?, latitude: Double, longitude: Double)
 
 }
