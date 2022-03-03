@@ -40,7 +40,7 @@ class HomeViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             repository.homeRepositoryEvent.collect { event ->
-                Log.i("Event", "${event}")
+                Log.i("Event", "INIT_VM $event")
                 when (event) {
                     is HomeRepositoryEvent.UserLocationStatus -> if (getLocationStatus(event)) {
                         location = repository.getUserLocation()
@@ -56,18 +56,16 @@ class HomeViewModel @Inject constructor(
 
     fun onEvent(event: HomeEvent) {
         when (event) {
-
             is HomeEvent.MarkerLocationChanged -> {
-                Log.i("Event", event.toString())
+                //Log.i("Event", "ON_EVENT_VM $event")
                 _markerLocation.value = event.location
             }
             is HomeEvent.MapReady -> {
-                Log.i("Event", event.toString())
+                Log.i("Event", "ON_EVENT_VM $event")
                 _userLocationStatus.value = HomeEvent.IsMapReady(
                     isLocationReady = userLocationStatus.value.isLocationReady,
                     isMapReady = true
                 )
-                Log.i("Event", _userLocationStatus.value.toString())
             }
         }
     }
@@ -89,6 +87,8 @@ class HomeViewModel @Inject constructor(
             }
         }
     }
+}
 
-
+sealed class PermissionStatus{
+    data
 }

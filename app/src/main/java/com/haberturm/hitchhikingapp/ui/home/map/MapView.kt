@@ -4,6 +4,7 @@ import android.location.Geocoder
 import android.util.Log
 import androidx.compose.material.Button
 import androidx.compose.material.Text
+import androidx.compose.material.TextField
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -57,6 +58,7 @@ fun GoogleMapView(
         LocationMarker(cameraPositionState, viewModel)
 
     }
+    TextField(value = "Поиск города", onValueChange = {/*TODO make request*/})
     LocationPicker(cameraPositionState,viewModel)
 }
 

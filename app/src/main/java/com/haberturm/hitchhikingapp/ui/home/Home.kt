@@ -86,8 +86,12 @@ private fun Home(
     )
 
     var isMapAndLocLoaded by remember { mutableStateOf(false) }
+    var isLocReady by remember { mutableStateOf(false) }
     LaunchedEffect(key1 = true) {
         viewModel.userLocationStatus.collect { event ->
+            if(event.isLocationReady){
+                isLocReady = true
+            }
             if (event.isLocationReady && event.isMapReady) {
                 isMapAndLocLoaded = true
             }
@@ -97,7 +101,6 @@ private fun Home(
 
     var locationPermissionGranted by remember { mutableStateOf(false) }
     Box(Modifier.fillMaxSize()) {
-        TextField(value = "Поиск города", onValueChange = {/*TODO make request*/})
         permissions.permissions.forEach { perm ->
             when (perm.permission) {
                 Manifest.permission.ACCESS_FINE_LOCATION -> {
@@ -107,18 +110,21 @@ private fun Home(
                             val userLocation = viewModel.location.collectAsState(
                                 initial = UserEntity(0, 1.35, 103.87) //TODO: weak
                             ).value
-                            GoogleMapView(
-                                userLocation.latitude,
-                                userLocation.longitude,
-                                locationPermissionGranted,
-                                modifier = Modifier.matchParentSize(),
-                                onMapLoaded = {
-                                    viewModel.onEvent(HomeEvent.MapReady)
-                                    //isMapLoaded = true
-                                },
-                                viewModel
-                            )
-                            if (!isMapAndLocLoaded && !locationPermissionGranted) {
+                            if(isLocReady){
+                                GoogleMapView(
+                                    userLocation.latitude,
+                                    userLocation.longitude,
+                                    locationPermissionGranted,
+                                    modifier = Modifier.matchParentSize(),
+                                    onMapLoaded = {
+                                        viewModel.onEvent(HomeEvent.MapReady)
+                                        //isMapLoaded = true
+                                    },
+                                    viewModel
+                                )
+                            }
+
+                            if (!isMapAndLocLoaded) {
                                 AnimatedVisibility(
                                     modifier = Modifier
                                         .matchParentSize(),
@@ -174,6 +180,8 @@ private fun Home(
 
     }
 }
+
+
 
 
 
