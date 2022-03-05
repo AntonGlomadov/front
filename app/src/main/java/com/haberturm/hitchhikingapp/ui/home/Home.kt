@@ -7,10 +7,12 @@ import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Text
 import androidx.compose.material.TextField
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
@@ -89,12 +91,42 @@ private fun Home(
     var isLocReady by remember { mutableStateOf(false) }
     LaunchedEffect(key1 = true) {
         viewModel.userLocationStatus.collect { event ->
-            if(event.isLocationReady){
+            if (event.isLocationReady) {
                 isLocReady = true
             }
             if (event.isLocationReady && event.isMapReady) {
                 isMapAndLocLoaded = true
             }
+        }
+    }
+
+    var permissionStatus by remember { mutableStateOf<PermissionStatus>(PermissionStatus.PermissionNotProcessed) }
+//    LaunchedEffect(key1 = true){
+//      viewModel.uiEvent.collect { event ->
+//          when(event){
+//              is HomeEvent.PermissionEvent ->{
+//                  permissionStatus = event.status
+//              }
+//          }
+//      }
+//    }
+
+    when (permissionStatus) {
+        is PermissionStatus.PermissionNotProcessed -> {
+            Log.i("permissionstatus", "PermissionNotProcessed")
+            Text(text = "PermissionNotProcessed")
+        }
+        is PermissionStatus.PermissionAccepted -> {
+            Log.i("permissionstatus", "PermissionAccepted")
+            Text(text = "PermissionAccepted")
+        }
+        is PermissionStatus.PermissionDenied -> {
+            Log.i("permissionstatus", "PermissionDenied")
+            Text(text = "PermissionDenied")
+        }
+        is PermissionStatus.PermissionPermanentlyDenied -> {
+            Log.i("permissionstatus", "PermissionPermanentlyDenied")
+            Text(text = "PermissionPermanentlyDenied")
         }
     }
 
@@ -106,11 +138,13 @@ private fun Home(
                 Manifest.permission.ACCESS_FINE_LOCATION -> {
                     when {
                         perm.hasPermission -> {
+                            permissionStatus = PermissionStatus.PermissionAccepted
                             viewModel.getUserLocation(LocalContext.current)
                             val userLocation = viewModel.location.collectAsState(
                                 initial = UserEntity(0, 1.35, 103.87) //TODO: weak
                             ).value
-                            if(isLocReady){
+                            Log.i("LOCATION_Init", userLocation.toString())
+                            if (isLocReady) {
                                 GoogleMapView(
                                     userLocation.latitude,
                                     userLocation.longitude,
@@ -144,6 +178,7 @@ private fun Home(
 
                         }
                         perm.shouldShowRationale -> {
+                            permissionStatus = PermissionStatus.PermissionDenied
                             ErrorAlertDialog(
                                 title = stringResource(R.string.LocationRationaleTitle),
                                 text = stringResource(R.string.LocationRationaleText),
@@ -161,23 +196,23 @@ private fun Home(
                             //TODO think about what to show when permanent denied
                             //TODO !CRITICAL! "permanent denied" dialog shows before permission ask
                             //TODO: fix states to handle this(now states works not as expected)
+                            if (permissionStatus != PermissionStatus.PermissionNotProcessed) {
+                                ErrorAlertDialog(
+                                    title = stringResource(R.string.LocationPermanentTitle),
+                                    text = stringResource(R.string.LocationRationaleText),
+                                    button1Text = stringResource(R.string.LocationRationaleButton1),
+                                    button2Text = "",//stringResource(R.string.LocationRationaleButton2),
+                                    {}
 
-                            ErrorAlertDialog(
-                                title = stringResource(R.string.LocationPermanentTitle),
-                                text = stringResource(R.string.LocationRationaleText),
-                                button1Text = stringResource(R.string.LocationRationaleButton1),
-                                button2Text = "",//stringResource(R.string.LocationRationaleButton2),
-                                {}
-
-                            )
-                            locationPermissionGranted = false
+                                )
+                                permissionStatus = PermissionStatus.PermissionDenied
+                                locationPermissionGranted = false
+                            }
                         }
                     }
                 }
             }
         }
-
-
     }
 }
 

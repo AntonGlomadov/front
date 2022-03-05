@@ -1,17 +1,19 @@
 package com.haberturm.hitchhikingapp.ui.home.map
 
-import android.location.Geocoder
+import android.content.Context
 import android.util.Log
-import androidx.compose.material.Button
-import androidx.compose.material.Text
-import androidx.compose.material.TextField
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.painterResource
 import com.google.android.gms.maps.GoogleMapOptions
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.*
+import com.haberturm.hitchhikingapp.R
 import com.haberturm.hitchhikingapp.ui.home.HomeEvent
 import com.haberturm.hitchhikingapp.ui.home.HomeViewModel
 
@@ -40,7 +42,7 @@ fun GoogleMapView(
             mutableStateOf(MapProperties(mapType = MapType.NORMAL))
         }
     }
-    var uiSettings by remember { mutableStateOf(MapUiSettings(compassEnabled = false, myLocationButtonEnabled = true)) }
+    var uiSettings by remember { mutableStateOf(MapUiSettings(compassEnabled = false, myLocationButtonEnabled = true, zoomControlsEnabled = false)) }
     GoogleMap(
         modifier = modifier,
         cameraPositionState = cameraPositionState,
@@ -58,19 +60,55 @@ fun GoogleMapView(
         LocationMarker(cameraPositionState, viewModel)
 
     }
-    TextField(value = "Поиск города", onValueChange = {/*TODO make request*/})
-    LocationPicker(cameraPositionState,viewModel)
+
+    MapHood(cameraPositionState,viewModel, LocalContext.current)
+
+
+}
+
+@Composable
+fun MapHood(
+    cameraPositionState: CameraPositionState,
+    viewModel: HomeViewModel,
+    context: Context
+){
+    Box(modifier = Modifier.fillMaxSize()){
+        TextField(
+            value = "",
+            onValueChange = {/*TODO make request*/},
+            modifier = Modifier.fillMaxWidth(),
+
+            )
+
+
+        LocationPicker(
+            cameraPositionState,
+            viewModel
+        )
+        FloatingActionButton(
+            onClick = { viewModel.onEvent(HomeEvent.OnMyLocationClicked(context)) },
+            Modifier.align(Alignment.BottomEnd)
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.ic_baseline_my_location_24),
+                contentDescription =""
+            )
+        }
+    }
 }
 
 @Composable
 fun LocationPicker(cameraPositionState: CameraPositionState, viewModel: HomeViewModel) {
     if(!cameraPositionState.isMoving){
-        Button(onClick = { /*TODO*/ }) {
-            Text(text = "Поехали! ")
+        Box(modifier = Modifier.fillMaxSize()) {
+            Button(onClick = { /*TODO*/ }, modifier = Modifier.align(Alignment.BottomCenter)) {
+                Text(text = "Поехали! ")
+            }
+            val loc = viewModel.markerLocation.collectAsState()
+            Text(text = loc.value.toString())
         }
-        val loc = viewModel.markerLocation.collectAsState()
-        Text(text = loc.value.toString())
     }
+
 }
 
 
