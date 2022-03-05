@@ -37,7 +37,7 @@ fun GoogleMapView(
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(location, 16f)
     }
-    var mapProperties by remember{
+    var mapProperties by remember {
         mutableStateOf(MapProperties(mapType = MapType.NORMAL))
     }
     var uiSettings by remember {
@@ -100,7 +100,13 @@ fun MapHood(
                 backgroundColor = MaterialTheme.colors.background,
                 focusedIndicatorColor = Color.Transparent,
                 unfocusedIndicatorColor = Color.Transparent
-            )
+            ),
+            leadingIcon = {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_baseline_search_24),
+                    contentDescription = ""
+                )
+            }
         )
 
 
@@ -135,7 +141,7 @@ fun LocationPicker(cameraPositionState: CameraPositionState, viewModel: HomeView
                 Text(text = "Поехали! ")
             }
             val loc = viewModel.markerLocation.collectAsState()
-           // Text(text = loc.value.toString())
+            // Text(text = loc.value.toString())
         }
     }
 
