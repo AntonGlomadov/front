@@ -42,7 +42,15 @@ fun GoogleMapView(
             mutableStateOf(MapProperties(mapType = MapType.NORMAL))
         }
     }
-    var uiSettings by remember { mutableStateOf(MapUiSettings(compassEnabled = false, myLocationButtonEnabled = true, zoomControlsEnabled = false)) }
+    var uiSettings by remember {
+        mutableStateOf(
+            MapUiSettings(
+                compassEnabled = false,
+                myLocationButtonEnabled = true,
+                zoomControlsEnabled = false
+            )
+        )
+    }
     GoogleMap(
         modifier = modifier,
         cameraPositionState = cameraPositionState,
@@ -56,26 +64,35 @@ fun GoogleMapView(
             Log.d("TAG", "POI clicked: ${it.name}")
         }
     ) {
-        cameraPositionState.move(com.google.android.gms.maps.CameraUpdateFactory.newLatLngZoom(location,16f)) //TODO check all zoom bugs (mb save zoom value)
+
+        cameraPositionState.move(
+            com.google.android.gms.maps.CameraUpdateFactory.newLatLngZoom(
+                location,
+                16f
+            )
+        ) //TODO check all zoom bugs (mb save zoom value)
         LocationMarker(cameraPositionState, viewModel)
 
     }
 
-    MapHood(cameraPositionState,viewModel, LocalContext.current)
+    MapHood(cameraPositionState, viewModel, LocalContext.current, location)
 
 
 }
+
 
 @Composable
 fun MapHood(
     cameraPositionState: CameraPositionState,
     viewModel: HomeViewModel,
-    context: Context
-){
-    Box(modifier = Modifier.fillMaxSize()){
+    context: Context,
+    location: LatLng,
+) {
+
+    Box(modifier = Modifier.fillMaxSize()) {
         TextField(
             value = "",
-            onValueChange = {/*TODO make request*/},
+            onValueChange = {/*TODO make request*/ },
             modifier = Modifier.fillMaxWidth(),
 
             )
@@ -86,12 +103,19 @@ fun MapHood(
             viewModel
         )
         FloatingActionButton(
-            onClick = { viewModel.onEvent(HomeEvent.OnMyLocationClicked(context)) },
+            onClick = {
+                moveCamera(
+                    viewModel,
+                    context,
+                    location,
+                    cameraPositionState
+                )
+            },
             Modifier.align(Alignment.BottomEnd)
         ) {
             Icon(
                 painter = painterResource(R.drawable.ic_baseline_my_location_24),
-                contentDescription =""
+                contentDescription = ""
             )
         }
     }
@@ -99,7 +123,7 @@ fun MapHood(
 
 @Composable
 fun LocationPicker(cameraPositionState: CameraPositionState, viewModel: HomeViewModel) {
-    if(!cameraPositionState.isMoving){
+    if (!cameraPositionState.isMoving) {
         Box(modifier = Modifier.fillMaxSize()) {
             Button(onClick = { /*TODO*/ }, modifier = Modifier.align(Alignment.BottomCenter)) {
                 Text(text = "Поехали! ")
@@ -116,4 +140,20 @@ fun LocationPicker(cameraPositionState: CameraPositionState, viewModel: HomeView
 fun LocationMarker(cameraPositionState: CameraPositionState, viewModel: HomeViewModel) {
     Marker(position = cameraPositionState.position.target)
     viewModel.onEvent(HomeEvent.MarkerLocationChanged(cameraPositionState.position.target))
+}
+
+fun moveCamera(
+    viewModel: HomeViewModel,
+    context: Context,
+    location: LatLng,
+    cameraPositionState: CameraPositionState,
+) {
+    viewModel.onEvent(HomeEvent.OnMyLocationClicked(context))
+    cameraPositionState.move(
+        com.google.android.gms.maps.CameraUpdateFactory.newLatLngZoom(
+            location,
+            16f
+        )
+    )
+
 }
