@@ -4,7 +4,6 @@
     <string name="LocationRationaleText">Text</string>
     <string name="LocationRationaleButton1">OK</string>
     <string name="LocationRationaleButton2">Dismiss</string>
-
     <string name="LocationPermanentTitle">Permanent</string>
 
 </resources>

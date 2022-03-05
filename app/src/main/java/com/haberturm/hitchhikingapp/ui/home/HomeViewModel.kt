@@ -26,7 +26,7 @@ class HomeViewModel @Inject constructor(
     private val _uiEvent = Channel<HomeEvent>()
     val uiEvent = _uiEvent.receiveAsFlow()
 
-    var location: Flow<UserEntity> = flowOf()
+    var location: Flow<UserEntity> = repository.getUserLocation()
         private set
 
     private val _markerLocation = MutableStateFlow<LatLng>(LatLng(0.0, 0.0))
@@ -43,7 +43,8 @@ class HomeViewModel @Inject constructor(
                 Log.i("Event", "INIT_VM $event")
                 when (event) {
                     is HomeRepositoryEvent.UserLocationStatus -> if (getLocationStatus(event)) {
-                        location = repository.getUserLocation()
+                        //location = repository.getUserLocation()
+                        Log.i("LOCATION_Init", location.toString())
                         _userLocationStatus.value = HomeEvent.IsMapReady(
                             isLocationReady = true,
                             isMapReady = userLocationStatus.value.isMapReady
@@ -67,6 +68,17 @@ class HomeViewModel @Inject constructor(
                     isMapReady = true
                 )
             }
+//            is HomeEvent.PermissionEvent-> {
+//                when(event.status){
+//                    is PermissionStatus.PermissionNotProcessed{
+//                        sendUiEvent()
+//                    }
+//                }
+//            }
+            is HomeEvent.OnMyLocationClicked -> {
+                getUserLocation(event.context)
+            }
+            else -> {}
         }
     }
 
@@ -87,8 +99,10 @@ class HomeViewModel @Inject constructor(
             }
         }
     }
+    private fun sendUiEvent(event: HomeEvent){
+        viewModelScope.launch {
+            _uiEvent.send(event)
+        }
+    }
 }
 
-sealed class PermissionStatus{
-    data
-}
