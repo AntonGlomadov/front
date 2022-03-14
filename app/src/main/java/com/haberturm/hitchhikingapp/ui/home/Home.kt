@@ -22,6 +22,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.SavedStateHandle
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.haberturm.hitchhikingapp.R
 import com.haberturm.hitchhikingapp.ui.home.map.GetPermissions
@@ -29,25 +30,28 @@ import com.haberturm.hitchhikingapp.ui.home.map.isPermanentlyDenied
 import com.haberturm.hitchhikingapp.ui.nav.NavRoute
 import com.haberturm.hitchhikingapp.ui.views.ErrorAlertDialog
 import com.haberturm.hitchhikingapp.ui.home.map.*
+import com.haberturm.hitchhikingapp.ui.nav.getOrThrow
 import kotlinx.coroutines.flow.collect
 import user.userdb.UserEntity
 
 
-const val KEY_CONTENT_PAGE_INDEX = "CONTENT_PAGE_INDEX"
+const val KEY_HOME_INDEX = "HOME_PAGE_INDEX"
 
 object HomeRoute : NavRoute<HomeViewModel> {
-    override val route: String = "home/{$KEY_CONTENT_PAGE_INDEX}/"
+    override val route: String = "home/{$KEY_HOME_INDEX}/"
 
     /**
      * Returns the route that can be used for navigating to this page.
      */
-    fun get(index: Int): String = route.replace("{$KEY_CONTENT_PAGE_INDEX}", "$index")
+    fun get(index: Int): String = route.replace("{$KEY_HOME_INDEX}", "$index")
+
+//    fun getIndexFrom(savedStateHandle: SavedStateHandle) =
+//        savedStateHandle.getOrThrow<Int>(KEY_HOME_INDEX)
 
     /*
     not used yet
 
-    fun getIndexFrom(savedStateHandle: SavedStateHandle) =
-        savedStateHandle.getOrThrow<Int>(KEY_CONTENT_PAGE_INDEX)
+
 
     override fun getArguments(): List<NamedNavArgument> = listOf(
         navArgument(KEY_CONTENT_PAGE_INDEX) { type = NavType.IntType })

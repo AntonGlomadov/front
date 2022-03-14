@@ -2,6 +2,9 @@ package com.haberturm.hitchhikingapp.ui.home.map
 
 import android.content.Context
 import android.util.Log
+import androidx.compose.foundation.border
+import androidx.compose.foundation.interaction.MutableInteractionSource
+import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
@@ -20,6 +23,7 @@ import com.google.maps.android.compose.*
 import com.haberturm.hitchhikingapp.R
 import com.haberturm.hitchhikingapp.ui.home.HomeEvent
 import com.haberturm.hitchhikingapp.ui.home.HomeViewModel
+import com.haberturm.hitchhikingapp.ui.views.SearchField
 
 
 @Composable
@@ -88,32 +92,27 @@ fun MapHood(
 ) {
 
     Box(modifier = Modifier.fillMaxSize()) {
-        TextField(
-            value = "",
-            onValueChange = {/*TODO make request*/ },
+
+        SearchField(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(8.dp),
-            shape = RoundedCornerShape(32.dp),
-            singleLine = true,
-            colors = TextFieldDefaults.textFieldColors(
-                backgroundColor = MaterialTheme.colors.background,
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent
-            ),
+                .padding(8.dp)
+                .border(1.dp, MaterialTheme.colors.secondary, RoundedCornerShape(32.dp)),
             leadingIcon = {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_baseline_search_24),
                     contentDescription = ""
                 )
-            }
+            },
+
         )
 
 
-        LocationPicker(
-            cameraPositionState,
-            viewModel
-        )
+
+            LocationPicker(
+                cameraPositionState,
+                viewModel
+            )
         FloatingActionButton(
             onClick = {
                 moveCamera(
@@ -137,7 +136,10 @@ fun MapHood(
 fun LocationPicker(cameraPositionState: CameraPositionState, viewModel: HomeViewModel) {
     if (!cameraPositionState.isMoving) {
         Box(modifier = Modifier.fillMaxSize()) {
-            Button(onClick = { /*TODO*/ }, modifier = Modifier.align(Alignment.BottomCenter)) {
+            Button(
+                onClick = { viewModel.onEvent(HomeEvent.NavigateToSearchDirection) },
+                modifier = Modifier.align(Alignment.BottomCenter))
+            {
                 Text(text = "Поехали! ")
             }
             val loc = viewModel.markerLocation.collectAsState()

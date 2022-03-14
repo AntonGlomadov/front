@@ -3,12 +3,14 @@ package com.haberturm.hitchhikingapp.ui.home
 import android.annotation.SuppressLint
 import android.content.Context
 import android.util.Log
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.maps.model.LatLng
 import com.haberturm.hitchhikingapp.data.repositories.HomeRepository
 import com.haberturm.hitchhikingapp.data.repositories.HomeRepositoryEvent
 import com.haberturm.hitchhikingapp.ui.nav.RouteNavigator
+import com.haberturm.hitchhikingapp.ui.searchDirection.SearchDirectionRoute
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
@@ -18,10 +20,12 @@ import javax.inject.Inject
 
 @HiltViewModel
 class HomeViewModel @Inject constructor(
+    savedStateHandle: SavedStateHandle,
     private val routeNavigator: RouteNavigator,
     private val repository: HomeRepository,
 ) : ViewModel(), RouteNavigator by routeNavigator {
 
+    //private val index = HomeRoute.getIndexFrom(savedStateHandle)
 
     private val _uiEvent = Channel<HomeEvent>()
     val uiEvent = _uiEvent.receiveAsFlow()
@@ -67,6 +71,9 @@ class HomeViewModel @Inject constructor(
                     isLocationReady = userLocationStatus.value.isLocationReady,
                     isMapReady = true
                 )
+            }
+            is HomeEvent.NavigateToSearchDirection -> {
+                navigateToRoute(SearchDirectionRoute.get(1))
             }
 //            is HomeEvent.PermissionEvent-> {
 //                when(event.status){
