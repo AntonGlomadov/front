@@ -9,7 +9,13 @@ sealed class HomeEvent {
     data class MarkerLocationChanged(val location: LatLng) : HomeEvent()
     data class PermissionEvent(val status: PermissionStatus) : HomeEvent()
     data class OnMyLocationClicked(val context: Context) : HomeEvent()
-    object NavigateToSearchDirection : HomeEvent()
+    data class NavigateToSearchDirection(
+        val startLocation: LatLng,
+        val endLocation: LatLng
+    ) : HomeEvent()
+
+    data class GetGeocodeLocation(val address: String) : HomeEvent()
+    object RelocateMarker : HomeEvent()
 }
 
 sealed class PermissionStatus {

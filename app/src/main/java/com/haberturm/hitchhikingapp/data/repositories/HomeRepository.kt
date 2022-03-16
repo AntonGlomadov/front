@@ -1,6 +1,7 @@
 package com.haberturm.hitchhikingapp.data.repositories
 
 import android.content.Context
+import com.haberturm.hitchhikingapp.data.network.pojo.GeocodeLocationResponse
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import user.userdb.UserEntity
@@ -10,5 +11,6 @@ interface HomeRepository {
     fun getUserLocation(): Flow<UserEntity>
     suspend fun insertUser(id: Long?, latitude: Double, longitude: Double)
     val homeRepositoryEvent: Flow<HomeRepositoryEvent>
+    fun getGeocodeLocation(address: String) : Flow<GeocodeLocationResponse>
 
 }

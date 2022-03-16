@@ -7,10 +7,14 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.maps.model.LatLng
+import com.haberturm.hitchhikingapp.data.network.ApiState
+import com.haberturm.hitchhikingapp.data.network.pojo.GeocodeLocationResponse
 import com.haberturm.hitchhikingapp.data.repositories.HomeRepository
 import com.haberturm.hitchhikingapp.data.repositories.HomeRepositoryEvent
+import com.haberturm.hitchhikingapp.ui.model.GeocodeUiModel
 import com.haberturm.hitchhikingapp.ui.nav.RouteNavigator
 import com.haberturm.hitchhikingapp.ui.searchDirection.SearchDirectionRoute
+import com.haberturm.hitchhikingapp.ui.util.Util.toUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
@@ -25,8 +29,6 @@ class HomeViewModel @Inject constructor(
     private val repository: HomeRepository,
 ) : ViewModel(), RouteNavigator by routeNavigator {
 
-    //private val index = HomeRoute.getIndexFrom(savedStateHandle)
-
     private val _uiEvent = Channel<HomeEvent>()
     val uiEvent = _uiEvent.receiveAsFlow()
 
@@ -36,10 +38,11 @@ class HomeViewModel @Inject constructor(
     private val _markerLocation = MutableStateFlow<LatLng>(LatLng(0.0, 0.0))
     val markerLocation: StateFlow<LatLng> = _markerLocation
 
-
     private val _userLocationStatus =
         MutableStateFlow(HomeEvent.IsMapReady(isLocationReady = false, isMapReady = false))
     val userLocationStatus: StateFlow<HomeEvent.IsMapReady> = _userLocationStatus
+
+    private val geocodeApiResponse: MutableStateFlow<ApiState> = MutableStateFlow(ApiState.Empty)
 
     init {
         viewModelScope.launch {
@@ -53,6 +56,19 @@ class HomeViewModel @Inject constructor(
                             isLocationReady = true,
                             isMapReady = userLocationStatus.value.isMapReady
                         )
+                    }
+                }
+            }
+            geocodeApiResponse.collect { event ->
+                Log.i("testapi", event.toString())
+                when (event) {
+                    is ApiState.Success -> {
+                        _markerLocation.value = if (event.data is GeocodeLocationResponse) {
+                            event.data.toUiModel().location
+                        } else {
+                            LatLng(0.0, 0.0)
+                        }
+                        Log.i("testapi", markerLocation.value.toString())
                     }
                 }
             }
@@ -73,7 +89,23 @@ class HomeViewModel @Inject constructor(
                 )
             }
             is HomeEvent.NavigateToSearchDirection -> {
-                navigateToRoute(SearchDirectionRoute.get(1))
+//                var locLat: String = ""
+//                var locLng: String = ""
+//                viewModelScope.launch {
+//                    location.collect {
+//                        locLat = it.latitude.toString()
+//                        locLng = it.longitude.toString()
+//                    }
+//                }
+                //Log.i("NAVARGS" , "$locLat $locLng ${markerLocation.value}")
+                navigateToRoute(
+                    SearchDirectionRoute.get(
+                        event.startLocation.latitude.toString(),
+                        event.startLocation.longitude.toString(),
+                        event.endLocation.latitude.toString(),
+                        event.endLocation.longitude.toString()
+                    )
+                )
             }
 //            is HomeEvent.PermissionEvent-> {
 //                when(event.status){
@@ -85,7 +117,26 @@ class HomeViewModel @Inject constructor(
             is HomeEvent.OnMyLocationClicked -> {
                 getUserLocation(event.context)
             }
-            else -> {}
+
+            is HomeEvent.GetGeocodeLocation -> {
+                geocodeApiResponse.value = ApiState.Loading
+                Log.i("TESTAPI", "request clicked")
+                viewModelScope.launch {
+                    repository.getGeocodeLocation(event.address)
+                        .catch { e ->
+                            geocodeApiResponse.value = ApiState.Failure(e)
+                            //TODO ERROR AND STATUS
+                        }
+                        .collect { data ->
+                            _markerLocation.value = data.toUiModel().location
+                            geocodeApiResponse.value = ApiState.Success(data)
+                            sendUiEvent(HomeEvent.RelocateMarker)
+                            Log.i("testapi", markerLocation.value.toString())
+                        }
+                }
+            }
+            else -> {
+            }
         }
     }
 
@@ -106,7 +157,8 @@ class HomeViewModel @Inject constructor(
             }
         }
     }
-    private fun sendUiEvent(event: HomeEvent){
+
+    private fun sendUiEvent(event: HomeEvent) {
         viewModelScope.launch {
             _uiEvent.send(event)
         }

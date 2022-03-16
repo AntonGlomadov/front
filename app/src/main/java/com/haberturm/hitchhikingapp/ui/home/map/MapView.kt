@@ -3,15 +3,12 @@ package com.haberturm.hitchhikingapp.ui.home.map
 import android.content.Context
 import android.util.Log
 import androidx.compose.foundation.border
-import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.interaction.collectIsPressedAsState
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
@@ -24,6 +21,7 @@ import com.haberturm.hitchhikingapp.R
 import com.haberturm.hitchhikingapp.ui.home.HomeEvent
 import com.haberturm.hitchhikingapp.ui.home.HomeViewModel
 import com.haberturm.hitchhikingapp.ui.views.SearchField
+import kotlinx.coroutines.flow.collect
 
 
 @Composable
@@ -92,7 +90,22 @@ fun MapHood(
 ) {
 
     Box(modifier = Modifier.fillMaxSize()) {
+        val vmMarkerLocation = viewModel.markerLocation.collectAsState()
 
+        LaunchedEffect(key1 = true) {
+            viewModel.uiEvent.collect { event ->
+                when (event) {
+                    is HomeEvent.RelocateMarker -> {
+                        moveCamera(
+                            vmMarkerLocation.value,
+                            cameraPositionState
+                        )
+                    }
+                    else -> {
+                    }
+                }
+            }
+        }
         SearchField(
             modifier = Modifier
                 .fillMaxWidth()
@@ -104,20 +117,24 @@ fun MapHood(
                     contentDescription = ""
                 )
             },
+            onDone = fun(s: String) {
+                Log.i("TESTAPI", "before ${vmMarkerLocation.value}")
+                viewModel.onEvent(HomeEvent.GetGeocodeLocation(s))
+                Log.i("TESTAPI", "after ${vmMarkerLocation.value}")
+            }
+
 
         )
 
-
-
-            LocationPicker(
-                cameraPositionState,
-                viewModel
-            )
+        LocationPicker(
+            cameraPositionState,
+            viewModel,
+            location
+        )
         FloatingActionButton(
             onClick = {
+                viewModel.onEvent(HomeEvent.OnMyLocationClicked(context))
                 moveCamera(
-                    viewModel,
-                    context,
                     location,
                     cameraPositionState
                 )
@@ -133,12 +150,24 @@ fun MapHood(
 }
 
 @Composable
-fun LocationPicker(cameraPositionState: CameraPositionState, viewModel: HomeViewModel) {
+fun LocationPicker(
+    cameraPositionState: CameraPositionState,
+    viewModel: HomeViewModel,
+    location: LatLng
+) {
     if (!cameraPositionState.isMoving) {
         Box(modifier = Modifier.fillMaxSize()) {
             Button(
-                onClick = { viewModel.onEvent(HomeEvent.NavigateToSearchDirection) },
-                modifier = Modifier.align(Alignment.BottomCenter))
+                onClick = {
+                    viewModel.onEvent(
+                        HomeEvent.NavigateToSearchDirection(
+                            location,
+                            cameraPositionState.position.target
+                        )
+                    )
+                },
+                modifier = Modifier.align(Alignment.BottomCenter)
+            )
             {
                 Text(text = "Поехали! ")
             }
@@ -157,12 +186,10 @@ fun LocationMarker(cameraPositionState: CameraPositionState, viewModel: HomeView
 }
 
 fun moveCamera(
-    viewModel: HomeViewModel,
-    context: Context,
     location: LatLng,
     cameraPositionState: CameraPositionState,
 ) {
-    viewModel.onEvent(HomeEvent.OnMyLocationClicked(context))
+
     cameraPositionState.move(
         com.google.android.gms.maps.CameraUpdateFactory.newLatLngZoom(
             location,

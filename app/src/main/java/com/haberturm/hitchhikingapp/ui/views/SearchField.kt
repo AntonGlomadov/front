@@ -26,7 +26,8 @@ import androidx.compose.ui.unit.dp
 fun SearchField(
     leadingIcon: (@Composable() () -> Unit)? = null,
     modifier: Modifier,
-    interactionSource: MutableInteractionSource = MutableInteractionSource()
+    interactionSource: MutableInteractionSource = MutableInteractionSource(),
+    onDone: (String) -> Unit = { }
 ) {
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
@@ -55,11 +56,12 @@ fun SearchField(
             ),
             leadingIcon = leadingIcon,
             interactionSource = interactionSource,
-            keyboardActions = KeyboardActions(onDone = {
+            keyboardActions = KeyboardActions(onSearch = {
                 focusManager.clearFocus()
                 keyboardController?.hide()
+                onDone(text)
             }),
-            keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Done),
+            keyboardOptions = KeyboardOptions.Default.copy(imeAction = ImeAction.Search),
         )
     }
 
