@@ -1,6 +1,7 @@
 package com.haberturm.hitchhikingapp.ui.home.map
 
 import android.content.Context
+import android.graphics.BitmapFactory
 import android.util.Log
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -14,6 +15,7 @@ import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import com.google.android.gms.maps.GoogleMapOptions
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.*
@@ -181,7 +183,10 @@ fun LocationPicker(
 
 @Composable
 fun LocationMarker(cameraPositionState: CameraPositionState, viewModel: HomeViewModel) {
-    Marker(position = cameraPositionState.position.target)
+    Marker(
+        position = cameraPositionState.position.target,
+        icon = BitmapDescriptorFactory.fromResource()
+    )
     viewModel.onEvent(HomeEvent.MarkerLocationChanged(cameraPositionState.position.target))
 }
 

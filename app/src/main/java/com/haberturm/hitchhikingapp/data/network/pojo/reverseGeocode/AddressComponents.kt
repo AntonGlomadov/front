@@ -1,4 +1,4 @@
-package com.haberturm.hitchhikingapp.data.network.pojo.geocode
+package com.haberturm.hitchhikingapp.data.network.pojo.reverseGgeocode
 
 import com.google.gson.annotations.SerializedName
 

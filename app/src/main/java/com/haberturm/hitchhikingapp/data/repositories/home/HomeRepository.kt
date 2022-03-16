@@ -1,4 +1,4 @@
-package com.haberturm.hitchhikingapp.data.repositories
+package com.haberturm.hitchhikingapp.data.repositories.home
 
 import android.content.Context
 import com.haberturm.hitchhikingapp.data.network.pojo.geocode.GeocodeLocationResponse
@@ -12,5 +12,4 @@ interface HomeRepository {
     suspend fun insertUser(id: Long?, latitude: Double, longitude: Double)
     val homeRepositoryEvent: Flow<HomeRepositoryEvent>
     fun getGeocodeLocation(address: String) : Flow<GeocodeLocationResponse>
-
 }

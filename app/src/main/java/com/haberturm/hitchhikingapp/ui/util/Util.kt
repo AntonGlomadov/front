@@ -1,23 +1,30 @@
 package com.haberturm.hitchhikingapp.ui.util
 
-import com.haberturm.hitchhikingapp.data.network.pojo.GeocodeLocationResponse
-import com.haberturm.hitchhikingapp.data.network.pojo.Location
+import com.haberturm.hitchhikingapp.data.network.pojo.geocode.GeocodeLocationResponse
+import com.haberturm.hitchhikingapp.data.network.pojo.geocode.Location
 import com.google.android.gms.maps.model.LatLng
+import com.haberturm.hitchhikingapp.data.network.pojo.reverseGeocode.ReverseGeocodeResponse
 import com.haberturm.hitchhikingapp.ui.model.GeocodeUiModel
 
 object Util {
     fun GeocodeLocationResponse.toUiModel(): GeocodeUiModel{
         return GeocodeUiModel(
             formattedAddress = results[0].formattedAddress,
-            location = fromLocationToLatLng(results[0].geometry.location),
+            location = LatLng(
+                results[0].geometry.location.lat,
+                results[0].geometry.location.lng),
         )
     }
 
-    private fun fromLocationToLatLng(location: Location): LatLng{
-        val lat: Double = location.lat
-        val lng = location.lng
-        return  LatLng(lat, lng)
 
+    fun ReverseGeocodeResponse.toUiModel(): GeocodeUiModel{
+        return GeocodeUiModel(
+            formattedAddress = results[0].formattedAddress,
+            location = LatLng(
+                results[0].geometry.location.lat,
+                results[0].geometry.location.lng),
+        )
     }
+
 }
 

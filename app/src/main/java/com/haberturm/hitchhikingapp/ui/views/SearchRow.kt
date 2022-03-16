@@ -1,5 +1,6 @@
 package com.haberturm.hitchhikingapp.ui.views
 
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -20,7 +21,10 @@ import com.haberturm.hitchhikingapp.R
 
 
 @Composable
-fun SearchRow(iconId: Int){
+fun SearchRow(
+    iconId: Int,
+    value: String = "",
+){
     Row(
         verticalAlignment = Alignment.CenterVertically,
         modifier = Modifier.padding(bottom = 8.dp)
@@ -50,9 +54,8 @@ fun SearchRow(iconId: Int){
                 .fillMaxWidth()
                 .border(BorderStroke(1.dp, Color.Blue), RoundedCornerShape(32.dp))
                 .height(60.dp)
-
-
             ,
+            valueText = value
         )
 
     }
@@ -62,5 +65,5 @@ fun SearchRow(iconId: Int){
 @Preview
 @Composable
 fun SearchRowPrev(){
-    SearchRow(iconId = R.drawable.ic_baseline_navigation_24)
+    SearchRow(iconId = R.drawable.ic_baseline_navigation_24,"")
 }

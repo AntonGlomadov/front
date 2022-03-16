@@ -1,12 +1,11 @@
-package com.haberturm.hitchhikingapp.data.network.pojo
+package com.haberturm.hitchhikingapp.data.network.pojo.geocode
 
 import com.google.gson.annotations.SerializedName
-import com.haberturm.hitchhikingapp.data.network.pojo.Result
 
 
 data class GeocodeLocationResponse (
 
-  @SerializedName("results" ) var results : ArrayList<Result> = arrayListOf(),
-  @SerializedName("status"  ) var status  : String?            = null
+    @SerializedName("results" ) var results : ArrayList<Result> = arrayListOf(),
+    @SerializedName("status"  ) var status  : String?            = null
 
 )

@@ -1,4 +1,4 @@
-package com.haberturm.hitchhikingapp.data.repositories
+package com.haberturm.hitchhikingapp.data.repositories.home
 
 import android.annotation.SuppressLint
 import android.content.Context

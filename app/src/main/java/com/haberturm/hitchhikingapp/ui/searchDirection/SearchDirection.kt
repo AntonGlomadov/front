@@ -6,6 +6,7 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
@@ -125,7 +126,10 @@ fun SearchDirection(
 
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
-                SearchRow(iconId = R.drawable.ic_baseline_navigation_24)
+                SearchRow(
+                    iconId = R.drawable.ic_baseline_navigation_24,
+                    value = viewModel.startPointFormattedAddress
+                )
                 val pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
                 Canvas(
                     Modifier
@@ -149,7 +153,11 @@ fun SearchDirection(
 //                        .height(88.dp)
 //                        .width(3.dp),
 //                )
-                SearchRow(iconId = R.drawable.ic_baseline_flag_24)
+
+                SearchRow(
+                    iconId = R.drawable.ic_baseline_flag_24,
+                    value = viewModel.endPointFormattedAddress
+                )
             }
             Row(
                 horizontalArrangement = Arrangement.Center,

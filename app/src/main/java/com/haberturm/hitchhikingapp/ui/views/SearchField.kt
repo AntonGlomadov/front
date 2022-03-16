@@ -1,6 +1,7 @@
 package com.haberturm.hitchhikingapp.ui.views
 
 
+import android.util.Log
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
 import androidx.compose.foundation.layout.Column
@@ -27,11 +28,16 @@ fun SearchField(
     leadingIcon: (@Composable() () -> Unit)? = null,
     modifier: Modifier,
     interactionSource: MutableInteractionSource = MutableInteractionSource(),
-    onDone: (String) -> Unit = { }
+    onDone: (String) -> Unit = { },
+    valueText: String = ""
+
 ) {
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
-    var text by remember { mutableStateOf<String>("") }
+    var text by remember { mutableStateOf<String>(valueText) }
+    LaunchedEffect(key1 = valueText, block ={
+        text = valueText
+    } )
     Column(modifier = Modifier
         .pointerInput(Unit) {
             detectTapGestures(onTap = {

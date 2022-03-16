@@ -8,10 +8,9 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.maps.model.LatLng
 import com.haberturm.hitchhikingapp.data.network.ApiState
-import com.haberturm.hitchhikingapp.data.network.pojo.GeocodeLocationResponse
-import com.haberturm.hitchhikingapp.data.repositories.HomeRepository
-import com.haberturm.hitchhikingapp.data.repositories.HomeRepositoryEvent
-import com.haberturm.hitchhikingapp.ui.model.GeocodeUiModel
+import com.haberturm.hitchhikingapp.data.network.pojo.geocode.GeocodeLocationResponse
+import com.haberturm.hitchhikingapp.data.repositories.home.HomeRepository
+import com.haberturm.hitchhikingapp.data.repositories.home.HomeRepositoryEvent
 import com.haberturm.hitchhikingapp.ui.nav.RouteNavigator
 import com.haberturm.hitchhikingapp.ui.searchDirection.SearchDirectionRoute
 import com.haberturm.hitchhikingapp.ui.util.Util.toUiModel
@@ -59,19 +58,6 @@ class HomeViewModel @Inject constructor(
                     }
                 }
             }
-            geocodeApiResponse.collect { event ->
-                Log.i("testapi", event.toString())
-                when (event) {
-                    is ApiState.Success -> {
-                        _markerLocation.value = if (event.data is GeocodeLocationResponse) {
-                            event.data.toUiModel().location
-                        } else {
-                            LatLng(0.0, 0.0)
-                        }
-                        Log.i("testapi", markerLocation.value.toString())
-                    }
-                }
-            }
         }
     }
 
@@ -89,15 +75,6 @@ class HomeViewModel @Inject constructor(
                 )
             }
             is HomeEvent.NavigateToSearchDirection -> {
-//                var locLat: String = ""
-//                var locLng: String = ""
-//                viewModelScope.launch {
-//                    location.collect {
-//                        locLat = it.latitude.toString()
-//                        locLng = it.longitude.toString()
-//                    }
-//                }
-                //Log.i("NAVARGS" , "$locLat $locLng ${markerLocation.value}")
                 navigateToRoute(
                     SearchDirectionRoute.get(
                         event.startLocation.latitude.toString(),
@@ -107,13 +84,6 @@ class HomeViewModel @Inject constructor(
                     )
                 )
             }
-//            is HomeEvent.PermissionEvent-> {
-//                when(event.status){
-//                    is PermissionStatus.PermissionNotProcessed{
-//                        sendUiEvent()
-//                    }
-//                }
-//            }
             is HomeEvent.OnMyLocationClicked -> {
                 getUserLocation(event.context)
             }
