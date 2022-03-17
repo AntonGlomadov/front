@@ -147,12 +147,12 @@ private fun Home(
                             val userLocation = viewModel.location.collectAsState(
                                 initial = UserEntity(0, 1.35, 103.87) //TODO: weak
                             ).value
+
                             Log.i("LOCATION_Init", userLocation.toString())
                             if (isLocReady) {
                                 GoogleMapView(
                                     userLocation.latitude,
                                     userLocation.longitude,
-                                    locationPermissionGranted,
                                     modifier = Modifier.matchParentSize(),
                                     onMapLoaded = {
                                         viewModel.onEvent(HomeEvent.MapReady)

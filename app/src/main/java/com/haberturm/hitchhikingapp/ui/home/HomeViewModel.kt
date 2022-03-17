@@ -21,9 +21,14 @@ import kotlinx.coroutines.launch
 import user.userdb.UserEntity
 import javax.inject.Inject
 
+sealed class MarkerPicked {
+    object MarkerAPicked : MarkerPicked()
+    object MarkerBPicked : MarkerPicked()
+}
+
+
 @HiltViewModel
 class HomeViewModel @Inject constructor(
-    savedStateHandle: SavedStateHandle,
     private val routeNavigator: RouteNavigator,
     private val repository: HomeRepository,
 ) : ViewModel(), RouteNavigator by routeNavigator {
@@ -41,7 +46,13 @@ class HomeViewModel @Inject constructor(
         MutableStateFlow(HomeEvent.IsMapReady(isLocationReady = false, isMapReady = false))
     val userLocationStatus: StateFlow<HomeEvent.IsMapReady> = _userLocationStatus
 
+    private val _markerPicked =
+        MutableStateFlow(MarkerPicked.MarkerBPicked)
+    val markerPicked: StateFlow<MarkerPicked> = _markerPicked
+
     private val geocodeApiResponse: MutableStateFlow<ApiState> = MutableStateFlow(ApiState.Empty)
+
+
 
     init {
         viewModelScope.launch {
@@ -58,13 +69,15 @@ class HomeViewModel @Inject constructor(
                     }
                 }
             }
+            location.collect {
+                _markerLocation.value = LatLng(it.latitude, it.longitude)
+            }
         }
     }
 
     fun onEvent(event: HomeEvent) {
         when (event) {
             is HomeEvent.MarkerLocationChanged -> {
-                //Log.i("Event", "ON_EVENT_VM $event")
                 _markerLocation.value = event.location
             }
             is HomeEvent.MapReady -> {

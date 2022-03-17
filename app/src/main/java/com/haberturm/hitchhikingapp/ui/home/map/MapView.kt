@@ -1,7 +1,6 @@
 package com.haberturm.hitchhikingapp.ui.home.map
 
 import android.content.Context
-import android.graphics.BitmapFactory
 import android.util.Log
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -22,6 +21,8 @@ import com.google.maps.android.compose.*
 import com.haberturm.hitchhikingapp.R
 import com.haberturm.hitchhikingapp.ui.home.HomeEvent
 import com.haberturm.hitchhikingapp.ui.home.HomeViewModel
+import com.haberturm.hitchhikingapp.ui.nav.NavigationState
+import com.haberturm.hitchhikingapp.ui.util.Util
 import com.haberturm.hitchhikingapp.ui.views.SearchField
 import kotlinx.coroutines.flow.collect
 
@@ -30,7 +31,6 @@ import kotlinx.coroutines.flow.collect
 fun GoogleMapView(
     latitude: Double,
     longitude: Double,
-    locationPermissionGranted: Boolean,
     modifier: Modifier,
     onMapLoaded: () -> Unit,
     viewModel: HomeViewModel,
@@ -66,14 +66,21 @@ fun GoogleMapView(
             Log.d("TAG", "POI clicked: ${it.name}")
         }
     ) {
-
-        cameraPositionState.move(
-            com.google.android.gms.maps.CameraUpdateFactory.newLatLngZoom(
-                location,
-                16f
-            )
-        ) //TODO check all zoom bugs (mb save zoom value)
+        val navState = viewModel.navigationState.collectAsState()
+        LaunchedEffect(key1 = true, block = {
+            if (navState.value == NavigationState.NavigateUp()) {
+                moveCamera(viewModel.markerLocation.value, cameraPositionState)
+            }
+        })
         LocationMarker(cameraPositionState, viewModel)
+        Marker(
+            position = location,
+            icon = BitmapDescriptorFactory.fromResource(R.drawable.a_marker40),
+            draggable = true
+        )
+
+        MyLocationMarker(location = location)
+
 
     }
 
@@ -184,10 +191,21 @@ fun LocationPicker(
 @Composable
 fun LocationMarker(cameraPositionState: CameraPositionState, viewModel: HomeViewModel) {
     Marker(
-        position = cameraPositionState.position.target,
-        icon = BitmapDescriptorFactory.fromResource()
+        position = viewModel.markerLocation.collectAsState().value,
+        icon = BitmapDescriptorFactory.fromResource(R.drawable.b_marker40),
     )
     viewModel.onEvent(HomeEvent.MarkerLocationChanged(cameraPositionState.position.target))
+}
+
+@Composable
+fun MyLocationMarker(location: LatLng) {
+    Marker(
+        position = location,
+        icon = Util.bitmapDescriptorFromVector(
+            LocalContext.current,
+            R.drawable.ic_baseline_my_location_24
+        ),
+    )
 }
 
 fun moveCamera(

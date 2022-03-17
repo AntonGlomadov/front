@@ -127,7 +127,7 @@ fun SearchDirection(
         ) {
             Column(horizontalAlignment = Alignment.CenterHorizontally) {
                 SearchRow(
-                    iconId = R.drawable.ic_baseline_navigation_24,
+                    iconId = R.drawable.a_marker40,
                     value = viewModel.startPointFormattedAddress
                 )
                 val pathEffect = PathEffect.dashPathEffect(floatArrayOf(10f, 10f), 0f)
@@ -155,7 +155,7 @@ fun SearchDirection(
 //                )
 
                 SearchRow(
-                    iconId = R.drawable.ic_baseline_flag_24,
+                    iconId = R.drawable.b_marker40,
                     value = viewModel.endPointFormattedAddress
                 )
             }
