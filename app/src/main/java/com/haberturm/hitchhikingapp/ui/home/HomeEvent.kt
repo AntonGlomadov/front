@@ -6,8 +6,7 @@ import com.google.android.gms.maps.model.LatLng
 sealed class HomeEvent {
     data class IsMapReady(val isLocationReady: Boolean, val isMapReady: Boolean) : HomeEvent()
     object MapReady : HomeEvent()
-    data class MarkerLocationChanged(val location: LatLng) : HomeEvent()
-    data class PermissionEvent(val status: PermissionStatus) : HomeEvent()
+    data class ObserveMovingMarkerLocation(val location: LatLng) : HomeEvent()
     data class OnMyLocationClicked(val context: Context) : HomeEvent()
     data class NavigateToSearchDirection(
         val startLocation: LatLng,
@@ -16,7 +15,13 @@ sealed class HomeEvent {
 
     data class GetGeocodeLocation(val address: String) : HomeEvent()
     object RelocateMarker : HomeEvent()
+    object PlaceMarker : HomeEvent()
+    data class MarkerPlaced(val keyOfMarker:String) : HomeEvent()
+    data class MakeMarkerMovable(val keyOfMarker: String): HomeEvent()
 }
+
+const val A_MARKER_KEY = "A_MARKER"
+const val B_MARKER_KEY = "B_MARKER"
 
 sealed class PermissionStatus {
     object PermissionNotProcessed : PermissionStatus()
@@ -24,3 +29,4 @@ sealed class PermissionStatus {
     object PermissionDenied : PermissionStatus()
     object PermissionPermanentlyDenied : PermissionStatus()
 }
+

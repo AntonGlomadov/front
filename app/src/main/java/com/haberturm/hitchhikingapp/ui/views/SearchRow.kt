@@ -55,7 +55,7 @@ fun SearchRow(
                 .border(BorderStroke(1.dp, Color.Blue), RoundedCornerShape(32.dp))
                 .height(60.dp)
             ,
-            valueText = value
+            valueText = value,
         )
 
     }

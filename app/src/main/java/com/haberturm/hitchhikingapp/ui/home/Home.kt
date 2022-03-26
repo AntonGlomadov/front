@@ -156,7 +156,6 @@ private fun Home(
                                     modifier = Modifier.matchParentSize(),
                                     onMapLoaded = {
                                         viewModel.onEvent(HomeEvent.MapReady)
-                                        //isMapLoaded = true
                                     },
                                     viewModel
                                 )
