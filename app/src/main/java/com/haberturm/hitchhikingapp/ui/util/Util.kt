@@ -9,13 +9,17 @@ import androidx.compose.material.MaterialTheme
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.BlendModeColorFilterCompat
 import androidx.core.graphics.BlendModeCompat
+import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.haberturm.hitchhikingapp.data.network.pojo.geocode.GeocodeLocationResponse
 import com.haberturm.hitchhikingapp.data.network.pojo.geocode.Location
 import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.compose.CameraPositionState
 import com.haberturm.hitchhikingapp.data.network.pojo.reverseGeocode.ReverseGeocodeResponse
 import com.haberturm.hitchhikingapp.ui.model.GeocodeUiModel
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 object Util {
     fun GeocodeLocationResponse.toUiModel(): GeocodeUiModel{
@@ -46,6 +50,32 @@ object Util {
             draw(Canvas(bitmap))
             BitmapDescriptorFactory.fromBitmap(bitmap)
         }
+    }
+
+    fun moveCamera(
+        location: LatLng,
+        cameraPositionState: CameraPositionState,
+        coroutineScope: CoroutineScope,
+        isAnimated: Boolean = true
+    ) {
+        if(isAnimated){
+            coroutineScope.launch {
+                cameraPositionState.animate(
+                    CameraUpdateFactory.newLatLngZoom(
+                        location,
+                        16f
+                    )
+                )
+            }
+        }else{
+            cameraPositionState.move(
+                CameraUpdateFactory.newLatLngZoom(
+                    location,
+                    16f
+                )
+            )
+        }
+
     }
 
 }

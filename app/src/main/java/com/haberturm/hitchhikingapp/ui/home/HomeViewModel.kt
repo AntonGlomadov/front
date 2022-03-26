@@ -51,9 +51,6 @@ class HomeViewModel @Inject constructor(
     private val _currentMarkerLocation = MutableStateFlow<LatLng>(LatLng(0.0, 0.0))
     val currentMarkerLocation: StateFlow<LatLng> = _currentMarkerLocation
 
-    //    private val _markerPicked =
-//        MutableStateFlow<MarkerPicked>(MarkerPicked.MarkerAPicked)
-//    val markerPicked: StateFlow<MarkerPicked> = _markerPicked
     private var markerPicked: MarkerPicked = MarkerPicked.MarkerAPicked
 
     private val _bMarkerLocation = MutableStateFlow<LatLng>(LatLng(0.0, 0.0))
@@ -188,11 +185,9 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-
     private fun getLocationStatus(event: HomeRepositoryEvent.UserLocationStatus): Boolean {
         return event.isDone
     }
-
 
     @SuppressLint("MissingPermission")
     fun getUserLocation(context: Context) {
@@ -212,13 +207,9 @@ class HomeViewModel @Inject constructor(
         }
     }
 
-
-    @OptIn(ExperimentalCoroutinesApi::class)
     private fun sendUiEvent(event: HomeEvent) {
         viewModelScope.launch {
-            Log.i("MARKER-in-send", "$event")
             _uiEvent.send(event)
-            Log.i("MARKER-in-send", "${_uiEvent.isClosedForReceive}")
 
         }
     }
