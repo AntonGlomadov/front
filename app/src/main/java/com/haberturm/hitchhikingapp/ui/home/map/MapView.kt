@@ -54,7 +54,6 @@ fun GoogleMapView(
             )
         )
     }
-
     var currentMarker = remember {
         mutableStateOf(R.drawable.a_marker40)
     }
@@ -82,6 +81,7 @@ fun GoogleMapView(
         })
         val markerPlacedState = viewModel.markerPlacedState.collectAsState()
         Log.i("MARKER", "${markerPlacedState.value.aPlaced} ${markerPlacedState.value.bPlaced}")
+
         if (!markerPlacedState.value.aPlaced || !markerPlacedState.value.bPlaced) {
             MovingMarker(cameraPositionState, viewModel, currentMarker.value)
         }
@@ -96,6 +96,7 @@ fun GoogleMapView(
                 onClick = {
                     moveCamera(position.value, cameraPositionState)
                     viewModel.onEvent(HomeEvent.MakeMarkerMovable(A_MARKER_KEY))
+                    currentMarker.value = R.drawable.a_marker40
                     true
                 }
             )
@@ -107,6 +108,12 @@ fun GoogleMapView(
             Marker(
                 position = position.value,
                 icon = BitmapDescriptorFactory.fromResource(R.drawable.b_marker40),
+                onClick = {
+                    moveCamera(position.value, cameraPositionState)
+                    viewModel.onEvent(HomeEvent.MakeMarkerMovable(B_MARKER_KEY))
+                    currentMarker.value = R.drawable.b_marker40
+                    true
+                }
             )
         }
 

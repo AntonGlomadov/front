@@ -50,7 +50,7 @@ class HomeViewModel @Inject constructor(
     private val _currentMarkerLocation = MutableStateFlow<LatLng>(LatLng(0.0, 0.0))
     val currentMarkerLocation: StateFlow<LatLng> = _currentMarkerLocation
 
-//    private val _markerPicked =
+    //    private val _markerPicked =
 //        MutableStateFlow<MarkerPicked>(MarkerPicked.MarkerAPicked)
 //    val markerPicked: StateFlow<MarkerPicked> = _markerPicked
     private var markerPicked: MarkerPicked = MarkerPicked.MarkerAPicked
@@ -132,7 +132,7 @@ class HomeViewModel @Inject constructor(
             }
 
             is HomeEvent.PlaceMarker -> {
-                if (markerPicked== MarkerPicked.MarkerBPicked) {
+                if (markerPicked == MarkerPicked.MarkerBPicked) {
                     Log.i("MARKER-event-vm", "place b")
                     _bMarkerLocation.value = currentMarkerLocation.value
                     markerPicked = MarkerPicked.MarkerAPicked
@@ -140,10 +140,10 @@ class HomeViewModel @Inject constructor(
                         aPlaced = markerPlacedState.value.aPlaced,
                         bPlaced = true
                     )
+                    Log.i("MARKER-event-vm-placing", "$markerPicked")
                     emitMarkerEvent(HomeEvent.MarkerPlaced(B_MARKER_KEY))
 
-                }
-                else if(markerPicked== MarkerPicked.MarkerAPicked){
+                } else if (markerPicked == MarkerPicked.MarkerAPicked) {
                     Log.i("MARKER-event-vm", "place a")
                     _aMarkerLocation.value = currentMarkerLocation.value
                     markerPicked = MarkerPicked.MarkerBPicked
@@ -151,8 +151,8 @@ class HomeViewModel @Inject constructor(
                         aPlaced = true,
                         bPlaced = markerPlacedState.value.bPlaced
                     )
-                    Log.i("MARKER-event-vm", "place a after")
-                   emitMarkerEvent(HomeEvent.MarkerPlaced(A_MARKER_KEY))
+                    Log.i("MARKER-event-vm-placing", "$markerPicked ")
+                    emitMarkerEvent(HomeEvent.MarkerPlaced(A_MARKER_KEY))
 
                 }
             }
@@ -160,8 +160,8 @@ class HomeViewModel @Inject constructor(
                 _currentMarkerLocation.value = event.location
             }
 
-            is HomeEvent.MakeMarkerMovable ->{
-                if(event.keyOfMarker == A_MARKER_KEY){
+            is HomeEvent.MakeMarkerMovable -> {
+                if (event.keyOfMarker == A_MARKER_KEY) {
                     _currentMarkerLocation.value = aMarkerLocation.value
                     markerPicked = MarkerPicked.MarkerAPicked
                     _markerPlacedState.value = MarkerPlacedState(
@@ -169,7 +169,7 @@ class HomeViewModel @Inject constructor(
                         bPlaced = markerPlacedState.value.bPlaced
                     )
                 }
-                if(event.keyOfMarker == B_MARKER_KEY){
+                if (event.keyOfMarker == B_MARKER_KEY) {
                     _currentMarkerLocation.value = bMarkerLocation.value
                     markerPicked = MarkerPicked.MarkerBPicked
                     _markerPlacedState.value = MarkerPlacedState(
@@ -200,7 +200,8 @@ class HomeViewModel @Inject constructor(
             }
         }
     }
-    private fun emitMarkerEvent(event: HomeEvent){
+
+    private fun emitMarkerEvent(event: HomeEvent) {
         viewModelScope.launch {
             _markerEvent.emit(event)
         }
