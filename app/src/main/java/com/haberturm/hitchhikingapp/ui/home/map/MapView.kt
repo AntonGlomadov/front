@@ -13,6 +13,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMapOptions
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
@@ -23,9 +24,11 @@ import com.haberturm.hitchhikingapp.ui.home.*
 import com.haberturm.hitchhikingapp.ui.nav.NavigationState
 import com.haberturm.hitchhikingapp.ui.util.Util
 import com.haberturm.hitchhikingapp.ui.views.SearchField
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 
 
 @Composable
@@ -57,6 +60,7 @@ fun GoogleMapView(
     var currentMarker = remember {
         mutableStateOf(R.drawable.a_marker40)
     }
+    val coroutineScope = rememberCoroutineScope()
 
     GoogleMap(
         modifier = modifier,
@@ -76,7 +80,7 @@ fun GoogleMapView(
         val navState = viewModel.navigationState.collectAsState()
         LaunchedEffect(key1 = true, block = {                       //useless now
             if (navState.value == NavigationState.NavigateUp()) {
-                moveCamera(viewModel.bMarkerLocation.value, cameraPositionState)
+                moveCamera(viewModel.bMarkerLocation.value, cameraPositionState, coroutineScope)
             }
         })
         val markerPlacedState = viewModel.markerPlacedState.collectAsState()
@@ -94,7 +98,11 @@ fun GoogleMapView(
                 position = position.value,
                 icon = BitmapDescriptorFactory.fromResource(R.drawable.a_marker40),
                 onClick = {
-                    moveCamera(position.value, cameraPositionState)
+                    moveCamera(
+                        position.value,
+                        cameraPositionState,
+                        coroutineScope
+                    )
                     viewModel.onEvent(HomeEvent.MakeMarkerMovable(A_MARKER_KEY))
                     currentMarker.value = R.drawable.a_marker40
                     true
@@ -109,8 +117,13 @@ fun GoogleMapView(
                 position = position.value,
                 icon = BitmapDescriptorFactory.fromResource(R.drawable.b_marker40),
                 onClick = {
-                    moveCamera(position.value, cameraPositionState)
                     viewModel.onEvent(HomeEvent.MakeMarkerMovable(B_MARKER_KEY))
+                    moveCamera(
+                        position.value,
+                        cameraPositionState,
+                        coroutineScope
+                    )
+
                     currentMarker.value = R.drawable.b_marker40
                     true
                 }
@@ -140,7 +153,13 @@ fun GoogleMapView(
         }
         UserLocationMarker(location = location)
     }
-    MapHood(cameraPositionState, viewModel, LocalContext.current, location)
+    MapHood(
+        cameraPositionState,
+        viewModel,
+        LocalContext.current,
+        location,
+        coroutineScope
+    )
 }
 
 
@@ -150,6 +169,7 @@ fun MapHood(
     viewModel: HomeViewModel,
     context: Context,
     location: LatLng,
+    coroutineScope: CoroutineScope
 ) {
 
     Box(modifier = Modifier.fillMaxSize()) {
@@ -161,7 +181,8 @@ fun MapHood(
                     is HomeEvent.RelocateMarker -> {
                         moveCamera(
                             vmMarkerLocation.value,
-                            cameraPositionState
+                            cameraPositionState,
+                            coroutineScope
                         )
                     }
                     else -> {
@@ -189,14 +210,15 @@ fun MapHood(
         LocationPicker(
             cameraPositionState,
             viewModel,
-            location
+            coroutineScope
         )
         FloatingActionButton(
             onClick = {
                 viewModel.onEvent(HomeEvent.OnMyLocationClicked(context))
                 moveCamera(
                     location,
-                    cameraPositionState
+                    cameraPositionState,
+                    coroutineScope
                 )
             },
             Modifier.align(Alignment.BottomEnd)
@@ -214,7 +236,7 @@ fun MapHood(
 fun LocationPicker(
     cameraPositionState: CameraPositionState,
     viewModel: HomeViewModel,
-    location: LatLng
+    coroutineScope: CoroutineScope
 ) {
     if (!cameraPositionState.isMoving) {
         Box(modifier = Modifier.fillMaxSize()) {
@@ -231,7 +253,11 @@ fun LocationPicker(
                     val newLocation = LatLng(
                         currentCameraPosition.latitude-0.00001,
                         currentCameraPosition.longitude)
-                    moveCamera(newLocation, cameraPositionState)
+                    moveCamera(
+                        newLocation,
+                        cameraPositionState,
+                        coroutineScope
+                    )
                 },
                 modifier = Modifier.align(Alignment.BottomCenter)
             )
@@ -276,13 +302,27 @@ fun UserLocationMarker(location: LatLng) {
 fun moveCamera(
     location: LatLng,
     cameraPositionState: CameraPositionState,
+    coroutineScope: CoroutineScope
 ) {
-    cameraPositionState.move(
-        com.google.android.gms.maps.CameraUpdateFactory.newLatLngZoom(
-            location,
-            16f
-        )
-    )
+
+        coroutineScope.launch {
+            cameraPositionState.animate(
+                CameraUpdateFactory.newLatLngZoom(
+                    location,
+                    16f
+                )
+            )
+        }
+
+
+
+
+//    cameraPositionState.move(
+//        com.google.android.gms.maps.CameraUpdateFactory.newLatLngZoom(
+//            location,
+//            16f
+//        )
+//    )
 }
 
 @Preview

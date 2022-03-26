@@ -15,6 +15,7 @@ import com.haberturm.hitchhikingapp.ui.util.Util.toUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import user.userdb.UserEntity
@@ -161,21 +162,25 @@ class HomeViewModel @Inject constructor(
             }
 
             is HomeEvent.MakeMarkerMovable -> {
-                if (event.keyOfMarker == A_MARKER_KEY) {
-                    _currentMarkerLocation.value = aMarkerLocation.value
-                    markerPicked = MarkerPicked.MarkerAPicked
-                    _markerPlacedState.value = MarkerPlacedState(
-                        aPlaced = false,
-                        bPlaced = markerPlacedState.value.bPlaced
-                    )
-                }
-                if (event.keyOfMarker == B_MARKER_KEY) {
-                    _currentMarkerLocation.value = bMarkerLocation.value
-                    markerPicked = MarkerPicked.MarkerBPicked
-                    _markerPlacedState.value = MarkerPlacedState(
-                        aPlaced = markerPlacedState.value.bPlaced,
-                        bPlaced = false
-                    )
+                viewModelScope.launch {
+                    delay(1000)
+
+                    if (event.keyOfMarker == A_MARKER_KEY) {
+                        _currentMarkerLocation.value = aMarkerLocation.value
+                        markerPicked = MarkerPicked.MarkerAPicked
+                        _markerPlacedState.value = MarkerPlacedState(
+                            aPlaced = false,
+                            bPlaced = markerPlacedState.value.bPlaced
+                        )
+                    }
+                    if (event.keyOfMarker == B_MARKER_KEY) {
+                        _currentMarkerLocation.value = bMarkerLocation.value
+                        markerPicked = MarkerPicked.MarkerBPicked
+                        _markerPlacedState.value = MarkerPlacedState(
+                            aPlaced = markerPlacedState.value.bPlaced,
+                            bPlaced = false
+                        )
+                    }
                 }
             }
             else -> {
