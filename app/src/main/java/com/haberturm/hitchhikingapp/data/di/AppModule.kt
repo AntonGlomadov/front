@@ -4,8 +4,10 @@ import android.app.Application
 import com.haberturm.hitchhikingapp.UserDatabase
 import com.haberturm.hitchhikingapp.data.database.UserDataSource
 import com.haberturm.hitchhikingapp.data.database.UserDataSourceImpl
-import com.haberturm.hitchhikingapp.data.repositories.HomeRepository
-import com.haberturm.hitchhikingapp.data.repositories.HomeRepositoryImpl
+import com.haberturm.hitchhikingapp.data.repositories.home.HomeRepository
+import com.haberturm.hitchhikingapp.data.repositories.home.HomeRepositoryImpl
+import com.haberturm.hitchhikingapp.data.repositories.searchDirection.SearchDirectionRepository
+import com.haberturm.hitchhikingapp.data.repositories.searchDirection.SearchDirectionRepositoryImpl
 import com.squareup.sqldelight.android.AndroidSqliteDriver
 import com.squareup.sqldelight.db.SqlDriver
 import dagger.Module
@@ -38,5 +40,11 @@ object AppModule {
     @Singleton
     fun provideHomeRepository(db : UserDataSource): HomeRepository {
         return HomeRepositoryImpl(db)
+    }
+
+    @Provides
+    @Singleton
+    fun provideSearchDirectionRepository(): SearchDirectionRepository {
+        return SearchDirectionRepositoryImpl()
     }
 }

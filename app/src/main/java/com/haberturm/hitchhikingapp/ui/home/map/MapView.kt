@@ -2,31 +2,43 @@ package com.haberturm.hitchhikingapp.ui.home.map
 
 import android.content.Context
 import android.util.Log
+import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.GoogleMapOptions
+import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.*
 import com.haberturm.hitchhikingapp.R
-import com.haberturm.hitchhikingapp.ui.home.HomeEvent
-import com.haberturm.hitchhikingapp.ui.home.HomeViewModel
+import com.haberturm.hitchhikingapp.ui.home.*
+import com.haberturm.hitchhikingapp.ui.nav.NavigationState
+import com.haberturm.hitchhikingapp.ui.util.Util
+import com.haberturm.hitchhikingapp.ui.util.Util.moveCamera
+import com.haberturm.hitchhikingapp.ui.views.MapHood
+import com.haberturm.hitchhikingapp.ui.views.MovingMarker
+import com.haberturm.hitchhikingapp.ui.views.SearchField
+import com.haberturm.hitchhikingapp.ui.views.UserLocationMarker
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.launch
 
 
 @Composable
 fun GoogleMapView(
     latitude: Double,
     longitude: Double,
-    locationPermissionGranted: Boolean,
     modifier: Modifier,
     onMapLoaded: () -> Unit,
     viewModel: HomeViewModel,
@@ -37,10 +49,10 @@ fun GoogleMapView(
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(location, 16f)
     }
-    var mapProperties by remember{
+    val mapProperties by remember {
         mutableStateOf(MapProperties(mapType = MapType.NORMAL))
     }
-    var uiSettings by remember {
+    val uiSettings by remember {
         mutableStateOf(
             MapUiSettings(
                 compassEnabled = false,
@@ -49,6 +61,11 @@ fun GoogleMapView(
             )
         )
     }
+    val currentMarker = remember {
+        mutableStateOf(R.drawable.a_marker40)
+    }
+    val coroutineScope = rememberCoroutineScope()
+
     GoogleMap(
         modifier = modifier,
         cameraPositionState = cameraPositionState,
@@ -58,121 +75,82 @@ fun GoogleMapView(
         googleMapOptionsFactory = {
             GoogleMapOptions().camera(CameraPosition.fromLatLngZoom(location, 16f))
         },
-        onPOIClick = {
-            Log.d("TAG", "POI clicked: ${it.name}")
-        }
     ) {
-
-        cameraPositionState.move(
-            com.google.android.gms.maps.CameraUpdateFactory.newLatLngZoom(
-                location,
-                16f
-            )
-        ) //TODO check all zoom bugs (mb save zoom value)
-        LocationMarker(cameraPositionState, viewModel)
-
-    }
-
-    MapHood(cameraPositionState, viewModel, LocalContext.current, location)
-
-
-}
-
-
-@Composable
-fun MapHood(
-    cameraPositionState: CameraPositionState,
-    viewModel: HomeViewModel,
-    context: Context,
-    location: LatLng,
-) {
-
-    Box(modifier = Modifier.fillMaxSize()) {
-        TextField(
-            value = "",
-            onValueChange = {/*TODO make request*/ },
-            modifier = Modifier
-                .fillMaxWidth()
-                .padding(8.dp),
-            shape = RoundedCornerShape(32.dp),
-            singleLine = true,
-            colors = TextFieldDefaults.textFieldColors(
-                backgroundColor = MaterialTheme.colors.background,
-                focusedIndicatorColor = Color.Transparent,
-                unfocusedIndicatorColor = Color.Transparent
-            )
-        )
-
-
-        LocationPicker(
-            cameraPositionState,
-            viewModel
-        )
-        FloatingActionButton(
-            onClick = {
-                moveCamera(
-                    viewModel,
-                    context,
-                    location,
-                    cameraPositionState
-                )
-            },
-            Modifier.align(Alignment.BottomEnd)
-        ) {
-            Icon(
-                painter = painterResource(R.drawable.ic_baseline_my_location_24),
-                contentDescription = ""
-            )
-        }
-    }
-}
-
-@Composable
-fun LocationPicker(cameraPositionState: CameraPositionState, viewModel: HomeViewModel) {
-    if (!cameraPositionState.isMoving) {
-        Box(modifier = Modifier.fillMaxSize()) {
-            Button(onClick = { /*TODO*/ }, modifier = Modifier.align(Alignment.BottomCenter)) {
-                Text(text = "Поехали! ")
+        val navState = viewModel.navigationState.collectAsState()
+        LaunchedEffect(key1 = true, block = {                       //useless now
+            if (navState.value == NavigationState.NavigateUp()) {
+                moveCamera(viewModel.currentMarkerLocation.value, cameraPositionState, coroutineScope)
             }
-            val loc = viewModel.markerLocation.collectAsState()
-           // Text(text = loc.value.toString())
+        })
+        val markerPlacedState = viewModel.markerPlacedState.collectAsState()
+
+        if (!markerPlacedState.value.aPlaced || !markerPlacedState.value.bPlaced) {
+            MovingMarker(cameraPositionState, viewModel, currentMarker.value)
         }
+        if (markerPlacedState.value.aPlaced) {
+            val position = remember {
+                mutableStateOf(cameraPositionState.position.target)
+            }
+            Marker(
+                position = position.value,
+                icon = BitmapDescriptorFactory.fromResource(R.drawable.a_marker40),
+                onClick = {
+                    moveCamera(
+                        position.value,
+                        cameraPositionState,
+                        coroutineScope
+                    )
+                    viewModel.onEvent(HomeEvent.MakeMarkerMovable(A_MARKER_KEY))
+                    currentMarker.value = R.drawable.a_marker40
+                    true
+                }
+            )
+        }
+        if (markerPlacedState.value.bPlaced) {
+            val position = remember {
+                mutableStateOf(cameraPositionState.position.target)
+            }
+            Marker(
+                position = position.value,
+                icon = BitmapDescriptorFactory.fromResource(R.drawable.b_marker40),
+                onClick = {
+                    viewModel.onEvent(HomeEvent.MakeMarkerMovable(B_MARKER_KEY))
+                    moveCamera(
+                        position.value,
+                        cameraPositionState,
+                        coroutineScope
+                    )
+                    currentMarker.value = R.drawable.b_marker40
+                    true
+                }
+            )
+        }
+
+        LaunchedEffect(key1 = true) {
+            viewModel.markerEvent.onEach { event ->
+                when (event) {
+                    is HomeEvent.MarkerPlaced -> {
+                        if (event.keyOfMarker == A_MARKER_KEY) {
+                            currentMarker.value = R.drawable.b_marker40
+                        }
+                        if (event.keyOfMarker == B_MARKER_KEY) {
+                            currentMarker.value = R.drawable.a_marker40
+                        }
+                    }
+                    else -> {
+                        Log.i("MARKER", "WHAT?")
+                    }
+                }
+            }.launchIn(this)
+        }
+        UserLocationMarker(location = location)
     }
-
-}
-
-
-@Composable
-fun LocationMarker(cameraPositionState: CameraPositionState, viewModel: HomeViewModel) {
-    Marker(position = cameraPositionState.position.target)
-    viewModel.onEvent(HomeEvent.MarkerLocationChanged(cameraPositionState.position.target))
-}
-
-fun moveCamera(
-    viewModel: HomeViewModel,
-    context: Context,
-    location: LatLng,
-    cameraPositionState: CameraPositionState,
-) {
-    viewModel.onEvent(HomeEvent.OnMyLocationClicked(context))
-    cameraPositionState.move(
-        com.google.android.gms.maps.CameraUpdateFactory.newLatLngZoom(
-            location,
-            16f
-        )
+    MapHood(
+        cameraPositionState,
+        viewModel,
+        LocalContext.current,
+        location,
+        coroutineScope
     )
 }
 
-@Preview
-@Composable
-fun TestSearch() {
-    Box {
-        TextField(
-            value = "",
-            onValueChange = {/*TODO make request*/ },
-            modifier = Modifier
-                .fillMaxWidth(),
-        )
-
-    }
-}

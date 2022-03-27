@@ -8,6 +8,7 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import com.haberturm.hitchhikingapp.ui.auth.AuthRoute
 import com.haberturm.hitchhikingapp.ui.home.HomeRoute
+import com.haberturm.hitchhikingapp.ui.searchDirection.SearchDirectionRoute
 
 @Composable
 fun ScreenHolder(navHostController: NavHostController, paddingValues: PaddingValues) {
@@ -18,5 +19,6 @@ fun ScreenHolder(navHostController: NavHostController, paddingValues: PaddingVal
     ) {
         AuthRoute.composable(this, navHostController)
         HomeRoute.composable(this, navHostController)
+        SearchDirectionRoute.composable(this, navHostController)
     }
 }
