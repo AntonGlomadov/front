@@ -1,12 +1,16 @@
 package com.haberturm.hitchhikingapp.ui.views
 
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
+import androidx.compose.material.ExperimentalMaterialApi
+import androidx.compose.material.LocalMinimumTouchTargetEnforcement
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.CameraPositionState
 import com.haberturm.hitchhikingapp.ui.home.HomeEvent
@@ -14,6 +18,7 @@ import com.haberturm.hitchhikingapp.ui.home.HomeViewModel
 import com.haberturm.hitchhikingapp.ui.util.Util.moveCamera
 import kotlinx.coroutines.CoroutineScope
 
+@OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun LocationPicker(
     cameraPositionState: CameraPositionState,
@@ -21,9 +26,50 @@ fun LocationPicker(
     coroutineScope: CoroutineScope
 ) {
     if (!cameraPositionState.isMoving) {
-        Box(modifier = Modifier.fillMaxSize()) {
+        Column(modifier = Modifier
+            .fillMaxSize()
+            .padding(0.dp),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Bottom
+        ) {
+            CompositionLocalProvider(
+                LocalMinimumTouchTargetEnforcement provides false,
+            ) {
+                Button(
+                    modifier = Modifier,
+                    onClick = {
+//                    viewModel.onEvent(
+//                        HomeEvent.NavigateToSearchDirection(
+//                            location,
+//                            cameraPositionState.position.target
+//                        )
+//                    )
+                        placeMarkerOnClick(
+                            placeMarkerFun = { viewModel.onEvent(HomeEvent.PlaceMarker) },
+                            cameraPositionState = cameraPositionState,
+                            coroutineScope = coroutineScope
+                        )
+                    },
+                )
+                {
+                    Text(text = "Поехали! ")
+                }
+            }
+        }
+    }
+}
+
+@Composable
+@Preview
+fun Prev(){
+    if (!false) {
+        Column(modifier = Modifier
+            .fillMaxSize(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Bottom
+        ) {
             Button(
-                modifier = Modifier.align(Alignment.BottomCenter),
+                modifier = Modifier,
                 onClick = {
 //                    viewModel.onEvent(
 //                        HomeEvent.NavigateToSearchDirection(
@@ -31,11 +77,7 @@ fun LocationPicker(
 //                            cameraPositionState.position.target
 //                        )
 //                    )
-                    placeMarkerOnClick(
-                        placeMarkerFun = {viewModel.onEvent(HomeEvent.PlaceMarker)},
-                        cameraPositionState = cameraPositionState,
-                        coroutineScope = coroutineScope
-                    )
+
                 },
             )
             {
@@ -44,6 +86,7 @@ fun LocationPicker(
         }
     }
 }
+
 
 fun placeMarkerOnClick(
     placeMarkerFun: () -> Unit,

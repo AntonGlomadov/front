@@ -35,7 +35,10 @@ fun MapHood(
     coroutineScope: CoroutineScope
 ) {
 
-    Box(modifier = Modifier.fillMaxSize()) {
+    Box(modifier = Modifier
+        .fillMaxSize()
+        .padding(8.dp)
+    ) {
         val vmMarkerLocation = viewModel.currentMarkerLocation.collectAsState()
 
         LaunchedEffect(key1 = true) {
@@ -56,7 +59,6 @@ fun MapHood(
         SearchField(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(8.dp)
                 .border(1.dp, MaterialTheme.colors.secondary, RoundedCornerShape(32.dp)),
             leadingIcon = {
                 Icon(
