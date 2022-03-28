@@ -6,14 +6,15 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.maps.model.LatLng
+import com.haberturm.hitchhikingapp.R
 import com.haberturm.hitchhikingapp.data.network.ApiState
 import com.haberturm.hitchhikingapp.data.repositories.home.HomeRepository
 import com.haberturm.hitchhikingapp.data.repositories.home.HomeRepositoryEvent
 import com.haberturm.hitchhikingapp.ui.nav.RouteNavigator
 import com.haberturm.hitchhikingapp.ui.searchDirection.SearchDirectionRoute
+import com.haberturm.hitchhikingapp.ui.util.Util
 import com.haberturm.hitchhikingapp.ui.util.Util.toUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.ExperimentalCoroutinesApi
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
@@ -51,7 +52,7 @@ class HomeViewModel @Inject constructor(
     private val _currentMarkerLocation = MutableStateFlow<LatLng>(LatLng(0.0, 0.0))
     val currentMarkerLocation: StateFlow<LatLng> = _currentMarkerLocation
 
-    private var _markerPicked =  MutableStateFlow<MarkerPicked>(MarkerPicked.MarkerAPicked)
+    private var _markerPicked = MutableStateFlow<MarkerPicked>(MarkerPicked.MarkerAPicked)
     val markerPicked: StateFlow<MarkerPicked> = _markerPicked
 
 
@@ -69,6 +70,12 @@ class HomeViewModel @Inject constructor(
     private val _userLocationStatus =
         MutableStateFlow(HomeEvent.IsMapReady(isLocationReady = false, isMapReady = false))
     val userLocationStatus: StateFlow<HomeEvent.IsMapReady> = _userLocationStatus
+
+    private val _currentMarkerRes = MutableStateFlow<Int>(R.drawable.a_marker_light)
+    val currentMarkerRes: StateFlow<Int> = _currentMarkerRes
+
+    private val _firstLaunch = MutableStateFlow<Boolean>(true)
+    val firstLaunch: StateFlow<Boolean> = _firstLaunch
 
     private val geocodeApiResponse: MutableStateFlow<ApiState> = MutableStateFlow(ApiState.Empty)
 
@@ -113,6 +120,30 @@ class HomeViewModel @Inject constructor(
                 getUserLocation(event.context)
             }
 
+            is HomeEvent.ChangeCurrentMarkerRes -> {
+                _currentMarkerRes.value = event.res
+                if (firstLaunch.value) {
+                    _firstLaunch.value = false
+                }
+
+            }
+
+            is HomeEvent.ColorModeChanged -> {
+                if(event.colorMode){
+                    if(markerPicked.value == MarkerPicked.MarkerAPicked){
+                        _currentMarkerRes.value = Util.aMarkerDark
+                    }else{
+                        _currentMarkerRes.value = Util.bMarkerDark
+                    }
+                }else{
+                    if(markerPicked.value == MarkerPicked.MarkerAPicked){
+                        _currentMarkerRes.value = Util.aMarkerLight
+                    }else{
+                        _currentMarkerRes.value = Util.bMarkerLight
+                    }
+                }
+            }
+
             is HomeEvent.GetGeocodeLocation -> {
                 geocodeApiResponse.value = ApiState.Loading
                 Log.i("TESTAPI", "request clicked")
@@ -140,9 +171,9 @@ class HomeViewModel @Inject constructor(
                         aPlaced = markerPlacedState.value.aPlaced,
                         bPlaced = true
                     )
-                    if(markerPlacedState.value.aPlaced && markerPlacedState.value.bPlaced){
+                    if (markerPlacedState.value.aPlaced && markerPlacedState.value.bPlaced) {
                         _markerPicked.value = MarkerPicked.AllMarkersPlaced
-                    }else{
+                    } else {
                         _markerPicked.value = MarkerPicked.MarkerAPicked
                     }
 
@@ -160,9 +191,9 @@ class HomeViewModel @Inject constructor(
                         bPlaced = markerPlacedState.value.bPlaced
                     )
 
-                    if(markerPlacedState.value.aPlaced && markerPlacedState.value.bPlaced){
+                    if (markerPlacedState.value.aPlaced && markerPlacedState.value.bPlaced) {
                         _markerPicked.value = MarkerPicked.AllMarkersPlaced
-                    }else{
+                    } else {
                         _markerPicked.value = MarkerPicked.MarkerBPicked
                     }
 

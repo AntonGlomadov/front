@@ -18,13 +18,13 @@ import com.haberturm.hitchhikingapp.ui.home.B_MARKER_KEY
 import com.haberturm.hitchhikingapp.ui.home.HomeEvent
 import com.haberturm.hitchhikingapp.ui.home.HomeViewModel
 import com.haberturm.hitchhikingapp.ui.nav.NavigationState
+import com.haberturm.hitchhikingapp.ui.util.Util
 import com.haberturm.hitchhikingapp.ui.util.Util.moveCamera
 import com.haberturm.hitchhikingapp.ui.views.MapHood
 import com.haberturm.hitchhikingapp.ui.views.MovingMarker
 import com.haberturm.hitchhikingapp.ui.views.UserLocationMarker
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-
 
 @Composable
 fun GoogleMapView(
@@ -60,9 +60,24 @@ fun GoogleMapView(
             )
         )
     }
-    val currentMarker = remember {
-        mutableStateOf(R.drawable.a_marker40)
+
+    val firstLaunch = viewModel.firstLaunch.collectAsState()
+
+    val aMarker: Int by lazy { getAMarkerAsset(dark) }
+    val bMarker: Int by lazy { getBMarkerAsset(dark) }
+
+
+
+    if (firstLaunch.value){
+        viewModel.onEvent(HomeEvent.ChangeCurrentMarkerRes(aMarker))
+        viewModel.onEvent(HomeEvent.ColorModeChanged(dark))
+
     }
+    LaunchedEffect(key1 = dark, block = {
+        viewModel.onEvent(HomeEvent.ColorModeChanged(dark))
+    })
+
+    val currentMarker = viewModel.currentMarkerRes.collectAsState()
     val coroutineScope = rememberCoroutineScope()
 
     GoogleMap(
@@ -87,12 +102,10 @@ fun GoogleMapView(
             MovingMarker(cameraPositionState, viewModel, currentMarker.value)
         }
         if (markerPlacedState.value.aPlaced) {
-            val position = remember {
-                mutableStateOf(cameraPositionState.position.target)
-            }
+            val position = viewModel.aMarkerLocation.collectAsState()
             Marker(
                 position = position.value,
-                icon = BitmapDescriptorFactory.fromResource(R.drawable.a_marker40),
+                icon = BitmapDescriptorFactory.fromResource(aMarker),
                 onClick = {
                     moveCamera(
                         position.value,
@@ -100,18 +113,17 @@ fun GoogleMapView(
                         coroutineScope
                     )
                     viewModel.onEvent(HomeEvent.MakeMarkerMovable(A_MARKER_KEY))
-                    currentMarker.value = R.drawable.a_marker40
+                    viewModel.onEvent(HomeEvent.ChangeCurrentMarkerRes(aMarker))
+                    //currentMarker.value = aMarker
                     true
                 }
             )
         }
         if (markerPlacedState.value.bPlaced) {
-            val position = remember {
-                mutableStateOf(cameraPositionState.position.target)
-            }
+            val position = viewModel.bMarkerLocation.collectAsState()
             Marker(
                 position = position.value,
-                icon = BitmapDescriptorFactory.fromResource(R.drawable.b_marker40),
+                icon = BitmapDescriptorFactory.fromResource(bMarker),
                 onClick = {
                     viewModel.onEvent(HomeEvent.MakeMarkerMovable(B_MARKER_KEY))
                     moveCamera(
@@ -119,7 +131,8 @@ fun GoogleMapView(
                         cameraPositionState,
                         coroutineScope
                     )
-                    currentMarker.value = R.drawable.b_marker40
+                    viewModel.onEvent(HomeEvent.ChangeCurrentMarkerRes(bMarker))
+                    //currentMarker.value = bMarker
                     true
                 }
             )
@@ -130,10 +143,12 @@ fun GoogleMapView(
                 when (event) {
                     is HomeEvent.MarkerPlaced -> {
                         if (event.keyOfMarker == A_MARKER_KEY) {
-                            currentMarker.value = R.drawable.b_marker40
+                            viewModel.onEvent(HomeEvent.ChangeCurrentMarkerRes(bMarker))
+                            //currentMarker.value = bMarker
                         }
                         if (event.keyOfMarker == B_MARKER_KEY) {
-                            currentMarker.value = R.drawable.a_marker40
+                            viewModel.onEvent(HomeEvent.ChangeCurrentMarkerRes(aMarker))
+                            //currentMarker.value = aMarker
                         }
                     }
                     else -> {
@@ -153,3 +168,18 @@ fun GoogleMapView(
     )
 }
 
+fun getAMarkerAsset(isDarkTheme:Boolean):Int{
+    return if (isDarkTheme){
+        Util.aMarkerDark
+    }else{
+        Util.aMarkerLight
+    }
+}
+
+fun getBMarkerAsset(isDarkTheme:Boolean):Int{
+    return if (isDarkTheme){
+        Util.bMarkerDark
+    }else{
+        Util.bMarkerLight
+    }
+}

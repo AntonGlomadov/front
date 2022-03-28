@@ -4,8 +4,6 @@ import android.content.Context
 import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
-import android.graphics.ColorFilter
-import androidx.compose.material.MaterialTheme
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.BlendModeColorFilterCompat
 import androidx.core.graphics.BlendModeCompat
@@ -13,15 +11,23 @@ import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.haberturm.hitchhikingapp.data.network.pojo.geocode.GeocodeLocationResponse
-import com.haberturm.hitchhikingapp.data.network.pojo.geocode.Location
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.CameraPositionState
+import com.haberturm.hitchhikingapp.R
 import com.haberturm.hitchhikingapp.data.network.pojo.reverseGeocode.ReverseGeocodeResponse
 import com.haberturm.hitchhikingapp.ui.model.GeocodeUiModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
 
 object Util {
+
+    const val bMarkerDark = R.drawable.b_marker_dark
+    const val aMarkerDark = R.drawable.a_marker_dark
+    const val bMarkerLight = R.drawable.b_marker_light
+    const val aMarkerLight = R.drawable.a_marker_light
+
+
+
     fun GeocodeLocationResponse.toUiModel(): GeocodeUiModel{
         return GeocodeUiModel(
             formattedAddress = results[0].formattedAddress,

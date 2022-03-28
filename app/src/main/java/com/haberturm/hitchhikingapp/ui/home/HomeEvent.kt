@@ -16,8 +16,10 @@ sealed class HomeEvent {
     data class GetGeocodeLocation(val address: String) : HomeEvent()
     object RelocateMarker : HomeEvent()
     object PlaceMarker : HomeEvent()
-    data class MarkerPlaced(val keyOfMarker:String) : HomeEvent()
-    data class MakeMarkerMovable(val keyOfMarker: String): HomeEvent()
+    data class MarkerPlaced(val keyOfMarker: String) : HomeEvent()
+    data class MakeMarkerMovable(val keyOfMarker: String) : HomeEvent()
+    data class ChangeCurrentMarkerRes(val res: Int) : HomeEvent()
+    data class ColorModeChanged(val colorMode: Boolean) : HomeEvent() // true - dark, false - light
 }
 
 const val A_MARKER_KEY = "A_MARKER"

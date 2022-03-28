@@ -1,8 +1,11 @@
 package com.haberturm.hitchhikingapp.ui.views
 
 import android.content.Context
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
@@ -60,7 +63,7 @@ fun MapHood(
         SearchField(
             modifier = Modifier
                 .fillMaxWidth()
-                .border(1.dp, MaterialTheme.colors.secondary, RoundedCornerShape(32.dp)),
+                .border(1.dp, MaterialTheme.colors.primary, RoundedCornerShape(32.dp)),
             leadingIcon = {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_baseline_search_24),
@@ -79,22 +82,8 @@ fun MapHood(
             val currentMarkerState = viewModel.markerPicked.collectAsState()
             if(currentMarkerState.value is MarkerPicked.MarkerAPicked){
                 StrokeText("Выберите начальную точку")
-//            Text(
-//                text = "Выберите начальную точку",
-//                fontSize = 10.sp,
-//                textAlign = TextAlign.Center,
-//                modifier = Modifier.align(Alignment.CenterHorizontally),
-//                color = Color.Gray,
-//            )
             }else if(currentMarkerState.value is MarkerPicked.MarkerBPicked){
                 StrokeText("Выберите конечную точку")
-//            Text(
-//                text = "Выберите конечную точку",
-//                fontSize = 10.sp,
-//                textAlign = TextAlign.Center,
-//                modifier = Modifier.align(Alignment.CenterHorizontally),
-//                color = Color.Gray,
-//            )
             }
         }
 
@@ -104,7 +93,7 @@ fun MapHood(
             contentAlignment = Alignment.BottomCenter
 
         ) {
-            FloatingActionButton(
+            OutlinedButton(
                 onClick = {
                     viewModel.onEvent(HomeEvent.OnMyLocationClicked(context))
                     moveCamera(
@@ -113,11 +102,18 @@ fun MapHood(
                         coroutineScope
                     )
                 },
-                Modifier.align(Alignment.BottomEnd)
+                modifier = Modifier
+                    .size(60.dp)
+                    .align(Alignment.BottomEnd),
+                contentPadding = PaddingValues(0.dp),
+                shape = CircleShape,
+                border= BorderStroke(1.dp, MaterialTheme.colors.primary),
+
             ) {
                 Icon(
                     painter = painterResource(R.drawable.ic_baseline_my_location_24),
-                    contentDescription = "find_user_location_button"
+                    contentDescription = "find_user_location_button",
+                    tint = MaterialTheme.colors.primary,
                 )
             }
             LocationPicker(

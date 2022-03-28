@@ -35,8 +35,7 @@ fun LocationPicker(
             CompositionLocalProvider(
                 LocalMinimumTouchTargetEnforcement provides false,
             ) {
-                Button(
-                    modifier = Modifier,
+                LetsGoButton(
                     onClick = {
 //                    viewModel.onEvent(
 //                        HomeEvent.NavigateToSearchDirection(
@@ -50,10 +49,8 @@ fun LocationPicker(
                             coroutineScope = coroutineScope
                         )
                     },
+                    text = "Поехали"
                 )
-                {
-                    Text(text = "Поехали! ")
-                }
             }
         }
     }
