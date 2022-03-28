@@ -72,24 +72,32 @@ fun MapHood(
             }
 
         )
-        val currentMarkerState = viewModel.markerPicked.collectAsState()
-        if(currentMarkerState.value is MarkerPicked.MarkerAPicked){
-            Text(
-                text = "Выберите начальную точку",
-                fontSize = 10.sp,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.align(Alignment.CenterHorizontally),
-                color = Color.Gray,
-            )
-        }else if(currentMarkerState.value is MarkerPicked.MarkerBPicked){
-            Text(
-                text = "Выберите конечную точку точку",
-                fontSize = 10.sp,
-                textAlign = TextAlign.Center,
-                modifier = Modifier.align(Alignment.CenterHorizontally),
-                color = Color.Gray,
-            )
+        Row(
+//            Modifier.fillMaxWidth(),
+//            horizontalArrangement = Arrangement.Center
+        ){
+            val currentMarkerState = viewModel.markerPicked.collectAsState()
+            if(currentMarkerState.value is MarkerPicked.MarkerAPicked){
+                StrokeText("Выберите начальную точку")
+//            Text(
+//                text = "Выберите начальную точку",
+//                fontSize = 10.sp,
+//                textAlign = TextAlign.Center,
+//                modifier = Modifier.align(Alignment.CenterHorizontally),
+//                color = Color.Gray,
+//            )
+            }else if(currentMarkerState.value is MarkerPicked.MarkerBPicked){
+                StrokeText("Выберите конечную точку")
+//            Text(
+//                text = "Выберите конечную точку",
+//                fontSize = 10.sp,
+//                textAlign = TextAlign.Center,
+//                modifier = Modifier.align(Alignment.CenterHorizontally),
+//                color = Color.Gray,
+//            )
+            }
         }
+
 
         Box(
             modifier = Modifier.fillMaxSize(),
