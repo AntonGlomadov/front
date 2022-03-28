@@ -7,13 +7,11 @@ import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.wrapContentSize
 import androidx.compose.material.CircularProgressIndicator
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
-import androidx.compose.material.TextField
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -22,7 +20,6 @@ import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
-import androidx.lifecycle.SavedStateHandle
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.haberturm.hitchhikingapp.R
 import com.haberturm.hitchhikingapp.ui.home.map.GetPermissions
@@ -30,7 +27,6 @@ import com.haberturm.hitchhikingapp.ui.home.map.isPermanentlyDenied
 import com.haberturm.hitchhikingapp.ui.nav.NavRoute
 import com.haberturm.hitchhikingapp.ui.views.ErrorAlertDialog
 import com.haberturm.hitchhikingapp.ui.home.map.*
-import com.haberturm.hitchhikingapp.ui.nav.getOrThrow
 import kotlinx.coroutines.flow.collect
 import user.userdb.UserEntity
 
@@ -157,7 +153,8 @@ private fun Home(
                                     onMapLoaded = {
                                         viewModel.onEvent(HomeEvent.MapReady)
                                     },
-                                    viewModel
+                                    viewModel,
+                                    LocalContext.current
                                 )
                             }
 

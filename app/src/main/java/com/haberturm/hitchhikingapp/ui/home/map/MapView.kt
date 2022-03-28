@@ -1,6 +1,8 @@
 package com.haberturm.hitchhikingapp.ui.home.map
 
+import android.content.Context
 import android.util.Log
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -8,6 +10,7 @@ import com.google.android.gms.maps.GoogleMapOptions
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.android.gms.maps.model.CameraPosition
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.MapStyleOptions
 import com.google.maps.android.compose.*
 import com.haberturm.hitchhikingapp.R
 import com.haberturm.hitchhikingapp.ui.home.A_MARKER_KEY
@@ -30,6 +33,7 @@ fun GoogleMapView(
     modifier: Modifier,
     onMapLoaded: () -> Unit,
     viewModel: HomeViewModel,
+    context: Context,
 ) {
     val location = LatLng(latitude, longitude)
     Log.i("LOCATION", "${location}")
@@ -37,15 +41,22 @@ fun GoogleMapView(
     val cameraPositionState = rememberCameraPositionState {
         position = CameraPosition.fromLatLngZoom(location, 16f)
     }
+    val dark = isSystemInDarkTheme()
     val mapProperties by remember {
-        mutableStateOf(MapProperties(mapType = MapType.NORMAL))
+        if(dark){
+            mutableStateOf(MapProperties(mapType = MapType.NORMAL, mapStyleOptions = MapStyleOptions.loadRawResourceStyle(context, R.raw.map_night_mode)))
+        }else{
+            mutableStateOf(MapProperties(mapType = MapType.NORMAL))
+        }
+
     }
     val uiSettings by remember {
         mutableStateOf(
             MapUiSettings(
                 compassEnabled = false,
                 myLocationButtonEnabled = true,
-                zoomControlsEnabled = false
+                zoomControlsEnabled = false,
+
             )
         )
     }
