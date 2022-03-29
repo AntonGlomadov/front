@@ -75,17 +75,14 @@ fun MapHood(
             }
 
         )
-        Row(
-//            Modifier.fillMaxWidth(),
-//            horizontalArrangement = Arrangement.Center
-        ){
-            val currentMarkerState = viewModel.markerPicked.collectAsState()
-            if(currentMarkerState.value is MarkerPicked.MarkerAPicked){
-                StrokeText("Выберите начальную точку")
-            }else if(currentMarkerState.value is MarkerPicked.MarkerBPicked){
-                StrokeText("Выберите конечную точку")
-            }
+
+        val currentMarkerState = viewModel.markerPicked.collectAsState()
+        if (currentMarkerState.value is MarkerPicked.MarkerAPicked) {
+            StrokeText("Выберите начальную точку")
+        } else if (currentMarkerState.value is MarkerPicked.MarkerBPicked) {
+            StrokeText("Выберите конечную точку")
         }
+
 
 
         Box(
@@ -107,20 +104,39 @@ fun MapHood(
                     .align(Alignment.BottomEnd),
                 contentPadding = PaddingValues(0.dp),
                 shape = CircleShape,
-                border= BorderStroke(1.dp, MaterialTheme.colors.primary),
+                border = BorderStroke(1.dp, MaterialTheme.colors.primary),
 
-            ) {
+                ) {
                 Icon(
                     painter = painterResource(R.drawable.ic_baseline_my_location_24),
                     contentDescription = "find_user_location_button",
                     tint = MaterialTheme.colors.primary,
                 )
             }
-            LocationPicker(
-                cameraPositionState,
-                viewModel,
-                coroutineScope
-            )
+            if (currentMarkerState.value is MarkerPicked.MarkerAPicked) {
+                LocationPicker(
+                    cameraPositionState,
+                    viewModel,
+                    coroutineScope,
+                    "Выбрать начальную точку"
+                )
+            } else if (currentMarkerState.value is MarkerPicked.MarkerBPicked) {
+                LocationPicker(
+                    cameraPositionState,
+                    viewModel,
+                    coroutineScope,
+                    "Выбрать конечную точку"
+                )
+
+            } else if(currentMarkerState.value is MarkerPicked.AllMarkersPlaced){
+                LocationPicker(
+                    cameraPositionState,
+                    viewModel,
+                    coroutineScope,
+                    "Поехали!"
+                )
+            }
+
 
         }
 

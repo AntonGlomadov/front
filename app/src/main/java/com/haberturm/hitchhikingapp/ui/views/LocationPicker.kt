@@ -23,7 +23,8 @@ import kotlinx.coroutines.CoroutineScope
 fun LocationPicker(
     cameraPositionState: CameraPositionState,
     viewModel: HomeViewModel,
-    coroutineScope: CoroutineScope
+    coroutineScope: CoroutineScope,
+    text: String = ""
 ) {
     if (!cameraPositionState.isMoving) {
         Column(modifier = Modifier
@@ -49,7 +50,7 @@ fun LocationPicker(
                             coroutineScope = coroutineScope
                         )
                     },
-                    text = "Поехали"
+                    text = text
                 )
             }
         }
