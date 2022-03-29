@@ -201,7 +201,6 @@ class HomeViewModel @Inject constructor(
                             radius = Util.startRadius
                         )
                     ) {
-                        Log.i("MARKER", "not in radius")
                         emitMarkerEvent(HomeEvent.IsNotInRadius)
                     } else {
                         _aMarkerLocation.value = currentMarkerLocation.value
@@ -209,7 +208,6 @@ class HomeViewModel @Inject constructor(
                             aPlaced = true,
                             bPlaced = markerPlacedState.value.bPlaced
                         )
-
                         if (markerPlacedState.value.aPlaced && markerPlacedState.value.bPlaced) {
                             _markerPicked.value = MarkerPicked.AllMarkersPlaced
                         } else {

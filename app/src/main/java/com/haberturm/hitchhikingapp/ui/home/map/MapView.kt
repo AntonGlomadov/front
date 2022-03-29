@@ -20,6 +20,7 @@ import com.haberturm.hitchhikingapp.ui.home.HomeEvent
 import com.haberturm.hitchhikingapp.ui.home.HomeViewModel
 import com.haberturm.hitchhikingapp.ui.nav.NavigationState
 import com.haberturm.hitchhikingapp.ui.util.Util
+import com.haberturm.hitchhikingapp.ui.util.Util.defaultZoom
 import com.haberturm.hitchhikingapp.ui.util.Util.moveCamera
 import com.haberturm.hitchhikingapp.ui.views.ErrorAlertDialog
 import com.haberturm.hitchhikingapp.ui.views.MapHood
@@ -41,8 +42,9 @@ fun GoogleMapView(
     Log.i("LOCATION", "${location}")
     // Observing and controlling the camera's state can be done with a CameraPositionState
     val cameraPositionState = rememberCameraPositionState {
-        position = CameraPosition.fromLatLngZoom(location, 16f)
+        position = CameraPosition.fromLatLngZoom(location, defaultZoom)
     }
+
     val dark = isSystemInDarkTheme()
     val mapProperties by remember {
         if(dark){
@@ -89,7 +91,7 @@ fun GoogleMapView(
         uiSettings = uiSettings,
         onMapLoaded = onMapLoaded,
         googleMapOptionsFactory = {
-            GoogleMapOptions().camera(CameraPosition.fromLatLngZoom(location, 16f))
+            GoogleMapOptions().camera(CameraPosition.fromLatLngZoom(location, defaultZoom))
         },
     ) {
         val navState = viewModel.navigationState.collectAsState()

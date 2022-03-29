@@ -15,6 +15,7 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.compose.CameraPositionState
 import com.haberturm.hitchhikingapp.ui.home.HomeEvent
 import com.haberturm.hitchhikingapp.ui.home.HomeViewModel
+import com.haberturm.hitchhikingapp.ui.util.Util
 import com.haberturm.hitchhikingapp.ui.util.Util.moveCamera
 import kotlinx.coroutines.CoroutineScope
 
@@ -97,12 +98,22 @@ fun placeMarkerOnClick(
         currentCameraPosition.latitude - 0.00009,  //чтобы избавиться ри перекрытия маркеров
         currentCameraPosition.longitude
     )
-    moveCamera(
-        newLocation,
-        cameraPositionState,
-        coroutineScope,
-        isAnimated = false
-    )
+    if (cameraPositionState.position.zoom == Util.defaultZoom){
+        moveCamera(
+            newLocation,
+            cameraPositionState,
+            coroutineScope,
+            isAnimated = false
+        )
+    }else{
+        moveCamera(
+            newLocation,
+            cameraPositionState,
+            coroutineScope,
+            isAnimated = true
+        )
+    }
+
 
 
 }

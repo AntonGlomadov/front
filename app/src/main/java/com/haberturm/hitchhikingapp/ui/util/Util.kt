@@ -30,6 +30,8 @@ object Util {
 
     const val startRadius: Double = 5000.0
 
+    const val defaultZoom: Float = 16f
+
 
     fun GeocodeLocationResponse.toUiModel(): GeocodeUiModel {
         return GeocodeUiModel(
@@ -78,7 +80,7 @@ object Util {
                 cameraPositionState.animate(
                     CameraUpdateFactory.newLatLngZoom(
                         location,
-                        16f
+                        defaultZoom
                     )
                 )
             }
