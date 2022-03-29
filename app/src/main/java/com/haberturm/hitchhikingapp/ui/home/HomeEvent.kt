@@ -17,6 +17,7 @@ sealed class HomeEvent {
     object RelocateMarker : HomeEvent()
     object PlaceMarker : HomeEvent()
     data class MarkerPlaced(val keyOfMarker: String) : HomeEvent()
+    object IsNotInRadius : HomeEvent()
     data class MakeMarkerMovable(val keyOfMarker: String) : HomeEvent()
     data class ChangeCurrentMarkerRes(val res: Int) : HomeEvent()
     data class ColorModeChanged(val colorMode: Boolean) : HomeEvent() // true - dark, false - light

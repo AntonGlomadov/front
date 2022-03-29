@@ -16,6 +16,7 @@ fun MovingMarker(
     Marker(
         position = cameraPositionState.position.target,
         icon = BitmapDescriptorFactory.fromResource(iconRes),
+        onClick = {false}
     )
     viewModel.onEvent(HomeEvent.ObserveMovingMarkerLocation(cameraPositionState.position.target))
 }

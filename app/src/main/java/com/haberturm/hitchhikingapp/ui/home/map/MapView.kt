@@ -3,6 +3,7 @@ package com.haberturm.hitchhikingapp.ui.home.map
 import android.content.Context
 import android.util.Log
 import androidx.compose.foundation.isSystemInDarkTheme
+import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -20,6 +21,7 @@ import com.haberturm.hitchhikingapp.ui.home.HomeViewModel
 import com.haberturm.hitchhikingapp.ui.nav.NavigationState
 import com.haberturm.hitchhikingapp.ui.util.Util
 import com.haberturm.hitchhikingapp.ui.util.Util.moveCamera
+import com.haberturm.hitchhikingapp.ui.views.ErrorAlertDialog
 import com.haberturm.hitchhikingapp.ui.views.MapHood
 import com.haberturm.hitchhikingapp.ui.views.MovingMarker
 import com.haberturm.hitchhikingapp.ui.views.UserLocationMarker
@@ -96,8 +98,16 @@ fun GoogleMapView(
                 moveCamera(viewModel.currentMarkerLocation.value, cameraPositionState, coroutineScope)
             }
         })
-        val markerPlacedState = viewModel.markerPlacedState.collectAsState()
 
+
+        val markerPlacedState = viewModel.markerPlacedState.collectAsState()
+        if(!markerPlacedState.value.aPlaced){
+            Circle(
+                center = location,
+                strokeColor = MaterialTheme.colors.secondaryVariant,
+                radius = Util.startRadius,
+            )
+        }
         if (!markerPlacedState.value.aPlaced || !markerPlacedState.value.bPlaced) {
             MovingMarker(cameraPositionState, viewModel, currentMarker.value)
         }
@@ -114,8 +124,7 @@ fun GoogleMapView(
                     )
                     viewModel.onEvent(HomeEvent.MakeMarkerMovable(A_MARKER_KEY))
                     viewModel.onEvent(HomeEvent.ChangeCurrentMarkerRes(aMarker))
-                    //currentMarker.value = aMarker
-                    true
+                    false
                 }
             )
         }
@@ -132,12 +141,13 @@ fun GoogleMapView(
                         coroutineScope
                     )
                     viewModel.onEvent(HomeEvent.ChangeCurrentMarkerRes(bMarker))
-                    //currentMarker.value = bMarker
-                    true
+                    false
                 }
             )
         }
-
+        val showError= remember {
+            mutableStateOf(false)
+        }
         LaunchedEffect(key1 = true) {
             viewModel.markerEvent.onEach { event ->
                 when (event) {
@@ -151,12 +161,26 @@ fun GoogleMapView(
                             //currentMarker.value = aMarker
                         }
                     }
+                    is HomeEvent.IsNotInRadius -> {
+                       showError.value = true
+                    }
                     else -> {
                         Log.i("MARKER", "WHAT?")
                     }
                 }
             }.launchIn(this)
         }
+        if(showError.value){
+            ErrorAlertDialog(
+                title = "Точка не в радиусе",
+                text = "Выбирите в радиусе",
+                button1Text = "ok",
+                button2Text = "ok"
+            ) {
+                showError.value = false
+            }
+        }
+
         UserLocationMarker(location = location)
     }
     MapHood(

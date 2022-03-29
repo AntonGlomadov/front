@@ -2,6 +2,7 @@ package com.haberturm.hitchhikingapp.ui.home
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.location.Location
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -13,6 +14,7 @@ import com.haberturm.hitchhikingapp.data.repositories.home.HomeRepositoryEvent
 import com.haberturm.hitchhikingapp.ui.nav.RouteNavigator
 import com.haberturm.hitchhikingapp.ui.searchDirection.SearchDirectionRoute
 import com.haberturm.hitchhikingapp.ui.util.Util
+import com.haberturm.hitchhikingapp.ui.util.Util.isInRadius
 import com.haberturm.hitchhikingapp.ui.util.Util.toUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
@@ -46,8 +48,11 @@ class HomeViewModel @Inject constructor(
     private val _markerEvent = MutableSharedFlow<HomeEvent>()
     val markerEvent = _markerEvent.asSharedFlow()
 
-    var location: Flow<UserEntity> = repository.getUserLocation()
-        private set
+    //    var location: Flow<UserEntity> = repository.getUserLocation()
+//        private set
+    private val _location = MutableStateFlow<UserEntity>(UserEntity(0, 1.0, 1.0))
+    val location: StateFlow<UserEntity> = _location
+
 
     private val _currentMarkerLocation = MutableStateFlow<LatLng>(LatLng(0.0, 0.0))
     val currentMarkerLocation: StateFlow<LatLng> = _currentMarkerLocation
@@ -81,6 +86,11 @@ class HomeViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
+            repository.getUserLocation()
+                .onEach { userEntity ->
+                    _location.value = userEntity
+                }
+                .launchIn(this)
             repository.homeRepositoryEvent.collect { event ->
                 Log.i("Event", "INIT_VM $event")
                 when (event) {
@@ -129,16 +139,16 @@ class HomeViewModel @Inject constructor(
             }
 
             is HomeEvent.ColorModeChanged -> {
-                if(event.colorMode){
-                    if(markerPicked.value == MarkerPicked.MarkerAPicked){
+                if (event.colorMode) {
+                    if (markerPicked.value == MarkerPicked.MarkerAPicked) {
                         _currentMarkerRes.value = Util.aMarkerDark
-                    }else{
+                    } else {
                         _currentMarkerRes.value = Util.bMarkerDark
                     }
-                }else{
-                    if(markerPicked.value == MarkerPicked.MarkerAPicked){
+                } else {
+                    if (markerPicked.value == MarkerPicked.MarkerAPicked) {
                         _currentMarkerRes.value = Util.aMarkerLight
-                    }else{
+                    } else {
                         _currentMarkerRes.value = Util.bMarkerLight
                     }
                 }
@@ -164,9 +174,8 @@ class HomeViewModel @Inject constructor(
 
             is HomeEvent.PlaceMarker -> {
                 if (markerPicked.value == MarkerPicked.MarkerBPicked) {
-                    Log.i("MARKER-event-vm", "place b")
+                    //place b
                     _bMarkerLocation.value = currentMarkerLocation.value
-
                     _markerPlacedState.value = MarkerPlacedState(
                         aPlaced = markerPlacedState.value.aPlaced,
                         bPlaced = true
@@ -176,30 +185,38 @@ class HomeViewModel @Inject constructor(
                     } else {
                         _markerPicked.value = MarkerPicked.MarkerAPicked
                     }
-
-
-
-                    Log.i("MARKER-event-vm-placing", "$markerPicked")
                     emitMarkerEvent(HomeEvent.MarkerPlaced(B_MARKER_KEY))
 
                 } else if (markerPicked.value == MarkerPicked.MarkerAPicked) {
-                    Log.i("MARKER-event-vm", "place a")
-                    _aMarkerLocation.value = currentMarkerLocation.value
-
-                    _markerPlacedState.value = MarkerPlacedState(
-                        aPlaced = true,
-                        bPlaced = markerPlacedState.value.bPlaced
-                    )
-
-                    if (markerPlacedState.value.aPlaced && markerPlacedState.value.bPlaced) {
-                        _markerPicked.value = MarkerPicked.AllMarkersPlaced
+                    //place a
+                    if (!isInRadius(
+                            center = LatLng(
+                                location.value.latitude,
+                                location.value.longitude
+                            ),
+                            point = LatLng(
+                                currentMarkerLocation.value.latitude,
+                                currentMarkerLocation.value.longitude
+                            ),
+                            radius = Util.startRadius
+                        )
+                    ) {
+                        Log.i("MARKER", "not in radius")
+                        emitMarkerEvent(HomeEvent.IsNotInRadius)
                     } else {
-                        _markerPicked.value = MarkerPicked.MarkerBPicked
+                        _aMarkerLocation.value = currentMarkerLocation.value
+                        _markerPlacedState.value = MarkerPlacedState(
+                            aPlaced = true,
+                            bPlaced = markerPlacedState.value.bPlaced
+                        )
+
+                        if (markerPlacedState.value.aPlaced && markerPlacedState.value.bPlaced) {
+                            _markerPicked.value = MarkerPicked.AllMarkersPlaced
+                        } else {
+                            _markerPicked.value = MarkerPicked.MarkerBPicked
+                        }
+                        emitMarkerEvent(HomeEvent.MarkerPlaced(A_MARKER_KEY))
                     }
-
-                    Log.i("MARKER-event-vm-placing", "$markerPicked ")
-                    emitMarkerEvent(HomeEvent.MarkerPlaced(A_MARKER_KEY))
-
                 }
             }
             is HomeEvent.ObserveMovingMarkerLocation -> {
@@ -231,6 +248,23 @@ class HomeViewModel @Inject constructor(
             else -> {
             }
         }
+    }
+
+
+    private fun getDistFromUserLocation():Double {
+        val userLocation = Location("userLocation")
+        userLocation.apply {
+            latitude = location.value.latitude
+            longitude = location.value.longitude
+        }
+        val aMarkerLocation = Location("aMarkerLocation")
+        aMarkerLocation.apply {
+            latitude = currentMarkerLocation.value.latitude
+            longitude = currentMarkerLocation.value.longitude
+        }
+
+        return userLocation.distanceTo(aMarkerLocation).toDouble()
+
     }
 
     private fun getLocationStatus(event: HomeRepositoryEvent.UserLocationStatus): Boolean {

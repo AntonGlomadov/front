@@ -141,7 +141,7 @@ private fun Home(
                             permissionStatus = PermissionStatus.PermissionAccepted
                             viewModel.getUserLocation(LocalContext.current)
                             val userLocation = viewModel.location.collectAsState(
-                                initial = UserEntity(0, 1.35, 103.87) //TODO: weak
+                               // initial = UserEntity(0, 1.35, 103.87) //TODO: weak
                             ).value
 
                             Log.i("LOCATION_Init", userLocation.toString())
