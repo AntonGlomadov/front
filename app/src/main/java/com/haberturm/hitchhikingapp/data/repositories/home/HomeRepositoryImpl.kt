@@ -7,6 +7,7 @@ import com.haberturm.hitchhikingapp.data.network.pojo.geocode.GeocodeLocationRes
 import com.google.android.gms.location.LocationServices
 import com.haberturm.hitchhikingapp.data.database.UserDataSource
 import com.haberturm.hitchhikingapp.data.network.Retrofit
+import com.haberturm.hitchhikingapp.data.network.pojo.directions.Direction
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
@@ -27,9 +28,14 @@ class HomeRepositoryImpl(
     override val homeRepositoryEvent = _homeRepositoryEvent.receiveAsFlow()
 
     override fun getGeocodeLocation(address:String): Flow<GeocodeLocationResponse> = flow{
-        val p = Retrofit.retrofit.getGeocodeLocation(address)
-        Log.i("TESTAPI", p.toString())
-        emit(p)
+        val geocodeLocationResponse = Retrofit.retrofit.getGeocodeLocation(address = address)
+        emit(geocodeLocationResponse)
+    }.flowOn(Dispatchers.IO)
+
+    override fun getDirection(destination: String, origin: String): Flow<Direction> = flow{
+        val directionResponse = Retrofit.retrofit.getDirections(destination, origin)
+        Log.i("API-RESP", "${directionResponse}")
+        emit(directionResponse)
     }.flowOn(Dispatchers.IO)
 
 

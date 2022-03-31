@@ -29,11 +29,11 @@ object Retrofit {
             resp
         }.build()
 
-    val retrofit: GeocodeApi by lazy {
+    val retrofit: GoogleApi by lazy {
         Retrofit.Builder()
             .addConverterFactory(GsonConverterFactory.create(gson))
-            .baseUrl(AllApi.BASE_URL_GEOCODE)
+            .baseUrl(AllApi.BASE_URL_GOOGLE)
             .client(okHttpClient)
-            .build().create(GeocodeApi::class.java)
+            .build().create(GoogleApi::class.java)
     }
 }

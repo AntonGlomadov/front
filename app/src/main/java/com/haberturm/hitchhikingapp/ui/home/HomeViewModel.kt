@@ -7,6 +7,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.maps.model.LatLng
+import com.google.maps.android.PolyUtil
 import com.haberturm.hitchhikingapp.R
 import com.haberturm.hitchhikingapp.data.network.ApiState
 import com.haberturm.hitchhikingapp.data.repositories.home.HomeRepository
@@ -81,6 +82,15 @@ class HomeViewModel @Inject constructor(
 
     private val _firstLaunch = MutableStateFlow<Boolean>(true)
     val firstLaunch: StateFlow<Boolean> = _firstLaunch
+
+    private val _path = MutableStateFlow<List<LatLng>>(emptyList())
+    val path: StateFlow<List<LatLng>> = _path
+
+    private val _pathsList = MutableStateFlow<MutableList<List<LatLng>>>(mutableListOf())
+    val pathsList: StateFlow<MutableList<List<LatLng>>> = _pathsList
+
+    private val _shouldShowDirection = MutableStateFlow<Boolean>(false)
+    val shouldShowDirection: StateFlow<Boolean> = _shouldShowDirection
 
     private val geocodeApiResponse: MutableStateFlow<ApiState> = MutableStateFlow(ApiState.Empty)
 
@@ -161,6 +171,7 @@ class HomeViewModel @Inject constructor(
                     repository.getGeocodeLocation(event.address)
                         .catch { e ->
                             geocodeApiResponse.value = ApiState.Failure(e)
+                            Log.i("API_FAIL", "$e")
                             //TODO ERROR AND STATUS
                         }
                         .collect { data ->
@@ -215,6 +226,30 @@ class HomeViewModel @Inject constructor(
                         }
                         emitMarkerEvent(HomeEvent.MarkerPlaced(A_MARKER_KEY))
                     }
+                } else {
+                    viewModelScope.launch {
+                        repository.getDirection(
+                            destination = "${bMarkerLocation.value.latitude},${bMarkerLocation.value.longitude}",
+                            origin = "${aMarkerLocation.value.latitude},${aMarkerLocation.value.longitude}"
+                        )
+                            .catch { e->
+                                ApiState.Failure(e)
+                            }
+                            .onEach { direction ->
+                                direction.routes[0].legs[0].steps.forEach {
+
+                                    _pathsList.value.add(PolyUtil.decode(it.polyline.points))
+                                    //_path.value = PolyUtil.decode(it.polyline.points)
+                                   // _shouldShowDirection.value = true
+                                }
+                                _shouldShowDirection.value = true
+//
+//                                _path.value = PolyUtil.decode(direction.routes[0].overviewPolyline.points)
+//                                _shouldShowDirection.value = true
+                            }
+                            .launchIn(this)
+                    }
+
                 }
             }
             is HomeEvent.ObserveMovingMarkerLocation -> {
@@ -246,23 +281,6 @@ class HomeViewModel @Inject constructor(
             else -> {
             }
         }
-    }
-
-
-    private fun getDistFromUserLocation():Double {
-        val userLocation = Location("userLocation")
-        userLocation.apply {
-            latitude = location.value.latitude
-            longitude = location.value.longitude
-        }
-        val aMarkerLocation = Location("aMarkerLocation")
-        aMarkerLocation.apply {
-            latitude = currentMarkerLocation.value.latitude
-            longitude = currentMarkerLocation.value.longitude
-        }
-
-        return userLocation.distanceTo(aMarkerLocation).toDouble()
-
     }
 
     private fun getLocationStatus(event: HomeRepositoryEvent.UserLocationStatus): Boolean {

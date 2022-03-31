@@ -100,8 +100,6 @@ fun GoogleMapView(
                 moveCamera(viewModel.currentMarkerLocation.value, cameraPositionState, coroutineScope)
             }
         })
-
-
         val markerPlacedState = viewModel.markerPlacedState.collectAsState()
         if(!markerPlacedState.value.aPlaced){
             Circle(
@@ -181,6 +179,15 @@ fun GoogleMapView(
             ) {
                 showError.value = false
             }
+        }
+        val shouldShowDirection = viewModel.shouldShowDirection.collectAsState()
+        if(shouldShowDirection.value){
+           // val points = viewModel.path.collectAsState()
+            val paths = viewModel.pathsList.collectAsState()
+            paths.value.forEach{ points ->
+                Polyline(points = points)
+            }
+            //Polyline(points = points.value)
         }
 
         UserLocationMarker(location = location)
