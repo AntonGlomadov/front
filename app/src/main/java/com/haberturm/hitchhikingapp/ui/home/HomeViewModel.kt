@@ -299,7 +299,6 @@ class HomeViewModel @Inject constructor(
     private fun sendUiEvent(event: HomeEvent) {
         viewModelScope.launch {
             _uiEvent.send(event)
-
         }
     }
 }

@@ -154,15 +154,6 @@ object Util {
         } else {
             LatLngBounds(source, destination);
         }
-
-
-
-//
-//        return if(firstPoint.latitude >= secondPoint.latitude){
-//            LatLngBounds(secondPoint, firstPoint)
-//        }else{
-//            LatLngBounds( firstPoint,secondPoint)
-//        }
     }
 
 }
