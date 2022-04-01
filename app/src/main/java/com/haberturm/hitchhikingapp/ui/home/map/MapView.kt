@@ -180,14 +180,14 @@ fun GoogleMapView(
                 showError.value = false
             }
         }
+
+        //draw route
         val shouldShowDirection = viewModel.shouldShowDirection.collectAsState()
         if(shouldShowDirection.value){
-           // val points = viewModel.path.collectAsState()
             val paths = viewModel.pathsList.collectAsState()
             paths.value.forEach{ points ->
                 Polyline(points = points)
             }
-            //Polyline(points = points.value)
         }
 
         UserLocationMarker(location = location)

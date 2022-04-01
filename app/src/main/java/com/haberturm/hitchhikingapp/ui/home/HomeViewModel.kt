@@ -83,9 +83,6 @@ class HomeViewModel @Inject constructor(
     private val _firstLaunch = MutableStateFlow<Boolean>(true)
     val firstLaunch: StateFlow<Boolean> = _firstLaunch
 
-    private val _path = MutableStateFlow<List<LatLng>>(emptyList())
-    val path: StateFlow<List<LatLng>> = _path
-
     private val _pathsList = MutableStateFlow<MutableList<List<LatLng>>>(mutableListOf())
     val pathsList: StateFlow<MutableList<List<LatLng>>> = _pathsList
 
@@ -237,15 +234,9 @@ class HomeViewModel @Inject constructor(
                             }
                             .onEach { direction ->
                                 direction.routes[0].legs[0].steps.forEach {
-
                                     _pathsList.value.add(PolyUtil.decode(it.polyline.points))
-                                    //_path.value = PolyUtil.decode(it.polyline.points)
-                                   // _shouldShowDirection.value = true
                                 }
                                 _shouldShowDirection.value = true
-//
-//                                _path.value = PolyUtil.decode(direction.routes[0].overviewPolyline.points)
-//                                _shouldShowDirection.value = true
                             }
                             .launchIn(this)
                     }

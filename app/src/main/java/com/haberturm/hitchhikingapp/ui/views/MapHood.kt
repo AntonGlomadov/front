@@ -20,11 +20,13 @@ import androidx.compose.ui.text.style.TextDecoration
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.LatLngBounds
 import com.google.maps.android.compose.CameraPositionState
 import com.haberturm.hitchhikingapp.R
 import com.haberturm.hitchhikingapp.ui.home.HomeEvent
 import com.haberturm.hitchhikingapp.ui.home.HomeViewModel
 import com.haberturm.hitchhikingapp.ui.home.MarkerPicked
+import com.haberturm.hitchhikingapp.ui.util.Util
 import com.haberturm.hitchhikingapp.ui.util.Util.moveCamera
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.collect
@@ -118,27 +120,34 @@ fun MapHood(
                     cameraPositionState,
                     viewModel,
                     coroutineScope,
-                    "Выбрать начальную точку"
+                    "Выбрать начальную точку",
+                    true
                 )
             } else if (currentMarkerState.value is MarkerPicked.MarkerBPicked) {
                 LocationPicker(
                     cameraPositionState,
                     viewModel,
                     coroutineScope,
-                    "Выбрать конечную точку"
+                    "Выбрать конечную точку",
+                    true
                 )
 
             } else if(currentMarkerState.value is MarkerPicked.AllMarkersPlaced){
+                val firstPoint = viewModel.aMarkerLocation.collectAsState().value
+                val secondPoint = viewModel.bMarkerLocation.collectAsState().value
+                val bounds = Util.setRightBound(
+                    firstPoint,
+                    secondPoint
+                )
                 LocationPicker(
                     cameraPositionState,
                     viewModel,
                     coroutineScope,
-                    "Поехали!"
+                    "Поехали!",
+                    false,
+                    bounds,
                 )
             }
-
-
         }
-
     }
 }

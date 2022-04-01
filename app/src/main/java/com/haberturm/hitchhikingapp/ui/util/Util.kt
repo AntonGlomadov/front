@@ -14,6 +14,7 @@ import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.haberturm.hitchhikingapp.data.network.pojo.geocode.GeocodeLocationResponse
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.LatLngBounds
 import com.google.maps.android.compose.CameraPositionState
 import com.haberturm.hitchhikingapp.R
 import com.haberturm.hitchhikingapp.data.network.pojo.reverseGeocode.ReverseGeocodeResponse
@@ -88,11 +89,22 @@ object Util {
             cameraPositionState.move(
                 CameraUpdateFactory.newLatLngZoom(
                     location,
-                    16f
+                    defaultZoom
                 )
             )
         }
+    }
 
+    fun moveCameraBetweenBounds(
+        bounds: LatLngBounds,
+        cameraPositionState: CameraPositionState,
+        coroutineScope: CoroutineScope
+    ){
+        coroutineScope.launch {
+            cameraPositionState.animate(
+                CameraUpdateFactory.newLatLngBounds(bounds,300)
+            )
+        }
     }
 
     fun isInRadius(
@@ -125,6 +137,32 @@ object Util {
             longitude = endLng
         }
         return startPoint.distanceTo(endPoint).toDouble()
+    }
+
+    fun setRightBound(source: LatLng, destination:LatLng): LatLngBounds{
+        return if (source.latitude > destination.latitude &&
+            source.longitude > destination.longitude) {
+            LatLngBounds(destination, source)
+        } else if (source.longitude > destination.longitude) {
+            LatLngBounds(
+                LatLng(source.latitude, destination.longitude),
+                LatLng(destination.latitude, source.longitude))
+        } else if (source.latitude > destination.latitude) {
+            LatLngBounds(
+                LatLng(destination.latitude, source.longitude),
+                LatLng(source.latitude, destination.longitude));
+        } else {
+            LatLngBounds(source, destination);
+        }
+
+
+
+//
+//        return if(firstPoint.latitude >= secondPoint.latitude){
+//            LatLngBounds(secondPoint, firstPoint)
+//        }else{
+//            LatLngBounds( firstPoint,secondPoint)
+//        }
     }
 
 }

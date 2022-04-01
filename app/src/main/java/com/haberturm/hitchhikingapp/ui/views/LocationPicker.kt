@@ -1,5 +1,6 @@
 package com.haberturm.hitchhikingapp.ui.views
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
 import androidx.compose.material.ExperimentalMaterialApi
@@ -11,13 +12,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.LatLng
+import com.google.android.gms.maps.model.LatLngBounds
 import com.google.maps.android.compose.CameraPositionState
 import com.haberturm.hitchhikingapp.ui.home.HomeEvent
 import com.haberturm.hitchhikingapp.ui.home.HomeViewModel
 import com.haberturm.hitchhikingapp.ui.util.Util
 import com.haberturm.hitchhikingapp.ui.util.Util.moveCamera
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -25,7 +29,13 @@ fun LocationPicker(
     cameraPositionState: CameraPositionState,
     viewModel: HomeViewModel,
     coroutineScope: CoroutineScope,
-    text: String = ""
+    text: String = "",
+    shouldMove: Boolean,
+    bounds: LatLngBounds = LatLngBounds(
+        LatLng(0.0,0.0),
+        LatLng(0.0,0.0)
+    )
+
 ) {
     if (!cameraPositionState.isMoving) {
         Column(modifier = Modifier
@@ -48,7 +58,9 @@ fun LocationPicker(
                         placeMarkerOnClick(
                             placeMarkerFun = { viewModel.onEvent(HomeEvent.PlaceMarker) },
                             cameraPositionState = cameraPositionState,
-                            coroutineScope = coroutineScope
+                            coroutineScope = coroutineScope,
+                            shouldMove = shouldMove,
+                            bounds = bounds
                         )
                     },
                     text = text
@@ -90,7 +102,9 @@ fun Prev(){
 fun placeMarkerOnClick(
     placeMarkerFun: () -> Unit,
     cameraPositionState: CameraPositionState,
-    coroutineScope: CoroutineScope
+    coroutineScope: CoroutineScope,
+    shouldMove: Boolean,
+    bounds: LatLngBounds
 ){
     placeMarkerFun()
     val currentCameraPosition = cameraPositionState.position.target
@@ -98,21 +112,30 @@ fun placeMarkerOnClick(
         currentCameraPosition.latitude - 0.00009,  //чтобы избавиться ри перекрытия маркеров
         currentCameraPosition.longitude
     )
-    if (cameraPositionState.position.zoom == Util.defaultZoom){
-        moveCamera(
-            newLocation,
-            cameraPositionState,
-            coroutineScope,
-            isAnimated = false
-        )
+    if(shouldMove){
+        if (cameraPositionState.position.zoom == Util.defaultZoom){
+            moveCamera(
+                newLocation,
+                cameraPositionState,
+                coroutineScope,
+                isAnimated = false
+            )
+        }else{
+            moveCamera(
+                newLocation,
+                cameraPositionState,
+                coroutineScope,
+                isAnimated = true
+            )
+        }
     }else{
-        moveCamera(
-            newLocation,
+        Util.moveCameraBetweenBounds(
+            bounds,
             cameraPositionState,
-            coroutineScope,
-            isAnimated = true
+            coroutineScope
         )
     }
+
 
 
 
