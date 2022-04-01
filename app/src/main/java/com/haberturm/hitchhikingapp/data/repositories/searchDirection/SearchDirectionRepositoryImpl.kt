@@ -23,7 +23,7 @@ class SearchDirectionRepositoryImpl(
 ) : SearchDirectionRepository {
 
     override fun getReverseGeocodeLocation(latlng: String): Flow<ReverseGeocodeResponse> = flow{
-        val p = Retrofit.retrofit.getReverseGeocodeLocation(latlng)
+        val p = Retrofit.retrofit.getReverseGeocodeLocation(latlng = latlng)
         Log.i("TESTAPI", p.toString())
         emit(p)
     }.flowOn(Dispatchers.IO)
