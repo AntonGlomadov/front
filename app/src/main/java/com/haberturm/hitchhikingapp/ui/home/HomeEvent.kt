@@ -21,6 +21,7 @@ sealed class HomeEvent {
     data class MakeMarkerMovable(val keyOfMarker: String) : HomeEvent()
     data class ChangeCurrentMarkerRes(val res: Int) : HomeEvent()
     data class ColorModeChanged(val colorMode: Boolean) : HomeEvent() // true - dark, false - light
+    data class ChangeUserMode(val mode: UserMode) : HomeEvent()
 }
 
 const val A_MARKER_KEY = "A_MARKER"
@@ -33,3 +34,8 @@ sealed class PermissionStatus {
     object PermissionPermanentlyDenied : PermissionStatus()
 }
 
+sealed class UserMode{
+    object Companion : UserMode()
+    object Driver : UserMode()
+    object Undefined : UserMode()
+}

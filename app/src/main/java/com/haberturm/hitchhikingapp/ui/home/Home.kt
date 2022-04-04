@@ -27,7 +27,10 @@ import com.haberturm.hitchhikingapp.ui.home.map.isPermanentlyDenied
 import com.haberturm.hitchhikingapp.ui.nav.NavRoute
 import com.haberturm.hitchhikingapp.ui.views.ErrorAlertDialog
 import com.haberturm.hitchhikingapp.ui.home.map.*
+import com.haberturm.hitchhikingapp.ui.views.SelectModeDialog
 import kotlinx.coroutines.flow.collect
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import user.userdb.UserEntity
 
 
@@ -69,6 +72,10 @@ object HomeRoute : NavRoute<HomeViewModel> {
 private fun Home(
     viewModel: HomeViewModel
 ) {
+    SelectModeDialog(
+        changeUserModeToCompanion = {viewModel.onEvent(HomeEvent.ChangeUserMode(UserMode.Companion))},
+        changeUserModeToDriver = {viewModel.onEvent(HomeEvent.ChangeUserMode(UserMode.Driver))},
+    )
     val permissions = GetPermissions()
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(
@@ -90,26 +97,16 @@ private fun Home(
     var isMapAndLocLoaded by remember { mutableStateOf(false) }
     var isLocReady by remember { mutableStateOf(false) }
     LaunchedEffect(key1 = true) {
-        viewModel.userLocationStatus.collect { event ->
+        viewModel.userLocationStatus.onEach { event ->
             if (event.isLocationReady) {
                 isLocReady = true
             }
             if (event.isLocationReady && event.isMapReady) {
                 isMapAndLocLoaded = true
             }
-        }
+        }.launchIn(this)
     }
-
     var permissionStatus by remember { mutableStateOf<PermissionStatus>(PermissionStatus.PermissionNotProcessed) }
-//    LaunchedEffect(key1 = true){
-//      viewModel.uiEvent.collect { event ->
-//          when(event){
-//              is HomeEvent.PermissionEvent ->{
-//                  permissionStatus = event.status
-//              }
-//          }
-//      }
-//    }
 
     when (permissionStatus) {
         is PermissionStatus.PermissionNotProcessed -> {
@@ -140,12 +137,9 @@ private fun Home(
                         perm.hasPermission -> {
                             permissionStatus = PermissionStatus.PermissionAccepted
                             viewModel.getUserLocation(LocalContext.current)
-                            val userLocation = viewModel.location.collectAsState(
-                               // initial = UserEntity(0, 1.35, 103.87) //TODO: weak
-                            ).value
 
-                            Log.i("LOCATION_Init", userLocation.toString())
                             if (isLocReady) {
+                                val userLocation = viewModel.location.collectAsState().value
                                 GoogleMapView(
                                     userLocation.latitude,
                                     userLocation.longitude,

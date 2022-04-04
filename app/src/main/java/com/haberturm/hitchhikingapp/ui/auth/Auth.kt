@@ -9,6 +9,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.haberturm.hitchhikingapp.ui.nav.NavRoute
+import com.haberturm.hitchhikingapp.ui.views.SelectModeDialog
 
 object AuthRoute : NavRoute<AuthViewModel> {
     override val route: String = "auth/"
