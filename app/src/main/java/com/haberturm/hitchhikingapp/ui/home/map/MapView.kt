@@ -26,6 +26,7 @@ import com.haberturm.hitchhikingapp.ui.views.ErrorAlertDialog
 import com.haberturm.hitchhikingapp.ui.views.MapHood
 import com.haberturm.hitchhikingapp.ui.views.MovingMarker
 import com.haberturm.hitchhikingapp.ui.views.UserLocationMarker
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
@@ -86,6 +87,31 @@ fun GoogleMapView(
     LaunchedEffect(key1 = isDark, block = {
         viewModel.onEvent(HomeEvent.ColorModeChanged(isDark))
     })
+
+//    LaunchedEffect(key1 = true, block = {
+//        viewModel.uiEvent.collect { event ->
+//            if(event is HomeEvent.ChangeUserMode){
+//                moveCamera(location,cameraPositionState, this, false)
+//            }
+//        }
+//    })
+
+    LaunchedEffect(key1 = true) {
+        viewModel.uiEvent.collect { event ->
+            when (event) {
+                is HomeEvent.RelocateMarker -> {
+                    moveCamera(
+                        event.location,
+                        cameraPositionState,
+                        this,
+                        event.animation
+                    )
+                }
+                else -> {
+                }
+            }
+        }
+    }
 
     val currentMarker = viewModel.currentMarkerRes.collectAsState()
     val coroutineScope = rememberCoroutineScope()

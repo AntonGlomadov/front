@@ -35,14 +35,13 @@ data class MarkerPlacedState(
 )
 
 
-
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val routeNavigator: RouteNavigator,
     private val repository: HomeRepository,
 ) : ViewModel(), RouteNavigator by routeNavigator {
 
-    private val _currentUserMode= MutableStateFlow<UserMode>(UserMode.Undefined)
+    private val _currentUserMode = MutableStateFlow<UserMode>(UserMode.Undefined)
     val currentUserMode: StateFlow<UserMode> = _currentUserMode
 
 
@@ -179,7 +178,12 @@ class HomeViewModel @Inject constructor(
                         .collect { data ->
                             _currentMarkerLocation.value = data.toUiModel().location
                             geocodeApiResponse.value = ApiState.Success(data)
-                            sendUiEvent(HomeEvent.RelocateMarker)
+                            sendUiEvent(
+                                HomeEvent.RelocateMarker(
+                                    location = currentMarkerLocation.value,
+                                    animation = true
+                                )
+                            )
                             Log.i("testapi", currentMarkerLocation.value.toString())
                         }
                 }
@@ -234,7 +238,7 @@ class HomeViewModel @Inject constructor(
                             destination = "${bMarkerLocation.value.latitude},${bMarkerLocation.value.longitude}",
                             origin = "${aMarkerLocation.value.latitude},${aMarkerLocation.value.longitude}"
                         )
-                            .catch { e->
+                            .catch { e ->
                                 ApiState.Failure(e)
                             }
                             .onEach { direction ->
@@ -277,19 +281,40 @@ class HomeViewModel @Inject constructor(
 
             is HomeEvent.ChangeUserMode -> {
                 _currentUserMode.value = event.mode
-                if(currentUserMode.value is UserMode.Driver){
-                    onEvent(HomeEvent.PlaceMarker)
-                    if(isDark.value){
-                        _currentMarkerRes.value = Util.bMarkerDark
-                    }else{
-                        _currentMarkerRes.value = Util.bMarkerLight
-                    }
-                }else{
-                    _markerPicked.value = MarkerPicked.MarkerAPicked
-                    if(isDark.value){
-                        _currentMarkerRes.value = Util.aMarkerDark
-                    }else{
-                        _currentMarkerRes.value = Util.aMarkerLight
+                sendUiEvent(
+                    HomeEvent.RelocateMarker(
+                        location = LatLng(location.value.latitude, location.value.longitude),
+                        animation = false
+                    )
+                )
+                viewModelScope.launch {
+                    Log.i("modes", "in handler $event")
+                    delay(10)
+                    if (currentUserMode.value is UserMode.Driver) {
+                        _markerPicked.value = MarkerPicked.MarkerBPicked
+                        _aMarkerLocation.value =
+                            LatLng(location.value.latitude, location.value.longitude)
+                        _markerPlacedState.value = MarkerPlacedState(
+                            aPlaced = true,
+                            bPlaced = false
+                        )
+                        emitMarkerEvent(HomeEvent.MarkerPlaced(A_MARKER_KEY))
+                        if (isDark.value) {
+                            _currentMarkerRes.value = Util.bMarkerDark
+                        } else {
+                            _currentMarkerRes.value = Util.bMarkerLight
+                        }
+                    } else {
+                        _markerPicked.value = MarkerPicked.MarkerAPicked
+                        _markerPlacedState.value = MarkerPlacedState(
+                            aPlaced = false,
+                            bPlaced = false
+                        )
+                        if (isDark.value) {
+                            _currentMarkerRes.value = Util.aMarkerDark
+                        } else {
+                            _currentMarkerRes.value = Util.aMarkerLight
+                        }
                     }
                 }
             }

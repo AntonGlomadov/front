@@ -14,7 +14,7 @@ sealed class HomeEvent {
     ) : HomeEvent()
 
     data class GetGeocodeLocation(val address: String) : HomeEvent()
-    object RelocateMarker : HomeEvent()
+    data class RelocateMarker(val location: LatLng, val animation: Boolean) : HomeEvent()
     object PlaceMarker : HomeEvent()
     data class MarkerPlaced(val keyOfMarker: String) : HomeEvent()
     object IsNotInRadius : HomeEvent()
