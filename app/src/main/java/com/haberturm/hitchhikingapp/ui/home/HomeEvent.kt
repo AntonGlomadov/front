@@ -2,6 +2,8 @@ package com.haberturm.hitchhikingapp.ui.home
 
 import android.content.Context
 import com.google.android.gms.maps.model.LatLng
+import com.haberturm.hitchhikingapp.data.network.ApiState
+import java.lang.Exception
 
 sealed class HomeEvent {
     data class IsMapReady(val isLocationReady: Boolean, val isMapReady: Boolean) : HomeEvent()
@@ -22,6 +24,8 @@ sealed class HomeEvent {
     data class ChangeCurrentMarkerRes(val res: Int) : HomeEvent()
     data class ColorModeChanged(val colorMode: Boolean) : HomeEvent() // true - dark, false - light
     data class ChangeUserMode(val mode: UserMode) : HomeEvent()
+
+    data class ShowError(val e: Throwable): HomeEvent()
 }
 
 const val A_MARKER_KEY = "A_MARKER"

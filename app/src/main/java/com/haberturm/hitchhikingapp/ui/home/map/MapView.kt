@@ -95,7 +95,9 @@ fun GoogleMapView(
 //            }
 //        }
 //    })
-
+    val error = remember {
+        mutableStateOf("")
+    }
     LaunchedEffect(key1 = true) {
         viewModel.uiEvent.collect { event ->
             when (event) {
@@ -107,9 +109,22 @@ fun GoogleMapView(
                         event.animation
                     )
                 }
+                is HomeEvent.ShowError ->{
+                    error.value = event.e.message ?: "unknown error"
+                }
                 else -> {
                 }
             }
+        }
+    }
+    if(error.value.isNotEmpty()){
+        ErrorAlertDialog(
+            title = "Ошибка",
+            text = error.value,
+            button1Text = "ok",
+            button2Text = "ok"
+        ) {
+            error.value = ""
         }
     }
 
@@ -181,7 +196,7 @@ fun GoogleMapView(
                 }
             )
         }
-        val showError = remember {
+        val showMarkerError = remember {
             mutableStateOf(false)
         }
         LaunchedEffect(key1 = true) {
@@ -196,7 +211,7 @@ fun GoogleMapView(
                         }
                     }
                     is HomeEvent.IsNotInRadius -> {
-                        showError.value = true
+                        showMarkerError.value = true
                     }
                     else -> {
                         Log.i("MARKER", "WHAT?")
@@ -204,14 +219,14 @@ fun GoogleMapView(
                 }
             }.launchIn(this)
         }
-        if (showError.value) {
+        if (showMarkerError.value) {
             ErrorAlertDialog(
                 title = "Точка не в радиусе",
                 text = "Выбирите в радиусе",
                 button1Text = "ok",
                 button2Text = "ok"
             ) {
-                showError.value = false
+                showMarkerError.value = false
             }
         }
 
