@@ -9,6 +9,8 @@ import com.haberturm.hitchhikingapp.data.database.UserDataSource
 import com.haberturm.hitchhikingapp.data.network.backend.companion.CompanionRetrofit
 import com.haberturm.hitchhikingapp.data.network.backend.companion.pojo.companion.request.CompanionFindRequestData
 import com.haberturm.hitchhikingapp.data.network.backend.companion.pojo.companion.response.CompanionFindResponseData
+import com.haberturm.hitchhikingapp.data.network.backend.driver.DriverRetrofit
+import com.haberturm.hitchhikingapp.data.network.backend.driver.pojo.DriveCreateRequestData
 import com.haberturm.hitchhikingapp.data.network.googleApi.GoogleRetrofit
 import com.haberturm.hitchhikingapp.data.network.googleApi.pojo.directions.Direction
 import kotlinx.coroutines.CoroutineScope
@@ -37,17 +39,23 @@ class HomeRepositoryImpl(
         emit(directionResponse)
     }.flowOn(Dispatchers.IO)
 
+// this how it will be
 //    override fun postCompanionFind(data: CompanionFindRequest): Flow<List<CompanionFindResponse>> =
 //        flow<List<CompanionFindResponse>> {
-//            Log.i("API-RESP", "in repo")
 //            val companionFindResponse = BackendRetrofit.backendRetrofit.postCompanionFind(data)
-//            Log.i("API-RESP", "${companionFindResponse}")
 //        }.flowOn(Dispatchers.IO)
+
+//demo
 override fun postCompanionFind(data: CompanionFindRequestData): Flow<List<CompanionFindResponseData>>{
     Log.i("POST-API-RESP", "in repo")
     return flow { CompanionRetrofit.companionRetrofit.postCompanionFind(data) }
 
 }
+
+    override fun postCreateDrive(data: DriveCreateRequestData): Flow<String> {
+        Log.i("POST-API-RESP", "in repo")
+        return flow { DriverRetrofit.driverRetrofit.postCreateDrive(data) }
+    }
 
 
     @SuppressLint("MissingPermission")

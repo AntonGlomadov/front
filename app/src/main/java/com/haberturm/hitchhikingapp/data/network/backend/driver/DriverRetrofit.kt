@@ -34,7 +34,7 @@ object DriverRetrofit {
     val driverRetrofit: DriverApi by lazy {
         Retrofit.Builder()
             .addConverterFactory(GsonConverterFactory.create(gson))
-            .baseUrl(AllApi.BASE_URL_COMPANION)
+            .baseUrl(AllApi.BASE_URL_DRIVER)
             .client(okHttpClient)
             .build().create(DriverApi::class.java)
     }

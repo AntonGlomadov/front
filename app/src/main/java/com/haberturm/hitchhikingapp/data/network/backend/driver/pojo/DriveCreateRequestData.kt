@@ -4,7 +4,7 @@ import com.google.gson.annotations.SerializedName
 import com.haberturm.hitchhikingapp.data.network.backend.driver.pojo.Calories
 
 
-data class CreateDriveRequestData (
+data class DriveCreateRequestData (
 
     @SerializedName("id"       ) var id       : String?   = null,
     @SerializedName("calories" ) var calories : Calories? = Calories(),

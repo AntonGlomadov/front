@@ -5,7 +5,7 @@ import com.google.gson.annotations.SerializedName
 
 data class StartPoint (
 
-  @SerializedName("lat" ) var lat : Int? = null,
-  @SerializedName("lng" ) var lng : Int? = null
+  @SerializedName("lat" ) var lat : Double? = null,
+  @SerializedName("lng" ) var lng : Double? = null
 
 )
