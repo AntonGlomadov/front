@@ -9,6 +9,12 @@ import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.PolyUtil
 import com.haberturm.hitchhikingapp.R
 import com.haberturm.hitchhikingapp.data.network.ApiState
+import com.haberturm.hitchhikingapp.data.network.backend.companion.pojo.companion.request.CompanionFindRequestData
+import com.haberturm.hitchhikingapp.data.network.backend.companion.pojo.companion.request.EndPoint
+import com.haberturm.hitchhikingapp.data.network.backend.companion.pojo.companion.request.Route
+import com.haberturm.hitchhikingapp.data.network.backend.companion.pojo.companion.request.StartPoint
+import com.haberturm.hitchhikingapp.data.network.backend.driver.pojo.Calories
+import com.haberturm.hitchhikingapp.data.network.backend.driver.pojo.DriveCreateRequestData
 import com.haberturm.hitchhikingapp.data.repositories.home.HomeRepository
 import com.haberturm.hitchhikingapp.data.repositories.home.HomeRepositoryEvent
 import com.haberturm.hitchhikingapp.ui.nav.RouteNavigator
@@ -248,6 +254,59 @@ class HomeViewModel @Inject constructor(
                                 _shouldShowDirection.value = true
                             }
                             .launchIn(this)
+                        if(currentUserMode.value is UserMode.Companion){
+                            try {
+                                Log.i("POST_COMPANION", "here")
+                                val a = repository.postCompanionFind(
+                                    CompanionFindRequestData(
+                                        route = Route(
+                                            startPoint = StartPoint(
+                                                aMarkerLocation.value.latitude,
+                                                aMarkerLocation.value.longitude
+                                            ),
+                                            endPoint = EndPoint(
+                                                bMarkerLocation.value.latitude,
+                                                bMarkerLocation.value.longitude
+                                            )
+                                        ),
+                                        time = 15,
+                                        percent = 80
+                                    )
+                                )
+                                a.collect {
+                                    Log.i("POST_COMPANION", "$it")
+                                }
+                            } catch (e: Exception) {
+                                Log.i("EXCEPTION_POST_COMPANION", "$e")
+                                sendUiEvent(HomeEvent.ShowError(e))
+                            }
+                        }else if(currentUserMode.value is UserMode.Driver){
+                            try{
+                                val a = repository.postCreateDrive(
+                                    DriveCreateRequestData(
+                                        id = "1",
+                                        Calories(
+                                            startPoint = com.haberturm.hitchhikingapp.data.network.backend.driver.pojo.StartPoint(
+                                                aMarkerLocation.value.latitude,
+                                                aMarkerLocation.value.longitude
+                                            ),
+                                            endPoint = com.haberturm.hitchhikingapp.data.network.backend.driver.pojo.EndPoint(
+                                                bMarkerLocation.value.latitude,
+                                                bMarkerLocation.value.longitude
+                                            )
+                                        ),
+                                        status = "InProgress"
+                                    )
+                                )
+                                a.collect {
+                                    Log.i("POST_COMPANION", it)
+                                }
+                            }catch (e:Exception){
+                                Log.i("EXCEPTION_POST_DRIVE", "$e")
+                                sendUiEvent(HomeEvent.ShowError(e))
+                            }
+                        }
+
                     }
 
                 }
