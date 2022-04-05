@@ -1,6 +1,7 @@
 package com.haberturm.hitchhikingapp.ui.views
 
 import android.content.Context
+import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
@@ -8,9 +9,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.*
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -26,6 +25,7 @@ import com.haberturm.hitchhikingapp.R
 import com.haberturm.hitchhikingapp.ui.home.HomeEvent
 import com.haberturm.hitchhikingapp.ui.home.HomeViewModel
 import com.haberturm.hitchhikingapp.ui.home.MarkerPicked
+import com.haberturm.hitchhikingapp.ui.home.UserMode
 import com.haberturm.hitchhikingapp.ui.util.Util
 import com.haberturm.hitchhikingapp.ui.util.Util.moveCamera
 import kotlinx.coroutines.CoroutineScope
@@ -45,23 +45,8 @@ fun MapHood(
             .fillMaxSize()
             .padding(8.dp)
     ) {
-        val vmMarkerLocation = viewModel.currentMarkerLocation.collectAsState()
 
-        LaunchedEffect(key1 = true) {
-            viewModel.uiEvent.collect { event ->
-                when (event) {
-                    is HomeEvent.RelocateMarker -> {
-                        moveCamera(
-                            vmMarkerLocation.value,
-                            cameraPositionState,
-                            coroutineScope
-                        )
-                    }
-                    else -> {
-                    }
-                }
-            }
-        }
+
         SearchField(
             modifier = Modifier
                 .fillMaxWidth()
@@ -92,6 +77,29 @@ fun MapHood(
             contentAlignment = Alignment.BottomCenter
 
         ) {
+            val checkedState = remember { mutableStateOf(false) } // true - driver, false - companion
+            if (viewModel.currentUserMode.collectAsState().value is
+                        UserMode.Driver
+            ) {
+                checkedState.value = true
+            } else {
+                checkedState.value = false
+            }
+            Switch(
+                checked = checkedState.value,
+                onCheckedChange = {
+
+                    val mode = if(!checkedState.value){
+                        UserMode.Driver
+                    }else{
+                        UserMode.Companion
+                    }
+                    Log.i("modes", "$mode")
+                    viewModel.onEvent(HomeEvent.ChangeUserMode(mode))
+                },
+                modifier = Modifier.align(Alignment.BottomStart)
+            )
+
             OutlinedButton(
                 onClick = {
                     viewModel.onEvent(HomeEvent.OnMyLocationClicked(context))
@@ -132,7 +140,7 @@ fun MapHood(
                     true
                 )
 
-            } else if(currentMarkerState.value is MarkerPicked.AllMarkersPlaced){
+            } else if (currentMarkerState.value is MarkerPicked.AllMarkersPlaced) {
                 val firstPoint = viewModel.aMarkerLocation.collectAsState().value
                 val secondPoint = viewModel.bMarkerLocation.collectAsState().value
                 val bounds = Util.setRightBound(

@@ -5,5 +5,7 @@
     <string name="LocationRationaleButton1">OK</string>
     <string name="LocationRationaleButton2">Dismiss</string>
     <string name="LocationPermanentTitle">Permanent</string>
-
+    <string name="select_mode_dialog_header">Вы на машине?</string>
+    <string name="select_driver_text">Да, я ищу попутчика</string>
+    <string name="select_companion_text">Нет, я ищу водителя</string>
 </resources>

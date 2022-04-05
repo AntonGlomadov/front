@@ -26,6 +26,7 @@ import com.haberturm.hitchhikingapp.ui.views.ErrorAlertDialog
 import com.haberturm.hitchhikingapp.ui.views.MapHood
 import com.haberturm.hitchhikingapp.ui.views.MovingMarker
 import com.haberturm.hitchhikingapp.ui.views.UserLocationMarker
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
@@ -45,14 +46,21 @@ fun GoogleMapView(
         position = CameraPosition.fromLatLngZoom(location, defaultZoom)
     }
 
-    val dark = isSystemInDarkTheme()
+    val isDark = isSystemInDarkTheme()
     val mapProperties by remember {
-        if(dark){
-            mutableStateOf(MapProperties(mapType = MapType.NORMAL, mapStyleOptions = MapStyleOptions.loadRawResourceStyle(context, R.raw.map_night_mode)))
-        }else{
+        if (isDark) {
+            mutableStateOf(
+                MapProperties(
+                    mapType = MapType.NORMAL,
+                    mapStyleOptions = MapStyleOptions.loadRawResourceStyle(
+                        context,
+                        R.raw.map_night_mode
+                    )
+                )
+            )
+        } else {
             mutableStateOf(MapProperties(mapType = MapType.NORMAL))
         }
-
     }
     val uiSettings by remember {
         mutableStateOf(
@@ -61,25 +69,49 @@ fun GoogleMapView(
                 myLocationButtonEnabled = true,
                 zoomControlsEnabled = false,
 
-            )
+                )
         )
     }
 
     val firstLaunch = viewModel.firstLaunch.collectAsState()
 
-    val aMarker: Int by lazy { getAMarkerAsset(dark) }
-    val bMarker: Int by lazy { getBMarkerAsset(dark) }
+    val aMarker: Int by lazy { getAMarkerAsset(isDark) }
+    val bMarker: Int by lazy { getBMarkerAsset(isDark) }
 
 
-
-    if (firstLaunch.value){
+    if (firstLaunch.value) {
         viewModel.onEvent(HomeEvent.ChangeCurrentMarkerRes(aMarker))
-        viewModel.onEvent(HomeEvent.ColorModeChanged(dark))
+        viewModel.onEvent(HomeEvent.ColorModeChanged(isDark))
 
     }
-    LaunchedEffect(key1 = dark, block = {
-        viewModel.onEvent(HomeEvent.ColorModeChanged(dark))
+    LaunchedEffect(key1 = isDark, block = {
+        viewModel.onEvent(HomeEvent.ColorModeChanged(isDark))
     })
+
+//    LaunchedEffect(key1 = true, block = {
+//        viewModel.uiEvent.collect { event ->
+//            if(event is HomeEvent.ChangeUserMode){
+//                moveCamera(location,cameraPositionState, this, false)
+//            }
+//        }
+//    })
+
+    LaunchedEffect(key1 = true) {
+        viewModel.uiEvent.collect { event ->
+            when (event) {
+                is HomeEvent.RelocateMarker -> {
+                    moveCamera(
+                        event.location,
+                        cameraPositionState,
+                        this,
+                        event.animation
+                    )
+                }
+                else -> {
+                }
+            }
+        }
+    }
 
     val currentMarker = viewModel.currentMarkerRes.collectAsState()
     val coroutineScope = rememberCoroutineScope()
@@ -97,11 +129,15 @@ fun GoogleMapView(
         val navState = viewModel.navigationState.collectAsState()
         LaunchedEffect(key1 = true, block = {                       //useless now
             if (navState.value == NavigationState.NavigateUp()) {
-                moveCamera(viewModel.currentMarkerLocation.value, cameraPositionState, coroutineScope)
+                moveCamera(
+                    viewModel.currentMarkerLocation.value,
+                    cameraPositionState,
+                    coroutineScope
+                )
             }
         })
         val markerPlacedState = viewModel.markerPlacedState.collectAsState()
-        if(!markerPlacedState.value.aPlaced){
+        if (!markerPlacedState.value.aPlaced) {
             Circle(
                 center = location,
                 strokeColor = MaterialTheme.colors.secondaryVariant,
@@ -145,7 +181,7 @@ fun GoogleMapView(
                 }
             )
         }
-        val showError= remember {
+        val showError = remember {
             mutableStateOf(false)
         }
         LaunchedEffect(key1 = true) {
@@ -154,15 +190,13 @@ fun GoogleMapView(
                     is HomeEvent.MarkerPlaced -> {
                         if (event.keyOfMarker == A_MARKER_KEY) {
                             viewModel.onEvent(HomeEvent.ChangeCurrentMarkerRes(bMarker))
-                            //currentMarker.value = bMarker
                         }
                         if (event.keyOfMarker == B_MARKER_KEY) {
                             viewModel.onEvent(HomeEvent.ChangeCurrentMarkerRes(aMarker))
-                            //currentMarker.value = aMarker
                         }
                     }
                     is HomeEvent.IsNotInRadius -> {
-                       showError.value = true
+                        showError.value = true
                     }
                     else -> {
                         Log.i("MARKER", "WHAT?")
@@ -170,7 +204,7 @@ fun GoogleMapView(
                 }
             }.launchIn(this)
         }
-        if(showError.value){
+        if (showError.value) {
             ErrorAlertDialog(
                 title = "Точка не в радиусе",
                 text = "Выбирите в радиусе",
@@ -183,9 +217,9 @@ fun GoogleMapView(
 
         //draw route
         val shouldShowDirection = viewModel.shouldShowDirection.collectAsState()
-        if(shouldShowDirection.value){
+        if (shouldShowDirection.value) {
             val paths = viewModel.pathsList.collectAsState()
-            paths.value.forEach{ points ->
+            paths.value.forEach { points ->
                 Polyline(points = points)
             }
         }
@@ -201,18 +235,23 @@ fun GoogleMapView(
     )
 }
 
-fun getAMarkerAsset(isDarkTheme:Boolean):Int{
-    return if (isDarkTheme){
+fun getAMarkerAsset(isDarkTheme: Boolean): Int {
+    return if (isDarkTheme) {
         Util.aMarkerDark
-    }else{
+    } else {
         Util.aMarkerLight
     }
 }
 
-fun getBMarkerAsset(isDarkTheme:Boolean):Int{
-    return if (isDarkTheme){
+fun getBMarkerAsset(isDarkTheme: Boolean): Int {
+    return if (isDarkTheme) {
         Util.bMarkerDark
-    }else{
+    } else {
         Util.bMarkerLight
     }
+}
+
+@Composable
+fun ModeHood() {
+
 }

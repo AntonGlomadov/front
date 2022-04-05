@@ -14,13 +14,14 @@ sealed class HomeEvent {
     ) : HomeEvent()
 
     data class GetGeocodeLocation(val address: String) : HomeEvent()
-    object RelocateMarker : HomeEvent()
+    data class RelocateMarker(val location: LatLng, val animation: Boolean) : HomeEvent()
     object PlaceMarker : HomeEvent()
     data class MarkerPlaced(val keyOfMarker: String) : HomeEvent()
     object IsNotInRadius : HomeEvent()
     data class MakeMarkerMovable(val keyOfMarker: String) : HomeEvent()
     data class ChangeCurrentMarkerRes(val res: Int) : HomeEvent()
     data class ColorModeChanged(val colorMode: Boolean) : HomeEvent() // true - dark, false - light
+    data class ChangeUserMode(val mode: UserMode) : HomeEvent()
 }
 
 const val A_MARKER_KEY = "A_MARKER"
@@ -33,3 +34,8 @@ sealed class PermissionStatus {
     object PermissionPermanentlyDenied : PermissionStatus()
 }
 
+sealed class UserMode{
+    object Companion : UserMode()
+    object Driver : UserMode()
+    object Undefined : UserMode()
+}

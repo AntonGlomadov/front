@@ -2,7 +2,6 @@ package com.haberturm.hitchhikingapp.ui.home
 
 import android.annotation.SuppressLint
 import android.content.Context
-import android.location.Location
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
@@ -18,10 +17,9 @@ import com.haberturm.hitchhikingapp.ui.util.Util
 import com.haberturm.hitchhikingapp.ui.util.Util.isInRadius
 import com.haberturm.hitchhikingapp.ui.util.Util.toUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.*
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.*
-import kotlinx.coroutines.launch
 import user.userdb.UserEntity
 import javax.inject.Inject
 
@@ -42,6 +40,10 @@ class HomeViewModel @Inject constructor(
     private val routeNavigator: RouteNavigator,
     private val repository: HomeRepository,
 ) : ViewModel(), RouteNavigator by routeNavigator {
+
+    private val _currentUserMode = MutableStateFlow<UserMode>(UserMode.Undefined)
+    val currentUserMode: StateFlow<UserMode> = _currentUserMode
+
 
     private val _uiEvent = Channel<HomeEvent>()
     val uiEvent = _uiEvent.receiveAsFlow()
@@ -91,23 +93,24 @@ class HomeViewModel @Inject constructor(
 
     private val geocodeApiResponse: MutableStateFlow<ApiState> = MutableStateFlow(ApiState.Empty)
 
+    private val _isDark = MutableStateFlow<Boolean>(false)
+    val isDark: StateFlow<Boolean> = _isDark
+
     init {
         viewModelScope.launch {
-            repository.getUserLocation()
-                .onEach { userEntity ->
-                    _location.value = userEntity
-                }
-                .launchIn(this)
             repository.homeRepositoryEvent.collect { event ->
                 Log.i("Event", "INIT_VM $event")
                 when (event) {
                     is HomeRepositoryEvent.UserLocationStatus -> if (getLocationStatus(event)) {
-                        //location = repository.getUserLocation()
-                        Log.i("LOCATION_Init", location.toString())
-                        _userLocationStatus.value = HomeEvent.IsMapReady(
-                            isLocationReady = true,
-                            isMapReady = userLocationStatus.value.isMapReady
-                        )
+                        repository.getUserLocation()
+                            .onEach { userEntity ->
+                                _location.value = userEntity
+                                _userLocationStatus.value = HomeEvent.IsMapReady(
+                                    isLocationReady = true,
+                                    isMapReady = userLocationStatus.value.isMapReady
+                                )
+                            }
+                            .launchIn(this)
                     }
                 }
             }
@@ -146,7 +149,8 @@ class HomeViewModel @Inject constructor(
             }
 
             is HomeEvent.ColorModeChanged -> {
-                if (event.colorMode) {
+                _isDark.value = event.colorMode
+                if (isDark.value) {
                     if (markerPicked.value == MarkerPicked.MarkerAPicked) {
                         _currentMarkerRes.value = Util.aMarkerDark
                     } else {
@@ -174,7 +178,12 @@ class HomeViewModel @Inject constructor(
                         .collect { data ->
                             _currentMarkerLocation.value = data.toUiModel().location
                             geocodeApiResponse.value = ApiState.Success(data)
-                            sendUiEvent(HomeEvent.RelocateMarker)
+                            sendUiEvent(
+                                HomeEvent.RelocateMarker(
+                                    location = currentMarkerLocation.value,
+                                    animation = true
+                                )
+                            )
                             Log.i("testapi", currentMarkerLocation.value.toString())
                         }
                 }
@@ -229,7 +238,7 @@ class HomeViewModel @Inject constructor(
                             destination = "${bMarkerLocation.value.latitude},${bMarkerLocation.value.longitude}",
                             origin = "${aMarkerLocation.value.latitude},${aMarkerLocation.value.longitude}"
                         )
-                            .catch { e->
+                            .catch { e ->
                                 ApiState.Failure(e)
                             }
                             .onEach { direction ->
@@ -249,7 +258,7 @@ class HomeViewModel @Inject constructor(
 
             is HomeEvent.MakeMarkerMovable -> {
                 viewModelScope.launch {
-                    delay(1000)
+                    delay(1000) //delay for smooth animation
 
                     if (event.keyOfMarker == A_MARKER_KEY) {
                         _currentMarkerLocation.value = aMarkerLocation.value
@@ -269,8 +278,47 @@ class HomeViewModel @Inject constructor(
                     }
                 }
             }
-            else -> {
+
+            is HomeEvent.ChangeUserMode -> {
+                _currentUserMode.value = event.mode
+                sendUiEvent(
+                    HomeEvent.RelocateMarker(
+                        location = LatLng(location.value.latitude, location.value.longitude),
+                        animation = false
+                    )
+                )
+                viewModelScope.launch {
+                    Log.i("modes", "in handler $event")
+                    delay(10)
+                    if (currentUserMode.value is UserMode.Driver) {
+                        _markerPicked.value = MarkerPicked.MarkerBPicked
+                        _aMarkerLocation.value =
+                            LatLng(location.value.latitude, location.value.longitude)
+                        _markerPlacedState.value = MarkerPlacedState(
+                            aPlaced = true,
+                            bPlaced = false
+                        )
+                        emitMarkerEvent(HomeEvent.MarkerPlaced(A_MARKER_KEY))
+                        if (isDark.value) {
+                            _currentMarkerRes.value = Util.bMarkerDark
+                        } else {
+                            _currentMarkerRes.value = Util.bMarkerLight
+                        }
+                    } else {
+                        _markerPicked.value = MarkerPicked.MarkerAPicked
+                        _markerPlacedState.value = MarkerPlacedState(
+                            aPlaced = false,
+                            bPlaced = false
+                        )
+                        if (isDark.value) {
+                            _currentMarkerRes.value = Util.aMarkerDark
+                        } else {
+                            _currentMarkerRes.value = Util.aMarkerLight
+                        }
+                    }
+                }
             }
+            else -> Unit
         }
     }
 
