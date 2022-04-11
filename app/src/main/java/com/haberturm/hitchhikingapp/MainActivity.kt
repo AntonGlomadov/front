@@ -7,6 +7,7 @@ import androidx.compose.material.Scaffold
 import androidx.navigation.compose.rememberNavController
 import com.haberturm.hitchhikingapp.ui.nav.ScreenHolder
 import com.haberturm.hitchhikingapp.ui.theme.HitchHikingAppTheme
+import com.haberturm.hitchhikingapp.ui.views.BottomNavigation
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -16,7 +17,8 @@ class MainActivity : ComponentActivity() {
         setContent {
             val navController = rememberNavController()
             HitchHikingAppTheme {
-                Scaffold {
+                Scaffold(
+                ) {
                     ScreenHolder(navController, it)
                 }
             }
