@@ -45,12 +45,12 @@ class HomeRepositoryImpl(
 //            val companionFindResponse = BackendRetrofit.backendRetrofit.postCompanionFind(data)
 //        }.flowOn(Dispatchers.IO)
 
-//demo
-override fun postCompanionFind(data: CompanionFindRequestData): Flow<List<CompanionFindResponseData>>{
-    Log.i("POST-API-RESP", "in repo")
-    return flow { CompanionRetrofit.companionRetrofit.postCompanionFind(data) }
+    //demo
+    override fun postCompanionFind(data: CompanionFindRequestData): Flow<List<CompanionFindResponseData>> {
+        Log.i("POST-API-RESP", "in repo")
+        return flow { CompanionRetrofit.companionRetrofit.postCompanionFind(data) }
 
-}
+    }
 
     override fun postCreateDrive(data: DriveCreateRequestData): Flow<String> {
         Log.i("POST-API-RESP", "in repo")
@@ -65,12 +65,12 @@ override fun postCompanionFind(data: CompanionFindRequestData): Flow<List<Compan
         _homeRepositoryEvent.send(HomeRepositoryEvent.UserLocationStatus(isDone = false))
         locationResult.addOnCompleteListener { task ->
             if (task.isSuccessful) {
-                val lastKnownLocation = task.result
+                val lastKnownLocation =
+                    task.result //TODO handle case when lastKnownLocation is null
                 coroutineScope.launch {
                     async {
                         insertUser(0, lastKnownLocation.latitude, lastKnownLocation.longitude)
                     }.await()
-
                 }
             } else {
                 //TODO handle err

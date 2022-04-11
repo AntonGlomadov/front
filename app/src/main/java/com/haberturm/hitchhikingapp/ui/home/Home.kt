@@ -143,7 +143,6 @@ private fun Home(
                         perm.hasPermission -> {
                             permissionStatus = PermissionStatus.PermissionAccepted
                             viewModel.getUserLocation(LocalContext.current)
-
                             if (isLocReady) {
                                 val userLocation = viewModel.location.collectAsState().value
                                 GoogleMapView(
