@@ -84,3 +84,10 @@ fun <T> SavedStateHandle.getOrThrow(key: String): T =
     get<T>(key) ?: throw IllegalArgumentException(
         "Mandatory argument $key missing in arguments."
     )
+
+object NavConst{
+    const val HOME = "home/"
+    const val AUTH = "auth/"
+    const val MESSAGE = "message/"
+    const val ACCOUNT = "account/"
+}

@@ -6,17 +6,18 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.wrapContentSize
-import androidx.compose.material.CircularProgressIndicator
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.Text
+import androidx.compose.foundation.layout.*
+import androidx.compose.material.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
+import androidx.compose.ui.res.dimensionResource
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
@@ -27,6 +28,7 @@ import com.haberturm.hitchhikingapp.ui.home.map.isPermanentlyDenied
 import com.haberturm.hitchhikingapp.ui.nav.NavRoute
 import com.haberturm.hitchhikingapp.ui.views.ErrorAlertDialog
 import com.haberturm.hitchhikingapp.ui.home.map.*
+import com.haberturm.hitchhikingapp.ui.nav.NavConst
 import com.haberturm.hitchhikingapp.ui.views.SelectModeDialog
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.launchIn
@@ -37,7 +39,7 @@ import user.userdb.UserEntity
 const val KEY_HOME_INDEX = "HOME_PAGE_INDEX"
 
 object HomeRoute : NavRoute<HomeViewModel> {
-    override val route: String = "home/{$KEY_HOME_INDEX}/"
+    override val route: String = NavConst.HOME + "{$KEY_HOME_INDEX}/"
 
     /**
      * Returns the route that can be used for navigating to this page.
@@ -73,8 +75,8 @@ private fun Home(
     viewModel: HomeViewModel
 ) {
     SelectModeDialog(
-        changeUserModeToCompanion = {viewModel.onEvent(HomeEvent.ChangeUserMode(UserMode.Companion))},
-        changeUserModeToDriver = {viewModel.onEvent(HomeEvent.ChangeUserMode(UserMode.Driver))},
+        changeUserModeToCompanion = { viewModel.onEvent(HomeEvent.ChangeUserMode(UserMode.Companion)) },
+        changeUserModeToDriver = { viewModel.onEvent(HomeEvent.ChangeUserMode(UserMode.Driver)) },
     )
     val permissions = GetPermissions()
     val lifecycleOwner = LocalLifecycleOwner.current
@@ -129,7 +131,11 @@ private fun Home(
 
 
     var locationPermissionGranted by remember { mutableStateOf(false) }
-    Box(Modifier.fillMaxSize()) {
+    Box(
+        Modifier
+            .fillMaxSize()
+            .padding(bottom = dimensionResource(id = R.dimen.bottom_bar_size))
+    ) {
         permissions.permissions.forEach { perm ->
             when (perm.permission) {
                 Manifest.permission.ACCESS_FINE_LOCATION -> {
@@ -137,7 +143,6 @@ private fun Home(
                         perm.hasPermission -> {
                             permissionStatus = PermissionStatus.PermissionAccepted
                             viewModel.getUserLocation(LocalContext.current)
-
                             if (isLocReady) {
                                 val userLocation = viewModel.location.collectAsState().value
                                 GoogleMapView(
@@ -153,7 +158,7 @@ private fun Home(
                             }
 
                             if (!isMapAndLocLoaded) {
-                                AnimatedVisibility(
+                                androidx.compose.animation.AnimatedVisibility(
                                     modifier = Modifier
                                         .matchParentSize(),
                                     visible = !isMapAndLocLoaded,
@@ -205,6 +210,58 @@ private fun Home(
                         }
                     }
                 }
+            }
+        }
+    }
+
+    Column(
+        Modifier
+            .fillMaxSize()
+            .wrapContentSize(align = Alignment.BottomCenter)
+    ) {
+        Spacer(modifier = Modifier
+            .height(1.dp)
+            .fillMaxWidth()
+            .background(MaterialTheme.colors.primary)
+        )
+        Row(
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(dimensionResource(id =  R.dimen.bottom_bar_size))
+                .padding(start = 64.dp, end = 64.dp)
+            ,
+            verticalAlignment = Alignment.Bottom,
+            horizontalArrangement = Arrangement.SpaceBetween
+        ) {
+            IconButton(onClick = { /*TODO*/ }) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_baseline_map_24),
+                    contentDescription = "map_icon",
+                    modifier = Modifier
+                        .size(32.dp),
+                    tint = MaterialTheme.colors.primary
+                )
+            }
+
+            IconButton(onClick = { /*TODO*/ }) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_baseline_message_24),
+                    contentDescription = "message_icon",
+                    modifier = Modifier
+                        .size(32.dp)
+                    ,
+                    tint = Color.LightGray
+                )
+            }
+
+            IconButton(onClick = { /*TODO*/ }) {
+                Icon(
+                    painter = painterResource(id = R.drawable.ic_baseline_account_circle_24),
+                    contentDescription = "account_icon",
+                    modifier = Modifier
+                        .size(32.dp),
+                    tint = Color.LightGray
+                )
             }
         }
     }
