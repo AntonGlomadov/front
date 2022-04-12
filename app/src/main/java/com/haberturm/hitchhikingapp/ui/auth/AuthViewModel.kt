@@ -21,16 +21,24 @@ class AuthViewModel @Inject constructor(
     private val routeNavigator: RouteNavigator,
 ) : ViewModel(), RouteNavigator by routeNavigator{
 
+
     private val _uiEvent = MutableSharedFlow<AuthEvent>()
     val uiEvent = _uiEvent.asSharedFlow()
 
     private val _phoneFieldState = MutableStateFlow<Boolean>(false) // true - onFocus, false - is not focused
     val phoneFieldState = _phoneFieldState.asStateFlow()
 
+    private val _phoneNumber = MutableStateFlow<String>("")
+    val phoneNumber = _phoneNumber.asStateFlow()
+
     fun onEvent(event: AuthEvent){
         when(event){
             is AuthEvent.OnPhoneFieldFocused -> {
                 _phoneFieldState.value = event.focusState
+            }
+            is AuthEvent.UpdateNumber ->{
+                _phoneNumber.value = event.number
+                Log.i(TAG, phoneNumber.value)
             }
 
             else -> {

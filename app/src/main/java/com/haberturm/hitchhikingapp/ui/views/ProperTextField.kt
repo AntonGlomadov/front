@@ -25,6 +25,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.unit.dp
 import com.haberturm.hitchhikingapp.R
+import com.haberturm.hitchhikingapp.ui.auth.TAG
 
 
 @OptIn(ExperimentalComposeUiApi::class)

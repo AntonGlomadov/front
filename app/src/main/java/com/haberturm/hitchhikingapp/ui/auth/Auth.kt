@@ -80,13 +80,16 @@ fun Auth(
                 )
             },
             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Phone),
-            valueText = "",
+            valueText = viewModel.phoneNumber.collectAsState().value,
             visualTransformation = PhoneNumberVisualTransformation(),
             isPhoneInput = true,
             placeholder = stringResource(R.string.enter_phone_placeholder),
             onFocus = fun(focusState: Boolean) {
                 viewModel.onEvent(AuthEvent.OnPhoneFieldFocused(focusState))
             },
+            onValueChange = fun(number: String) {
+                viewModel.onEvent(AuthEvent.UpdateNumber(number))
+            }
         )
         Row(
             modifier = Modifier.wrapContentSize(align = Alignment.BottomCenter)
