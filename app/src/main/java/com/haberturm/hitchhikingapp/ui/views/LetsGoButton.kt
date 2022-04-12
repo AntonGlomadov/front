@@ -13,21 +13,21 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 
 @Composable
-fun LetsGoButton(
+fun OvalButton(
     onClick: () -> Unit,
-    text: String = "Поехали!"
+    text: String = "Поехали!",
+    /**float size, % of screen size (ex: 0.5f - half screen width)*/
+    modifier: Modifier
+
+
 ) {
-    val configuration = LocalConfiguration.current
+
     OutlinedButton(
-        modifier = Modifier
-            .width(
-                configuration.screenWidthDp.dp * 0.5f
-            )
-            .height(50.dp),
+        modifier = modifier,
         onClick = { onClick() },
         shape = RoundedCornerShape(32.dp),
         colors = ButtonDefaults.buttonColors(backgroundColor = MaterialTheme.colors.background),
-        border = BorderStroke(1.dp,MaterialTheme.colors.primary)
+        border = BorderStroke(1.dp, MaterialTheme.colors.primary)
 
     ) {
         Text(
@@ -41,5 +41,12 @@ fun LetsGoButton(
 @Composable
 @Preview
 fun LetsGoButtonPrev() {
-    LetsGoButton({})
+    val configuration = LocalConfiguration.current
+    OvalButton(
+        {},
+        modifier = Modifier.width(
+            configuration.screenWidthDp.dp * 0.5f
+        )
+            .height(50.dp),
+    )
 }
