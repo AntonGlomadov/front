@@ -2,12 +2,11 @@ package com.haberturm.hitchhikingapp.ui.views
 
 
 import android.util.Log
+import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.interaction.MutableInteractionSource
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
@@ -23,9 +22,11 @@ import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.haberturm.hitchhikingapp.R
 import com.haberturm.hitchhikingapp.ui.auth.TAG
+import com.haberturm.hitchhikingapp.ui.theme.ErrorColor
 
 
 @OptIn(ExperimentalComposeUiApi::class)
@@ -42,20 +43,26 @@ fun ProperTextField(
     visualTransformation: VisualTransformation? = null,
     isPhoneInput: Boolean = false,
     placeholder: String = "",
+    error: String = "",
 
-) {
+    ) {
     val focusManager = LocalFocusManager.current
     val keyboardController = LocalSoftwareKeyboardController.current
     var text by remember { mutableStateOf<String>(valueText) }
     LaunchedEffect(key1 = valueText, block = {
         text = valueText
     })
-
     val clearButtonVisible = remember { mutableStateOf(false) }
+    val color = MaterialTheme.colors.primary
+    val textFieldColor = remember {
+        mutableStateOf(color)
+    }
+
 
     LaunchedEffect(key1 = text, block = {
         clearButtonVisible.value = text != ""
     })
+
     Column(modifier = Modifier
         .pointerInput(Unit) {
             detectTapGestures(onTap = {
@@ -80,13 +87,16 @@ fun ProperTextField(
                 }
                 onValueChange(text)
             },
-            modifier = modifier.onFocusEvent {
-                if (it.isFocused) {
-                    onFocus(true)
-                } else if (!it.isFocused) {
-                    onFocus(false)
+            modifier = modifier
+                .onFocusEvent {
+                    if (it.isFocused) {
+                        onFocus(true)
+                    } else if (!it.isFocused) {
+                        onFocus(false)
+                    }
                 }
-            },
+                .border(BorderStroke(1.dp, textFieldColor.value), RoundedCornerShape(32.dp))
+            ,
             shape = RoundedCornerShape(32.dp),
             singleLine = true,
             colors = TextFieldDefaults.textFieldColors(
@@ -120,6 +130,16 @@ fun ProperTextField(
             },
             visualTransformation = visualTransformation ?: VisualTransformation.None,
         )
+        if (error != "") {
+            textFieldColor.value = ErrorColor
+            Text(
+                text = error,
+                textAlign = TextAlign.Center,
+                color = ErrorColor,
+                modifier = Modifier.fillMaxWidth(),
+            )
+        }
+
     }
 
 }

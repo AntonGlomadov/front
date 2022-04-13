@@ -24,6 +24,7 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.haberturm.hitchhikingapp.R
 import com.haberturm.hitchhikingapp.ui.nav.NavRoute
+import com.haberturm.hitchhikingapp.ui.theme.ErrorColor
 import com.haberturm.hitchhikingapp.ui.util.PhoneNumberVisualTransformation
 import com.haberturm.hitchhikingapp.ui.views.*
 
@@ -45,7 +46,7 @@ fun Auth(
     val arrangement = remember {
         mutableStateOf(Arrangement.Top)
     }
-    if (viewModel.phoneFieldState.collectAsState().value) { // on focus
+    if (viewModel.phoneFieldFocusState.collectAsState().value) { // on focus
         arrangement.value = Arrangement.Top
     } else {
         arrangement.value = Arrangement.SpaceBetween
@@ -63,6 +64,16 @@ fun Auth(
         verticalArrangement = arrangement.value,
     ) {
         val configuration = LocalConfiguration.current
+//        val color = MaterialTheme.colors.primary
+//        val textFieldColor = remember {
+//            mutableStateOf(color)
+//        }
+        val textFieldError = remember {
+            mutableStateOf("")
+        }
+        if(viewModel.phoneFieldError.collectAsState().value is NumberState.Failure){
+            textFieldError.value = (viewModel.phoneFieldError.collectAsState().value as NumberState.Failure).error
+        }
         ProperTextField(
             modifier = Modifier
                 .padding(
@@ -71,7 +82,7 @@ fun Auth(
                     top = configuration.screenHeightDp.dp * 0.4f
                 )
                 .fillMaxWidth()
-                .border(BorderStroke(1.dp, MaterialTheme.colors.primary), RoundedCornerShape(32.dp))
+                //.border(BorderStroke(1.dp, textFieldColor.value), RoundedCornerShape(32.dp))
                 .height(50.dp),
             leadingIcon = {
                 Icon(
@@ -89,13 +100,14 @@ fun Auth(
             },
             onValueChange = fun(number: String) {
                 viewModel.onEvent(AuthEvent.UpdateNumber(number))
-            }
+            },
+            error = textFieldError.value
         )
         Row(
             modifier = Modifier.wrapContentSize(align = Alignment.BottomCenter)
         ) {
             OvalButton(
-                onClick = viewModel::onAuthClicked,
+                onClick = {viewModel.onEvent(AuthEvent.EnterNumber)},
                 text = "Войти",
                 modifier = Modifier
                     .padding(

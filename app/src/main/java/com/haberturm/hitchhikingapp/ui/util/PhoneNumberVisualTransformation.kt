@@ -14,9 +14,6 @@ class PhoneNumberVisualTransformation(
     countryCode: String = Locale.getDefault().country
 ) : VisualTransformation {
 
-    init {
-        Log.i("PHONE", "${PhoneNumberUtils.isNonSeparator('-')}")
-    }
     private val phoneNumberFormatter = PhoneNumberUtil.getInstance().getAsYouTypeFormatter(countryCode)
 
     override fun filter(text: AnnotatedString): TransformedText {
