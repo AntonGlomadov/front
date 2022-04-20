@@ -9,4 +9,5 @@
     <string name="select_driver_text">Да, я ищу попутчика</string>
     <string name="select_companion_text">Нет, я ищу водителя</string>
     <string name="enter_phone_placeholder">Введите свой номер телефона</string>
+    <string name="enter_password">Введите пароль</string>
 </resources>

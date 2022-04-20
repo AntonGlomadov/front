@@ -25,7 +25,6 @@ import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import com.haberturm.hitchhikingapp.R
-import com.haberturm.hitchhikingapp.ui.auth.TAG
 import com.haberturm.hitchhikingapp.ui.theme.ErrorColor
 
 
@@ -57,7 +56,6 @@ fun ProperTextField(
     val textFieldColor = remember {
         mutableStateOf(color)
     }
-
 
     LaunchedEffect(key1 = text, block = {
         clearButtonVisible.value = text != ""
@@ -95,8 +93,7 @@ fun ProperTextField(
                         onFocus(false)
                     }
                 }
-                .border(BorderStroke(1.dp, textFieldColor.value), RoundedCornerShape(32.dp))
-            ,
+                .border(BorderStroke(1.dp, textFieldColor.value), RoundedCornerShape(32.dp)),
             shape = RoundedCornerShape(32.dp),
             singleLine = true,
             colors = TextFieldDefaults.textFieldColors(
@@ -116,14 +113,20 @@ fun ProperTextField(
                         )
                     }
                 }
-
             },
             interactionSource = interactionSource,
-            keyboardActions = KeyboardActions(onSearch = {
-                focusManager.clearFocus()
-                keyboardController?.hide()
-                onDone(text)
-            }),
+            keyboardActions = KeyboardActions(
+                onSearch = {
+                    focusManager.clearFocus()
+                    keyboardController?.hide()
+                    onDone(text)
+                },
+                onDone = {
+                    focusManager.clearFocus()
+                    keyboardController?.hide()
+                    onDone(text)
+                },
+            ),
             keyboardOptions = keyboardOptions,
             placeholder = {
                 Text(text = placeholder)
@@ -139,8 +142,6 @@ fun ProperTextField(
                 modifier = Modifier.fillMaxWidth(),
             )
         }
-
     }
-
 }
 

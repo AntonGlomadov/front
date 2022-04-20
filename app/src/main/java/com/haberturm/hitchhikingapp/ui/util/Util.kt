@@ -17,12 +17,11 @@ import com.google.android.gms.maps.model.LatLngBounds
 import com.google.maps.android.compose.CameraPositionState
 import com.haberturm.hitchhikingapp.R
 import com.haberturm.hitchhikingapp.data.network.googleApi.pojo.reverseGeocode.ReverseGeocodeResponse
-import com.haberturm.hitchhikingapp.ui.auth.NumberState
-import com.haberturm.hitchhikingapp.ui.auth.PhoneErrors
+import com.haberturm.hitchhikingapp.ui.auth.login.NumberState
+import com.haberturm.hitchhikingapp.ui.auth.login.PhoneErrors
 import com.haberturm.hitchhikingapp.ui.model.GeocodeUiModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
-import java.util.stream.IntStream.range
 
 object Util {
 
@@ -158,7 +157,7 @@ object Util {
         }
     }
 
-    fun checkNumber(number: String): NumberState{
+    fun checkNumber(number: String): NumberState {
         if(number.length !in 6..13){
             return NumberState.Failure(PhoneErrors.LENGTH_ERR)
         }

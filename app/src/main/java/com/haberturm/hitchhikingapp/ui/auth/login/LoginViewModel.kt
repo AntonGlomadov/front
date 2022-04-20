@@ -1,8 +1,10 @@
-package com.haberturm.hitchhikingapp.ui.auth
+package com.haberturm.hitchhikingapp.ui.auth.login
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.haberturm.hitchhikingapp.data.repositories.auth.AuthRepository
+import com.haberturm.hitchhikingapp.ui.auth.password.PasswordRoute
 import com.haberturm.hitchhikingapp.ui.home.HomeRoute
 import com.haberturm.hitchhikingapp.ui.nav.RouteNavigator
 import com.haberturm.hitchhikingapp.ui.util.Util
@@ -17,11 +19,12 @@ import javax.inject.Inject
 
 const val TAG = "PHONE_STATE"
 @HiltViewModel
-class AuthViewModel @Inject constructor(
+class LoginViewModel @Inject constructor(
     private val routeNavigator: RouteNavigator,
+    private val repository: AuthRepository,
 ) : ViewModel(), RouteNavigator by routeNavigator{
 
-    private val _uiEvent = MutableSharedFlow<AuthEvent>()
+    private val _uiEvent = MutableSharedFlow<LoginEvent>()
     val uiEvent = _uiEvent.asSharedFlow()
 
     private val _phoneFieldFocusState = MutableStateFlow<Boolean>(false) // true - onFocus, false - is not focused
@@ -30,23 +33,26 @@ class AuthViewModel @Inject constructor(
     private val _phoneNumber = MutableStateFlow<String>("")
     val phoneNumber = _phoneNumber.asStateFlow()
 
-    private val _phoneFieldError = MutableStateFlow<NumberState>(NumberState.None) // true - show err, false - not show err :)
-    val phoneFieldError = _phoneFieldError.asStateFlow()
+    private val _phoneFieldState = MutableStateFlow<NumberState>(NumberState.None)
+    val phoneFieldState = _phoneFieldState.asStateFlow()
 
-    fun onEvent(event: AuthEvent){
+    fun onEvent(event: LoginEvent){
         when(event){
-            is AuthEvent.OnPhoneFieldFocused -> {
+            is LoginEvent.OnPhoneFieldFocused -> {
                 _phoneFieldFocusState.value = event.focusState
             }
-            is AuthEvent.UpdateNumber ->{
+            is LoginEvent.UpdateNumber ->{
                 _phoneNumber.value = event.number
                 Log.i(TAG, phoneNumber.value)
             }
-            is AuthEvent.EnterNumber -> {
-                _phoneFieldError.value = Util.checkNumber(phoneNumber.value)
-                if(phoneFieldError.value is NumberState.Success){
-                    navigateToRoute(HomeRoute.get(0))
+            is LoginEvent.EnterNumber -> {
+                _phoneFieldState.value = Util.checkNumber(phoneNumber.value)
+                if(phoneFieldState.value is NumberState.Success){
+                    if(repository.checkNumberInDB(phoneNumber.value)){
+                        navigateToRoute(PasswordRoute.get(phoneNumber.value))
+                    }
                 }
+
             }
 
             else -> {
@@ -55,7 +61,7 @@ class AuthViewModel @Inject constructor(
         }
     }
 
-    private fun emitUiEvent(event: AuthEvent){
+    private fun emitUiEvent(event: LoginEvent){
         viewModelScope.launch {
             _uiEvent.emit(event)
         }

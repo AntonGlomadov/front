@@ -1,13 +1,9 @@
-package com.haberturm.hitchhikingapp.ui.auth
+package com.haberturm.hitchhikingapp.ui.auth.login
 
-import androidx.compose.foundation.BorderStroke
-import androidx.compose.foundation.border
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
-import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.Icon
-import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.collectAsState
 import androidx.compose.runtime.mutableStateOf
@@ -17,6 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
@@ -24,24 +21,23 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.haberturm.hitchhikingapp.R
 import com.haberturm.hitchhikingapp.ui.nav.NavRoute
-import com.haberturm.hitchhikingapp.ui.theme.ErrorColor
 import com.haberturm.hitchhikingapp.ui.util.PhoneNumberVisualTransformation
 import com.haberturm.hitchhikingapp.ui.views.*
 
-object AuthRoute : NavRoute<AuthViewModel> {
+object LoginRoute : NavRoute<LoginViewModel> {
     override val route: String = "auth/"
 
     @Composable
-    override fun Content(viewModel: AuthViewModel) = Auth(viewModel)
+    override fun Content(viewModel: LoginViewModel) = Login(viewModel)
 
     @Composable
-    override fun viewModel(): AuthViewModel = hiltViewModel()
+    override fun viewModel(): LoginViewModel = hiltViewModel()
 
 }
 
 @Composable
-fun Auth(
-    viewModel: AuthViewModel,
+fun Login(
+    viewModel: LoginViewModel,
 ) {
     val arrangement = remember {
         mutableStateOf(Arrangement.Top)
@@ -71,8 +67,8 @@ fun Auth(
         val textFieldError = remember {
             mutableStateOf("")
         }
-        if(viewModel.phoneFieldError.collectAsState().value is NumberState.Failure){
-            textFieldError.value = (viewModel.phoneFieldError.collectAsState().value as NumberState.Failure).error
+        if(viewModel.phoneFieldState.collectAsState().value is NumberState.Failure){
+            textFieldError.value = (viewModel.phoneFieldState.collectAsState().value as NumberState.Failure).error
         }
         ProperTextField(
             modifier = Modifier
@@ -82,8 +78,7 @@ fun Auth(
                     top = configuration.screenHeightDp.dp * 0.4f
                 )
                 .fillMaxWidth()
-                //.border(BorderStroke(1.dp, textFieldColor.value), RoundedCornerShape(32.dp))
-                .height(50.dp),
+                .height(dimensionResource(id = R.dimen.auth_field_height).value.dp),
             leadingIcon = {
                 Icon(
                     painter = painterResource(id = R.drawable.ic_baseline_phone_android_24),
@@ -96,10 +91,10 @@ fun Auth(
             isPhoneInput = true,
             placeholder = stringResource(R.string.enter_phone_placeholder),
             onFocus = fun(focusState: Boolean) {
-                viewModel.onEvent(AuthEvent.OnPhoneFieldFocused(focusState))
+                viewModel.onEvent(LoginEvent.OnPhoneFieldFocused(focusState))
             },
             onValueChange = fun(number: String) {
-                viewModel.onEvent(AuthEvent.UpdateNumber(number))
+                viewModel.onEvent(LoginEvent.UpdateNumber(number))
             },
             error = textFieldError.value
         )
@@ -107,7 +102,7 @@ fun Auth(
             modifier = Modifier.wrapContentSize(align = Alignment.BottomCenter)
         ) {
             OvalButton(
-                onClick = {viewModel.onEvent(AuthEvent.EnterNumber)},
+                onClick = {viewModel.onEvent(LoginEvent.EnterNumber)},
                 text = "Войти",
                 modifier = Modifier
                     .padding(
@@ -115,7 +110,7 @@ fun Auth(
                         vertical = 8.dp
                     )
                     .fillMaxWidth()
-                    .height(50.dp)
+                    .height(dimensionResource(id = R.dimen.auth_field_height).value.dp)
             )
         }
     }

@@ -4,6 +4,8 @@ import android.app.Application
 import com.haberturm.hitchhikingapp.UserDatabase
 import com.haberturm.hitchhikingapp.data.database.UserDataSource
 import com.haberturm.hitchhikingapp.data.database.UserDataSourceImpl
+import com.haberturm.hitchhikingapp.data.repositories.auth.AuthRepository
+import com.haberturm.hitchhikingapp.data.repositories.auth.AuthRepositoryImpl
 import com.haberturm.hitchhikingapp.data.repositories.home.HomeRepository
 import com.haberturm.hitchhikingapp.data.repositories.home.HomeRepositoryImpl
 import com.haberturm.hitchhikingapp.data.repositories.searchDirection.SearchDirectionRepository
@@ -46,5 +48,11 @@ object AppModule {
     @Singleton
     fun provideSearchDirectionRepository(): SearchDirectionRepository {
         return SearchDirectionRepositoryImpl()
+    }
+
+    @Provides
+    @Singleton
+    fun provideAuthRepository(): AuthRepository {
+        return AuthRepositoryImpl()
     }
 }
