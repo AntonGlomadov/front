@@ -5,6 +5,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import com.haberturm.hitchhikingapp.data.repositories.auth.AuthRepository
 import com.haberturm.hitchhikingapp.ui.auth.login.TAG
+import com.haberturm.hitchhikingapp.ui.home.HomeRoute
 import com.haberturm.hitchhikingapp.ui.nav.RouteNavigator
 import com.haberturm.hitchhikingapp.ui.util.Util
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -145,6 +146,21 @@ class RegViewModel @Inject constructor(
 
             is RegEvent.SignUp -> {
                 _phoneFieldState.value = Util.checkNumber(phoneNumber.value)
+                _passwordFieldState.value = Util.checkPassword(password.value)
+                _repeatPasswordFieldState.value = Util.repeatPasswordCheck(password.value, repeatPassword.value)
+                _birthFieldState.value = Util.checkDate(birth.value)
+                _emailFieldState.value = Util.checkEmail(email.value)
+                _nameFieldState.value = Util.checkName(name.value)
+                if (
+                    !(phoneFieldState.value != Util.TextFieldState.Success ||
+                    passwordFieldState.value != Util.TextFieldState.Success ||
+                    repeatPasswordFieldState.value != Util.TextFieldState.Success ||
+                    birthFieldState.value != Util.TextFieldState.Success ||
+                    emailFieldState.value != Util.TextFieldState.Success ||
+                    nameFieldState.value != Util.TextFieldState.Success)
+                ){
+                    navigateToRoute(HomeRoute.get(0))
+                }
             }
         }
     }

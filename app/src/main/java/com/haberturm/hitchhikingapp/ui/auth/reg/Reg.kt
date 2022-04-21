@@ -9,6 +9,7 @@ import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
+import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -181,7 +182,7 @@ private fun PhoneNumberTextField(viewModel: RegViewModel) {
             },
             error = numberFieldError.value
         )
-        if(viewModel.phoneFieldFocusState.collectAsState().value){
+        if(viewModel.phoneFieldFocusState.collectAsState().value && numberFieldError.value.isEmpty()){
             HintText(
                 text = "Введите номер в формате +(код страны)(номер)",
             )
@@ -268,7 +269,11 @@ fun PasswordTextField(
                         }
                     }
                 ) {
-                    Icon(painter = image, contentDescription = description)
+                    Icon(
+                        painter = image,
+                        contentDescription = description,
+                        tint = MaterialTheme.colors.primary
+                    )
                 }
             },
             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Password),
@@ -280,9 +285,9 @@ fun PasswordTextField(
             error = passwordFieldError.value,
             onDone = { }
         )
-        if(isFocused){
+        if(isFocused && passwordFieldError.value.isEmpty()){
             HintText(
-                text = "Пароль должен состоять от 8 до 16 символов и содержать как минимум одну цифру",
+                text = "Пароль должен состоять из 8-16 символов и содержать как минимум одну цифру",
             )
         }
     }
@@ -325,7 +330,7 @@ fun BirthTextField(viewModel: RegViewModel) {
             },
             error = birthFieldError.value
         )
-        if (viewModel.birthFieldFocusState.collectAsState().value){
+        if (viewModel.birthFieldFocusState.collectAsState().value && birthFieldError.value.isEmpty()){
             HintText(text = "Введите дату рождения в формате дд/мм/гггг")
         }
     }

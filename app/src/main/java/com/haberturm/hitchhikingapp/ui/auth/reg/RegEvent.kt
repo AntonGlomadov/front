@@ -24,3 +24,11 @@ sealed class RegEvent{
 
     object SignUp : RegEvent()
 }
+
+object RegErrors{
+    const val PASSWORDS_DONT_MATCH = "Пароли не совпадают"
+    const val WRONG_FORMAT = "Неверный формат"
+    const val PASSWORD_ERR = "Пароль должен состоять из 8-16 символов и содержать как минимум одну цифру"
+    const val EMAIL_ERR = "Введите дату рождения в формате дд/мм/гггг"
+    const val NAME_ERR = "Введите имя"
+}

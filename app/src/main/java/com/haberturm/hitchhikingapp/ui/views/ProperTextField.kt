@@ -110,6 +110,7 @@ fun ProperTextField(
                         Icon(
                             painter = painterResource(id = R.drawable.ic_baseline_clear_24),
                             contentDescription = "clear_text",
+                            tint = MaterialTheme.colors.primary
                         )
                     }
                 }
