@@ -7,9 +7,3 @@ sealed class PasswordEvent{
     object EnterPassword : PasswordEvent()
     data class OnPasswordVisibilityChange(val visibilityState: Boolean) : PasswordEvent()
 }
-
-sealed class PasswordState {
-    data class Failure(val error: String) : PasswordState()
-    object Success : PasswordState()
-    object None : PasswordState()
-}

@@ -4,7 +4,7 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.haberturm.hitchhikingapp.data.repositories.auth.AuthRepository
-import com.haberturm.hitchhikingapp.ui.auth.password.PasswordRoute
+import com.haberturm.hitchhikingapp.ui.auth.reg.RegRoute
 import com.haberturm.hitchhikingapp.ui.home.HomeRoute
 import com.haberturm.hitchhikingapp.ui.nav.RouteNavigator
 import com.haberturm.hitchhikingapp.ui.util.Util
@@ -33,7 +33,7 @@ class LoginViewModel @Inject constructor(
     private val _phoneNumber = MutableStateFlow<String>("")
     val phoneNumber = _phoneNumber.asStateFlow()
 
-    private val _phoneFieldState = MutableStateFlow<NumberState>(NumberState.None)
+    private val _phoneFieldState = MutableStateFlow<Util.TextFieldState>(Util.TextFieldState.None)
     val phoneFieldState = _phoneFieldState.asStateFlow()
 
     fun onEvent(event: LoginEvent){
@@ -46,12 +46,17 @@ class LoginViewModel @Inject constructor(
                 Log.i(TAG, phoneNumber.value)
             }
             is LoginEvent.EnterNumber -> {
-                _phoneFieldState.value = Util.checkNumber(phoneNumber.value)
-                if(phoneFieldState.value is NumberState.Success){
-                    if(repository.checkNumberInDB(phoneNumber.value)){
-                        navigateToRoute(PasswordRoute.get(phoneNumber.value))
-                    }
-                }
+//                _phoneFieldState.value = Util.checkNumber(phoneNumber.value)
+//                if(phoneFieldState.value is TextFieldState.Success){
+//                    if(repository.checkNumberInDB(phoneNumber.value)){
+//                        navigateToRoute(PasswordRoute.get(phoneNumber.value))
+//                    }else{
+//                        navigateToRoute(RegRoute.get(phoneNumber.value))
+//                    }
+//                }
+
+                //TODO
+                navigateToRoute(RegRoute.get("+79632909012"))
 
             }
 

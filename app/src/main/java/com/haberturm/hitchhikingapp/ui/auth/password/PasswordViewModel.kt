@@ -6,6 +6,7 @@ import androidx.lifecycle.ViewModel
 import com.haberturm.hitchhikingapp.data.repositories.auth.AuthRepository
 import com.haberturm.hitchhikingapp.ui.home.HomeRoute
 import com.haberturm.hitchhikingapp.ui.nav.RouteNavigator
+import com.haberturm.hitchhikingapp.ui.util.Util
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -22,7 +23,7 @@ class PasswordViewModel @Inject constructor(
         MutableStateFlow<Boolean>(false) // true - onFocus, false - is not focused
     val passwordFieldFocusState = _passwordFieldFocusState.asStateFlow()
 
-    private val _passwordFieldState = MutableStateFlow<PasswordState>(PasswordState.None)
+    private val _passwordFieldState = MutableStateFlow<Util.TextFieldState>(Util.TextFieldState.None)
     val passwordFieldState = _passwordFieldState.asStateFlow()
 
     private val _password = MutableStateFlow<String>("")
@@ -50,7 +51,7 @@ class PasswordViewModel @Inject constructor(
 
             is PasswordEvent.EnterPassword -> {
                 _passwordFieldState.value = repository.checkPasswordInDB(password.value)
-                if(passwordFieldState.value is PasswordState.Success){
+                if(passwordFieldState.value is Util.TextFieldState.Success){
                     navigateToRoute(HomeRoute.get(0))
                 }
             }

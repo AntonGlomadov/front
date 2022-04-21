@@ -1,8 +1,8 @@
 package com.haberturm.hitchhikingapp.data.repositories.auth
 
-import com.haberturm.hitchhikingapp.ui.auth.password.PasswordState
+import com.haberturm.hitchhikingapp.ui.util.Util
 
 interface AuthRepository {
     fun checkNumberInDB(number:String): Boolean
-    fun checkPasswordInDB(password:String): PasswordState
+    fun checkPasswordInDB(password:String): Util.TextFieldState
 }

@@ -6,11 +6,6 @@ sealed class LoginEvent {
     object EnterNumber : LoginEvent()
 }
 
-sealed class NumberState {
-    data class Failure(val error: String) : NumberState()
-    object Success : NumberState()
-    object None : NumberState()
-}
 
 object PhoneErrors {
     const val LENGTH_ERR = "Неверный формат номера: проверьте длину!"

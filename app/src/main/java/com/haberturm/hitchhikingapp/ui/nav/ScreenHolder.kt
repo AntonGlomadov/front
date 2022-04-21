@@ -1,4 +1,4 @@
-package com. haberturm.hitchhikingapp.ui.nav
+package com.haberturm.hitchhikingapp.ui.nav
 
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.padding
@@ -10,6 +10,7 @@ import com.haberturm.hitchhikingapp.ui.auth.login.LoginRoute
 import com.haberturm.hitchhikingapp.ui.auth.password.PasswordRoute
 import com.haberturm.hitchhikingapp.ui.home.HomeRoute
 import com.haberturm.hitchhikingapp.ui.searchDirection.SearchDirectionRoute
+import com.haberturm.hitchhikingapp.ui.auth.reg.RegRoute
 
 @Composable
 fun ScreenHolder(navHostController: NavHostController, paddingValues: PaddingValues) {
@@ -22,5 +23,6 @@ fun ScreenHolder(navHostController: NavHostController, paddingValues: PaddingVal
         HomeRoute.composable(this, navHostController)
         SearchDirectionRoute.composable(this, navHostController)
         PasswordRoute.composable(this, navHostController)
+        RegRoute.composable(this, navHostController)
     }
 }

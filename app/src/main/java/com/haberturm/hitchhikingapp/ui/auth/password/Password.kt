@@ -29,6 +29,7 @@ import androidx.navigation.navArgument
 import com.haberturm.hitchhikingapp.R
 import com.haberturm.hitchhikingapp.ui.nav.NavRoute
 import com.haberturm.hitchhikingapp.ui.nav.getOrThrow
+import com.haberturm.hitchhikingapp.ui.util.Util
 import com.haberturm.hitchhikingapp.ui.views.OvalButton
 import com.haberturm.hitchhikingapp.ui.views.ProperTextField
 
@@ -66,7 +67,6 @@ fun Password(
         arrangement.value = Arrangement.SpaceBetween
     }
     val focusManager = LocalFocusManager.current
-    val isPasswordVisible = viewModel.passwordVisibilityState.collectAsState().value
     Column(
         horizontalAlignment = Alignment.CenterHorizontally,
         modifier = Modifier
@@ -82,10 +82,11 @@ fun Password(
         val textFieldError = remember {
             mutableStateOf("")
         }
-        if (viewModel.passwordFieldState.collectAsState().value is PasswordState.Failure) {
+        if (viewModel.passwordFieldState.collectAsState().value is Util.TextFieldState.Failure) {
             textFieldError.value =
-                (viewModel.passwordFieldState.collectAsState().value as PasswordState.Failure).error
+                (viewModel.passwordFieldState.collectAsState().value as Util.TextFieldState.Failure).error
         }
+        val isPasswordVisible = viewModel.passwordVisibilityState.collectAsState().value
         ProperTextField(
             modifier = Modifier
                 .padding(
@@ -116,7 +117,7 @@ fun Password(
             keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Password),
             valueText = viewModel.password.collectAsState().value,
             visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
-            placeholder = stringResource(R.string.enter_password),
+            placeholder = stringResource(R.string.enter_password_placeholder),
             onFocus = fun(focusState: Boolean) {
                 viewModel.onEvent(PasswordEvent.OnPasswordFieldFocused(focusState))
             },

@@ -1,17 +1,17 @@
 package com.haberturm.hitchhikingapp.data.repositories.auth
 
-import com.haberturm.hitchhikingapp.ui.auth.password.PasswordState
+import com.haberturm.hitchhikingapp.ui.util.Util
 
 class AuthRepositoryImpl : AuthRepository {
     override fun checkNumberInDB(number: String): Boolean {
-        return true //TODO add proper check when server will be ready
+        return false //TODO add proper check when server will be ready
     }
 
-    override fun checkPasswordInDB(password: String): PasswordState {
+    override fun checkPasswordInDB(password: String): Util.TextFieldState{
         if(password != "1"){
-            return PasswordState.Failure("Неверный пароль!") //TODO add proper check when server will be ready
+            return Util.TextFieldState.Failure("Неверный пароль!") //TODO add proper check when server will be ready
         }else{
-            return PasswordState.Success
+            return Util.TextFieldState.Success
         }
     }
 }

@@ -17,7 +17,6 @@ import com.google.android.gms.maps.model.LatLngBounds
 import com.google.maps.android.compose.CameraPositionState
 import com.haberturm.hitchhikingapp.R
 import com.haberturm.hitchhikingapp.data.network.googleApi.pojo.reverseGeocode.ReverseGeocodeResponse
-import com.haberturm.hitchhikingapp.ui.auth.login.NumberState
 import com.haberturm.hitchhikingapp.ui.auth.login.PhoneErrors
 import com.haberturm.hitchhikingapp.ui.model.GeocodeUiModel
 import kotlinx.coroutines.CoroutineScope
@@ -157,21 +156,31 @@ object Util {
         }
     }
 
-    fun checkNumber(number: String): NumberState {
+    fun checkNumber(number: String): TextFieldState {
         if(number.length !in 6..13){
-            return NumberState.Failure(PhoneErrors.LENGTH_ERR)
+            return TextFieldState.Failure(PhoneErrors.LENGTH_ERR)
         }
         if (number[0] != '+'){
-            return NumberState.Failure(PhoneErrors.PLUS_START_ERR)
+            return TextFieldState.Failure(PhoneErrors.PLUS_START_ERR)
         }
         if(
             number.filter {
                 it == '+'
             }.length > 1
         ){
-            return NumberState.Failure(PhoneErrors.WRONG_FORMAT_ERR)
+            return TextFieldState.Failure(PhoneErrors.WRONG_FORMAT_ERR)
         }
-        return NumberState.Success
+        return TextFieldState.Success
+    }
+
+    fun checkPassword(password: String){
+
+    }
+
+    sealed class TextFieldState {
+        data class Failure(val error: String) : TextFieldState()
+        object Success : TextFieldState()
+        object None : TextFieldState()
     }
 }
 

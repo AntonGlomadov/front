@@ -22,6 +22,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import com.haberturm.hitchhikingapp.R
 import com.haberturm.hitchhikingapp.ui.nav.NavRoute
 import com.haberturm.hitchhikingapp.ui.util.PhoneNumberVisualTransformation
+import com.haberturm.hitchhikingapp.ui.util.Util
 import com.haberturm.hitchhikingapp.ui.views.*
 
 object LoginRoute : NavRoute<LoginViewModel> {
@@ -60,15 +61,11 @@ fun Login(
         verticalArrangement = arrangement.value,
     ) {
         val configuration = LocalConfiguration.current
-//        val color = MaterialTheme.colors.primary
-//        val textFieldColor = remember {
-//            mutableStateOf(color)
-//        }
         val textFieldError = remember {
             mutableStateOf("")
         }
-        if(viewModel.phoneFieldState.collectAsState().value is NumberState.Failure){
-            textFieldError.value = (viewModel.phoneFieldState.collectAsState().value as NumberState.Failure).error
+        if(viewModel.phoneFieldState.collectAsState().value is Util.TextFieldState.Failure){
+            textFieldError.value = (viewModel.phoneFieldState.collectAsState().value as Util.TextFieldState.Failure).error
         }
         ProperTextField(
             modifier = Modifier
