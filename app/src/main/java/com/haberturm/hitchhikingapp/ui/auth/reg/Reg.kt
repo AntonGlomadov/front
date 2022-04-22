@@ -1,6 +1,7 @@
 package com.haberturm.hitchhikingapp.ui.auth.reg
 
 import androidx.compose.foundation.ExperimentalFoundationApi
+import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.relocation.BringIntoViewRequester
@@ -10,15 +11,18 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.TextField
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.input.pointer.pointerInput
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
@@ -43,7 +47,7 @@ const val PHONE_NUMBER = "PHONE_NUMBER"
 
 object RegRoute : NavRoute<RegViewModel> {
 
-    override val route = "password/{$PHONE_NUMBER}/"
+    override val route = "reg/{$PHONE_NUMBER}/"
 
     fun get(number: String): String = route.replace("{$PHONE_NUMBER}", number)
 
@@ -66,21 +70,18 @@ private fun Reg(viewModel: RegViewModel) {
     val focusManager = LocalFocusManager.current
     Column(
         modifier = Modifier
-            .fillMaxWidth()
+            .fillMaxSize()
             .pointerInput(Unit) {
                 detectTapGestures(onTap = {
                     focusManager.clearFocus()
                 })
             }
-            .verticalScroll(state = rememberScrollState())
-            .height(LocalConfiguration.current.screenHeightDp.dp)
-            .imePadding(),
+        ,
         verticalArrangement = Arrangement.SpaceBetween,
     ) {
         //phone number
-        Column() {
+        Column(Modifier.imePadding()) {
             PhoneNumberTextField(viewModel = viewModel)
-            //name
             NameTextField(viewModel = viewModel)
             //password
             PasswordTextField(
@@ -117,17 +118,17 @@ private fun Reg(viewModel: RegViewModel) {
                 placeholder = stringResource(id = R.string.repeat_password_placeholder),
                 isFocused = viewModel.repeatPasswordFieldFocusState.collectAsState().value
             )
-            //birth
             BirthTextField(viewModel = viewModel)
-            //email
             EmailTextField(viewModel = viewModel)
         }
+
         Row(
             modifier = Modifier
                 .wrapContentSize(align = Alignment.BottomCenter),
         ) {
             OvalButton(
                 onClick = {
+                    focusManager.clearFocus()
                     viewModel.onEvent(RegEvent.SignUp)
                 },
                 text = "Войти",
@@ -169,7 +170,7 @@ private fun PhoneNumberTextField(viewModel: RegViewModel) {
                     contentDescription = "phone_icon"
                 )
             },
-            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Phone),
+            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Phone, imeAction = ImeAction.Next),
             valueText = viewModel.phoneNumber.collectAsState().value,
             visualTransformation = PhoneNumberVisualTransformation(),
             isPhoneInput = true,
@@ -212,7 +213,7 @@ private fun NameTextField(viewModel: RegViewModel) {
                 contentDescription = "account_icon"
             )
         },
-        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Text),
+        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Text, imeAction = ImeAction.Next),
         valueText = viewModel.name.collectAsState().value,
         isPhoneInput = false,
         placeholder = stringResource(R.string.enter_name_placeholder),
@@ -276,7 +277,7 @@ fun PasswordTextField(
                     )
                 }
             },
-            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Password),
+            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Password, imeAction = ImeAction.Next),
             valueText = password,
             visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             placeholder = placeholder,
@@ -318,7 +319,7 @@ fun BirthTextField(viewModel: RegViewModel) {
                     contentDescription = "birthday"
                 )
             },
-            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number),
+            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number, imeAction = ImeAction.Next),
             valueText = viewModel.birth.collectAsState().value,
             isPhoneInput = false,
             placeholder = stringResource(R.string.enter_birth_placeholder),
@@ -362,20 +363,21 @@ private fun EmailTextField(viewModel: RegViewModel) {
                 contentDescription = "account_icon"
             )
         },
-        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Email),
+        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Email,imeAction = ImeAction.Next),
         valueText = viewModel.email.collectAsState().value,
         isPhoneInput = false,
         placeholder = stringResource(R.string.enter_email_placeholder),
         onFocus = fun(focusState: Boolean) {
-            coroutineScope.launch {
-                delay(250)
-                bringIntoViewRequester.bringIntoView()
-            }
+//            coroutineScope.launch {
+//                delay(250)
+//                bringIntoViewRequester.bringIntoView()
+//            }
             viewModel.onEvent(RegEvent.OnEmailFieldFocused(focusState))
         },
         onValueChange = fun(email: String) {
             viewModel.onEvent(RegEvent.UpdateEmail(email))
         },
-        error = emailFieldError.value
+        error = emailFieldError.value,
+        onDone = {}
     )
 }

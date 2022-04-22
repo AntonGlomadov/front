@@ -64,8 +64,9 @@ fun Login(
         val textFieldError = remember {
             mutableStateOf("")
         }
-        if(viewModel.phoneFieldState.collectAsState().value is Util.TextFieldState.Failure){
-            textFieldError.value = (viewModel.phoneFieldState.collectAsState().value as Util.TextFieldState.Failure).error
+        if (viewModel.phoneFieldState.collectAsState().value is Util.TextFieldState.Failure) {
+            textFieldError.value =
+                (viewModel.phoneFieldState.collectAsState().value as Util.TextFieldState.Failure).error
         }
         ProperTextField(
             modifier = Modifier
@@ -99,7 +100,10 @@ fun Login(
             modifier = Modifier.wrapContentSize(align = Alignment.BottomCenter)
         ) {
             OvalButton(
-                onClick = {viewModel.onEvent(LoginEvent.EnterNumber)},
+                onClick = {
+                    focusManager.clearFocus()
+                    viewModel.onEvent(LoginEvent.EnterNumber)
+                },
                 text = "Войти",
                 modifier = Modifier
                     .padding(

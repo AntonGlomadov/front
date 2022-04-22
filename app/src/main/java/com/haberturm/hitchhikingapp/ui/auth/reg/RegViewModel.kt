@@ -100,7 +100,6 @@ class RegViewModel @Inject constructor(
             }
             is RegEvent.UpdateNumber ->{
                 _phoneNumber.value = event.number
-                Log.i(TAG, phoneNumber.value)
             }
             //name
             is RegEvent.OnNameFieldFocused -> {
@@ -159,16 +158,20 @@ class RegViewModel @Inject constructor(
                     emailFieldState.value != Util.TextFieldState.Success ||
                     nameFieldState.value != Util.TextFieldState.Success)
                 ){
+                    repository.signUp(
+                        phoneNumber = phoneNumber.value,
+                        name = name.value,
+                        password = password.value,
+                        birth = birth.value,
+                        email = email.value
+                    )
                     navigateToRoute(HomeRoute.get(0))
                 }
             }
         }
     }
 
-
     private fun getPhoneNumber(savedStateHandle: SavedStateHandle): String {
         return RegRoute.getArgFrom(savedStateHandle)
     }
-
-
 }

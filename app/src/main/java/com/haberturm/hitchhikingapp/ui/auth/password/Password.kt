@@ -131,7 +131,10 @@ fun Password(
             modifier = Modifier.wrapContentSize(align = Alignment.BottomCenter)
         ) {
             OvalButton(
-                onClick = { viewModel.onEvent(PasswordEvent.EnterPassword) },
+                onClick = {
+                    focusManager.clearFocus()
+                    viewModel.onEvent(PasswordEvent.EnterPassword)
+                },
                 text = "Войти",
                 modifier = Modifier
                     .padding(

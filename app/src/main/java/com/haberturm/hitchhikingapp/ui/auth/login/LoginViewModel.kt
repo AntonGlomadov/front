@@ -4,11 +4,13 @@ import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.haberturm.hitchhikingapp.data.repositories.auth.AuthRepository
+import com.haberturm.hitchhikingapp.ui.auth.password.PasswordRoute
 import com.haberturm.hitchhikingapp.ui.auth.reg.RegRoute
 import com.haberturm.hitchhikingapp.ui.home.HomeRoute
 import com.haberturm.hitchhikingapp.ui.nav.RouteNavigator
 import com.haberturm.hitchhikingapp.ui.util.Util
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asSharedFlow
@@ -43,25 +45,20 @@ class LoginViewModel @Inject constructor(
             }
             is LoginEvent.UpdateNumber ->{
                 _phoneNumber.value = event.number
-                Log.i(TAG, phoneNumber.value)
             }
             is LoginEvent.EnterNumber -> {
-//                _phoneFieldState.value = Util.checkNumber(phoneNumber.value)
-//                if(phoneFieldState.value is TextFieldState.Success){
-//                    if(repository.checkNumberInDB(phoneNumber.value)){
-//                        navigateToRoute(PasswordRoute.get(phoneNumber.value))
-//                    }else{
-//                        navigateToRoute(RegRoute.get(phoneNumber.value))
-//                    }
-//                }
-
-                //TODO
-                navigateToRoute(RegRoute.get("+79632909012"))
-
-            }
-
-            else -> {
-                Unit
+                _phoneFieldState.value = Util.checkNumber(phoneNumber.value)
+                if(phoneFieldState.value is Util.TextFieldState.Success){
+                    if(repository.checkNumberInDB(phoneNumber.value)){
+                        Log.i(TAG, "to password")
+                        navigateToRoute(PasswordRoute.get(phoneNumber.value))
+                    }else{
+                        viewModelScope.launch {
+                            delay(250)  // for fix strange padding bug
+                            navigateToRoute(RegRoute.get(phoneNumber.value))
+                        }
+                    }
+                }
             }
         }
     }
@@ -71,9 +68,4 @@ class LoginViewModel @Inject constructor(
             _uiEvent.emit(event)
         }
     }
-
-    fun onAuthClicked(){
-        navigateToRoute(HomeRoute.get(0))
-    }
-
 }
