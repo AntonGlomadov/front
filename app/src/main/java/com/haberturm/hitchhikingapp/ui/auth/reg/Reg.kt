@@ -5,13 +5,12 @@ import androidx.compose.foundation.background
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.relocation.BringIntoViewRequester
+import androidx.compose.foundation.relocation.bringIntoViewRequester
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
-import androidx.compose.material.TextField
+import androidx.compose.material.*
+import androidx.compose.material.SnackbarDefaults.backgroundColor
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -26,6 +25,7 @@ import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
@@ -40,6 +40,7 @@ import com.haberturm.hitchhikingapp.ui.util.Util
 import com.haberturm.hitchhikingapp.ui.views.HintText
 import com.haberturm.hitchhikingapp.ui.views.OvalButton
 import com.haberturm.hitchhikingapp.ui.views.ProperTextField
+import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.launch
 
@@ -67,81 +68,121 @@ object RegRoute : NavRoute<RegViewModel> {
 
 @Composable
 private fun Reg(viewModel: RegViewModel) {
-    val focusManager = LocalFocusManager.current
-    Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .pointerInput(Unit) {
-                detectTapGestures(onTap = {
-                    focusManager.clearFocus()
-                })
-            }
-        ,
-        verticalArrangement = Arrangement.SpaceBetween,
-    ) {
-        //phone number
-        Column(Modifier.imePadding()) {
-            PhoneNumberTextField(viewModel = viewModel)
-            NameTextField(viewModel = viewModel)
-            //password
-            PasswordTextField(
-                fieldState = viewModel.passwordFieldState.collectAsState().value,
-                visibilityState = viewModel.passwordVisibilityState.collectAsState().value,
-                changeVisibility = fun(visibilityState: Boolean) {
-                    viewModel.onEvent(RegEvent.OnPasswordVisibilityChange(visibilityState))
+    Scaffold(
+        topBar = {
+            TopAppBar(
+                navigationIcon = {
+                    IconButton(onClick = { }) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_baseline_arrow_back_24),
+                            contentDescription = "NavigateUP"
+                        )
+                    }
                 },
-                password = viewModel.password.collectAsState().value,
-                onFocus = fun(focusState: Boolean) {
-                    viewModel.onEvent(RegEvent.OnPasswordFieldFocused(focusState))
-                },
-                onValueChange = fun(password: String) {
-                    viewModel.onEvent(RegEvent.UpdatePassword(password))
-                },
-                placeholder = stringResource(id = R.string.enter_password_placeholder),
-                isFocused = viewModel.passwordFieldFocusState.collectAsState().value
-            )
-
-            //repeat password
-            PasswordTextField(
-                fieldState = viewModel.repeatPasswordFieldState.collectAsState().value,
-                visibilityState = viewModel.repeatPasswordVisibilityState.collectAsState().value,
-                changeVisibility = fun(visibilityState: Boolean) {
-                    viewModel.onEvent(RegEvent.OnRepeatPasswordVisibilityChange(visibilityState))
-                },
-                password = viewModel.repeatPassword.collectAsState().value,
-                onFocus = fun(focusState: Boolean) {
-                    viewModel.onEvent(RegEvent.OnRepeatPasswordFieldFocused(focusState))
-                },
-                onValueChange = fun(password: String) {
-                    viewModel.onEvent(RegEvent.UpdateRepeatPassword(password))
-                },
-                placeholder = stringResource(id = R.string.repeat_password_placeholder),
-                isFocused = viewModel.repeatPasswordFieldFocusState.collectAsState().value
-            )
-            BirthTextField(viewModel = viewModel)
-            EmailTextField(viewModel = viewModel)
-        }
-
-        Row(
-            modifier = Modifier
-                .wrapContentSize(align = Alignment.BottomCenter),
-        ) {
-            OvalButton(
-                onClick = {
-                    focusManager.clearFocus()
-                    viewModel.onEvent(RegEvent.SignUp)
-                },
-                text = "Войти",
-                modifier = Modifier
-                    .padding(
-                        horizontal = 8.dp,
-                        vertical = 8.dp
+                title = {
+                    Text(
+                        text = "Регистрация",
+                        color = MaterialTheme.colors.onBackground
                     )
-                    .fillMaxWidth()
-                    .height(dimensionResource(id = R.dimen.auth_field_height).value.dp)
+                },
+                backgroundColor = MaterialTheme.colors.background,
+                contentColor = MaterialTheme.colors.primary,
             )
+        },
+        content = {
+            val focusManager = LocalFocusManager.current
+            Column(
+                modifier = Modifier
+                    .padding(it)
+                    .fillMaxSize()
+                    .pointerInput(Unit) {
+                        detectTapGestures(onTap = {
+                            focusManager.clearFocus()
+                        })
+                    },
+                verticalArrangement = Arrangement.SpaceBetween,
+            ) {
+                Column(
+                    Modifier
+                        .imePadding()
+                        .navigationBarsPadding()) {
+                    Spacer(modifier = Modifier
+                        .fillMaxWidth()
+                        .height(1.dp)
+                        .background(MaterialTheme.colors.primary))
+                    Text(
+                        text = "Упс, мы не нашли вашего номера в базе данных. Зарегитрируйтесь.\nВсе поля обязательны для заполнения.",
+                        color = Color.LightGray,
+                        textAlign = TextAlign.Center,
+                        modifier = Modifier.padding(8.dp)
+                    )
+                    PhoneNumberTextField(viewModel = viewModel)
+                    NameTextField(viewModel = viewModel)
+                    //password
+                    PasswordTextField(
+                        fieldState = viewModel.passwordFieldState.collectAsState().value,
+                        visibilityState = viewModel.passwordVisibilityState.collectAsState().value,
+                        changeVisibility = fun(visibilityState: Boolean) {
+                            viewModel.onEvent(RegEvent.OnPasswordVisibilityChange(visibilityState))
+                        },
+                        password = viewModel.password.collectAsState().value,
+                        onFocus = fun(focusState: Boolean) {
+                            viewModel.onEvent(RegEvent.OnPasswordFieldFocused(focusState))
+                        },
+                        onValueChange = fun(password: String) {
+                            viewModel.onEvent(RegEvent.UpdatePassword(password))
+                        },
+                        placeholder = stringResource(id = R.string.enter_password_placeholder),
+                        isFocused = viewModel.passwordFieldFocusState.collectAsState().value
+                    )
+
+                    //repeat password
+                    PasswordTextField(
+                        fieldState = viewModel.repeatPasswordFieldState.collectAsState().value,
+                        visibilityState = viewModel.repeatPasswordVisibilityState.collectAsState().value,
+                        changeVisibility = fun(visibilityState: Boolean) {
+                            viewModel.onEvent(
+                                RegEvent.OnRepeatPasswordVisibilityChange(
+                                    visibilityState
+                                )
+                            )
+                        },
+                        password = viewModel.repeatPassword.collectAsState().value,
+                        onFocus = fun(focusState: Boolean) {
+                            viewModel.onEvent(RegEvent.OnRepeatPasswordFieldFocused(focusState))
+                        },
+                        onValueChange = fun(password: String) {
+                            viewModel.onEvent(RegEvent.UpdateRepeatPassword(password))
+                        },
+                        placeholder = stringResource(id = R.string.repeat_password_placeholder),
+                        isFocused = viewModel.repeatPasswordFieldFocusState.collectAsState().value
+                    )
+                    BirthTextField(viewModel = viewModel)
+                    EmailTextField(viewModel = viewModel)
+                }
+
+                Row(
+                    modifier = Modifier
+                        .wrapContentSize(align = Alignment.BottomCenter),
+                ) {
+                    OvalButton(
+                        onClick = {
+                            focusManager.clearFocus()
+                            viewModel.onEvent(RegEvent.SignUp)
+                        },
+                        text = "Войти",
+                        modifier = Modifier
+                            .padding(
+                                horizontal = 8.dp,
+                                vertical = 8.dp
+                            )
+                            .fillMaxWidth()
+                            .height(dimensionResource(id = R.dimen.auth_field_height).value.dp)
+                    )
+                }
+            }
         }
-    }
+    )
 }
 
 
@@ -170,7 +211,10 @@ private fun PhoneNumberTextField(viewModel: RegViewModel) {
                     contentDescription = "phone_icon"
                 )
             },
-            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Phone, imeAction = ImeAction.Next),
+            keyboardOptions = KeyboardOptions.Default.copy(
+                keyboardType = KeyboardType.Phone,
+                imeAction = ImeAction.Next
+            ),
             valueText = viewModel.phoneNumber.collectAsState().value,
             visualTransformation = PhoneNumberVisualTransformation(),
             isPhoneInput = true,
@@ -183,7 +227,7 @@ private fun PhoneNumberTextField(viewModel: RegViewModel) {
             },
             error = numberFieldError.value
         )
-        if(viewModel.phoneFieldFocusState.collectAsState().value && numberFieldError.value.isEmpty()){
+        if (viewModel.phoneFieldFocusState.collectAsState().value && numberFieldError.value.isEmpty()) {
             HintText(
                 text = "Введите номер в формате +(код страны)(номер)",
             )
@@ -213,7 +257,10 @@ private fun NameTextField(viewModel: RegViewModel) {
                 contentDescription = "account_icon"
             )
         },
-        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Text, imeAction = ImeAction.Next),
+        keyboardOptions = KeyboardOptions.Default.copy(
+            keyboardType = KeyboardType.Text,
+            imeAction = ImeAction.Next
+        ),
         valueText = viewModel.name.collectAsState().value,
         isPhoneInput = false,
         placeholder = stringResource(R.string.enter_name_placeholder),
@@ -227,6 +274,7 @@ private fun NameTextField(viewModel: RegViewModel) {
     )
 }
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun PasswordTextField(
     fieldState: Util.TextFieldState,
@@ -247,6 +295,8 @@ fun PasswordTextField(
             (fieldState as Util.TextFieldState.Failure).error
     }
     val isPasswordVisible = visibilityState
+    val  bringIntoViewRequester = BringIntoViewRequester()
+    val coroutineScope = rememberCoroutineScope()
     Column() {
         ProperTextField(
             modifier = Modifier
@@ -254,7 +304,8 @@ fun PasswordTextField(
                     8.dp
                 )
                 .fillMaxWidth()
-                .height(dimensionResource(id = R.dimen.auth_field_height).value.dp),
+                .height(dimensionResource(id = R.dimen.auth_field_height).value.dp)
+                .bringIntoViewRequester(bringIntoViewRequester),
             leadingIcon = {
                 val image = if (isPasswordVisible)
                     painterResource(id = R.drawable.ic_baseline_visibility_off_24)
@@ -277,16 +328,26 @@ fun PasswordTextField(
                     )
                 }
             },
-            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Password, imeAction = ImeAction.Next),
+            keyboardOptions = KeyboardOptions.Default.copy(
+                keyboardType = KeyboardType.Password,
+                imeAction = ImeAction.Next
+            ),
             valueText = password,
             visualTransformation = if (isPasswordVisible) VisualTransformation.None else PasswordVisualTransformation(),
             placeholder = placeholder,
-            onFocus = onFocus,
+            onFocus = {
+                onFocus(it)
+                coroutineScope.launch {
+                    delay(250)
+                    bringIntoViewRequester.bringIntoView()
+                }
+
+            },
             onValueChange = onValueChange,
             error = passwordFieldError.value,
             onDone = { }
         )
-        if(isFocused && passwordFieldError.value.isEmpty()){
+        if (isFocused && passwordFieldError.value.isEmpty()) {
             HintText(
                 text = "Пароль должен состоять из 8-16 символов и содержать как минимум одну цифру",
             )
@@ -319,7 +380,10 @@ fun BirthTextField(viewModel: RegViewModel) {
                     contentDescription = "birthday"
                 )
             },
-            keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Number, imeAction = ImeAction.Next),
+            keyboardOptions = KeyboardOptions.Default.copy(
+                keyboardType = KeyboardType.Number,
+                imeAction = ImeAction.Next
+            ),
             valueText = viewModel.birth.collectAsState().value,
             isPhoneInput = false,
             placeholder = stringResource(R.string.enter_birth_placeholder),
@@ -331,7 +395,7 @@ fun BirthTextField(viewModel: RegViewModel) {
             },
             error = birthFieldError.value
         )
-        if (viewModel.birthFieldFocusState.collectAsState().value && birthFieldError.value.isEmpty()){
+        if (viewModel.birthFieldFocusState.collectAsState().value && birthFieldError.value.isEmpty()) {
             HintText(text = "Введите дату рождения в формате дд/мм/гггг")
         }
     }
@@ -363,7 +427,10 @@ private fun EmailTextField(viewModel: RegViewModel) {
                 contentDescription = "account_icon"
             )
         },
-        keyboardOptions = KeyboardOptions.Default.copy(keyboardType = KeyboardType.Email,imeAction = ImeAction.Next),
+        keyboardOptions = KeyboardOptions.Default.copy(
+            keyboardType = KeyboardType.Email,
+            imeAction = ImeAction.Done
+        ),
         valueText = viewModel.email.collectAsState().value,
         isPhoneInput = false,
         placeholder = stringResource(R.string.enter_email_placeholder),
@@ -378,6 +445,8 @@ private fun EmailTextField(viewModel: RegViewModel) {
             viewModel.onEvent(RegEvent.UpdateEmail(email))
         },
         error = emailFieldError.value,
-        onDone = {}
+        onDone = {
+
+        }
     )
 }
