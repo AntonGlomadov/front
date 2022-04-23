@@ -11,3 +11,5 @@ val MainGreen = Color(0XFF0F9D58)
 val LightBackGroundWhite = Color(0xFFFFFFFF)
 
 val DarkBackGroundGrey = Color(0xFF14141C)
+
+val ErrorColor = Color(0xFFFC4F4F)

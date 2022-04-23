@@ -1,6 +1,5 @@
 package com.haberturm.hitchhikingapp.ui.views
 
-import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.Button
 import androidx.compose.material.ExperimentalMaterialApi
@@ -10,9 +9,9 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.maps.android.compose.CameraPositionState
@@ -21,7 +20,6 @@ import com.haberturm.hitchhikingapp.ui.home.HomeViewModel
 import com.haberturm.hitchhikingapp.ui.util.Util
 import com.haberturm.hitchhikingapp.ui.util.Util.moveCamera
 import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
@@ -44,10 +42,11 @@ fun LocationPicker(
             horizontalAlignment = Alignment.CenterHorizontally,
             verticalArrangement = Arrangement.Bottom
         ) {
+            val configuration = LocalConfiguration.current
             CompositionLocalProvider(
                 LocalMinimumTouchTargetEnforcement provides false,
             ) {
-                LetsGoButton(
+                OvalButton(
                     onClick = {
 //                    viewModel.onEvent(
 //                        HomeEvent.NavigateToSearchDirection(
@@ -63,7 +62,11 @@ fun LocationPicker(
                             bounds = bounds
                         )
                     },
-                    text = text
+                    text = text,
+                    modifier = Modifier.width(
+                        configuration.screenWidthDp.dp * 0.5f
+                    )
+                        .height(50.dp),
                 )
             }
         }

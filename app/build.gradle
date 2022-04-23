@@ -97,6 +97,13 @@ dependencies {
     //map util
     implementation 'com.google.maps.android:android-maps-utils:2.3.0'
 
+    //phone num util
+    implementation 'com.googlecode.libphonenumber:libphonenumber:7.0.4'
+
+    //insets
+    implementation "com.google.accompanist:accompanist-insets:0.24.6-alpha"
+    implementation "com.google.accompanist:accompanist-insets-ui:0.24.6-alpha"
+
 }
 
 sqldelight {

@@ -1,6 +1,5 @@
 package com.haberturm.hitchhikingapp.ui.views
 
-import android.util.Log
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.border
 import androidx.compose.foundation.layout.*
@@ -48,7 +47,7 @@ fun SearchRow(
             )
         }
 
-        SearchField(
+        ProperTextField(
             modifier = Modifier
                 .padding(start = 8.dp)
                 .fillMaxWidth()

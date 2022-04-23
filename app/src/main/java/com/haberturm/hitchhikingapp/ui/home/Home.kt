@@ -29,6 +29,7 @@ import com.haberturm.hitchhikingapp.ui.nav.NavRoute
 import com.haberturm.hitchhikingapp.ui.views.ErrorAlertDialog
 import com.haberturm.hitchhikingapp.ui.home.map.*
 import com.haberturm.hitchhikingapp.ui.nav.NavConst
+import com.haberturm.hitchhikingapp.ui.views.BottomNavBar
 import com.haberturm.hitchhikingapp.ui.views.SelectModeDialog
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.launchIn
@@ -214,57 +215,7 @@ private fun Home(
         }
     }
 
-    Column(
-        Modifier
-            .fillMaxSize()
-            .wrapContentSize(align = Alignment.BottomCenter)
-    ) {
-        Spacer(modifier = Modifier
-            .height(1.dp)
-            .fillMaxWidth()
-            .background(MaterialTheme.colors.primary)
-        )
-        Row(
-            modifier = Modifier
-                .fillMaxWidth()
-                .height(dimensionResource(id =  R.dimen.bottom_bar_size))
-                .padding(start = 64.dp, end = 64.dp)
-            ,
-            verticalAlignment = Alignment.Bottom,
-            horizontalArrangement = Arrangement.SpaceBetween
-        ) {
-            IconButton(onClick = { /*TODO*/ }) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_baseline_map_24),
-                    contentDescription = "map_icon",
-                    modifier = Modifier
-                        .size(32.dp),
-                    tint = MaterialTheme.colors.primary
-                )
-            }
-
-            IconButton(onClick = { /*TODO*/ }) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_baseline_message_24),
-                    contentDescription = "message_icon",
-                    modifier = Modifier
-                        .size(32.dp)
-                    ,
-                    tint = Color.LightGray
-                )
-            }
-
-            IconButton(onClick = { /*TODO*/ }) {
-                Icon(
-                    painter = painterResource(id = R.drawable.ic_baseline_account_circle_24),
-                    contentDescription = "account_icon",
-                    modifier = Modifier
-                        .size(32.dp),
-                    tint = Color.LightGray
-                )
-            }
-        }
-    }
+    BottomNavBar()
 }
 
 

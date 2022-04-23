@@ -3,6 +3,7 @@
   <component name="DesignSurface">
     <option name="filePathToZoomLevelMap">
       <map>
+        <entry key="..\:/android/MAPS/Hitch-hiking-app/hitch-hiking-app-front/app/src/main/res/drawable/ic_baseline_arrow_back_24.xml" value="0.117" />
         <entry key="..\:/android/MAPS/Hitch-hiking-app/hitch-hiking-app-front/app/src/main/res/layout/layout_map.xml" value="0.358695652173913" />
       </map>
     </option>

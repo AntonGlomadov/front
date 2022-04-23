@@ -6,13 +6,13 @@ import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.collectAsState
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.PathEffect
 import androidx.compose.ui.input.pointer.pointerInput
+import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.unit.dp
@@ -29,7 +29,7 @@ import com.haberturm.hitchhikingapp.ui.searchDirection.ArgKeys.END_POINT_LAT
 import com.haberturm.hitchhikingapp.ui.searchDirection.ArgKeys.END_POINT_LNG
 import com.haberturm.hitchhikingapp.ui.searchDirection.ArgKeys.START_POINT_LAT
 import com.haberturm.hitchhikingapp.ui.searchDirection.ArgKeys.START_POINT_LNG
-import com.haberturm.hitchhikingapp.ui.views.LetsGoButton
+import com.haberturm.hitchhikingapp.ui.views.OvalButton
 import com.haberturm.hitchhikingapp.ui.views.SearchRow
 
 
@@ -159,11 +159,15 @@ fun SearchDirection(
                     value = viewModel.endPointFormattedAddress
                 )
             }
+            val configuration = LocalConfiguration.current
             Row(
                 horizontalArrangement = Arrangement.Center,
                 modifier = Modifier.fillMaxWidth()
             ) {
-                LetsGoButton({})
+                OvalButton({}, modifier = Modifier.width(
+                    configuration.screenWidthDp.dp * 0.5f
+                )
+                    .height(50.dp),)
             }
         }
     }

@@ -17,6 +17,8 @@ import com.google.android.gms.maps.model.LatLngBounds
 import com.google.maps.android.compose.CameraPositionState
 import com.haberturm.hitchhikingapp.R
 import com.haberturm.hitchhikingapp.data.network.googleApi.pojo.reverseGeocode.ReverseGeocodeResponse
+import com.haberturm.hitchhikingapp.ui.auth.login.PhoneErrors
+import com.haberturm.hitchhikingapp.ui.auth.reg.RegErrors
 import com.haberturm.hitchhikingapp.ui.model.GeocodeUiModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch
@@ -98,10 +100,10 @@ object Util {
         bounds: LatLngBounds,
         cameraPositionState: CameraPositionState,
         coroutineScope: CoroutineScope
-    ){
+    ) {
         coroutineScope.launch {
             cameraPositionState.animate(
-                CameraUpdateFactory.newLatLngBounds(bounds,300)
+                CameraUpdateFactory.newLatLngBounds(bounds, 300)
             )
         }
     }
@@ -138,22 +140,93 @@ object Util {
         return startPoint.distanceTo(endPoint).toDouble()
     }
 
-    fun setRightBound(source: LatLng, destination:LatLng): LatLngBounds{
+    fun setRightBound(source: LatLng, destination: LatLng): LatLngBounds {
         return if (source.latitude > destination.latitude &&
-            source.longitude > destination.longitude) {
+            source.longitude > destination.longitude
+        ) {
             LatLngBounds(destination, source)
         } else if (source.longitude > destination.longitude) {
             LatLngBounds(
                 LatLng(source.latitude, destination.longitude),
-                LatLng(destination.latitude, source.longitude))
+                LatLng(destination.latitude, source.longitude)
+            )
         } else if (source.latitude > destination.latitude) {
             LatLngBounds(
                 LatLng(destination.latitude, source.longitude),
-                LatLng(source.latitude, destination.longitude));
+                LatLng(source.latitude, destination.longitude)
+            );
         } else {
             LatLngBounds(source, destination);
         }
     }
 
+    fun checkNumber(number: String): TextFieldState {
+        if (number.length !in 6..13) {
+            return TextFieldState.Failure(PhoneErrors.LENGTH_ERR)
+        }
+        if (number[0] != '+') {
+            return TextFieldState.Failure(PhoneErrors.PLUS_START_ERR)
+        }
+        if (
+            number.filter {
+                it == '+'
+            }.length > 1
+        ) {
+            return TextFieldState.Failure(PhoneErrors.WRONG_FORMAT_ERR)
+        }
+        return TextFieldState.Success
+    }
+
+    fun checkPassword(password: String): TextFieldState {
+        if (password.length !in 8..16) {
+            return TextFieldState.Failure(RegErrors.PASSWORD_ERR)
+        }
+        if (password.none { it.isDigit() }) {
+            return TextFieldState.Failure(RegErrors.PASSWORD_ERR)
+        }
+        return TextFieldState.Success
+    }
+
+    fun repeatPasswordCheck(password: String, repeatPassword: String): TextFieldState {
+        if (password != repeatPassword) {
+            return TextFieldState.Failure(RegErrors.PASSWORDS_DONT_MATCH)
+        } else {
+            return TextFieldState.Success
+        }
+    }
+
+    fun checkEmail(email: String): TextFieldState {
+        if (email.none { it == '@' }) {
+            return TextFieldState.Failure(RegErrors.WRONG_FORMAT)
+        } else {
+            return TextFieldState.Success
+        }
+    }
+
+    fun checkDate(date: String): TextFieldState {
+        if (
+            date.length != 10 ||
+            date[2] != '.' ||
+            date[5] != '.'
+                ){
+            return TextFieldState.Failure(RegErrors.EMAIL_ERR)
+        }else{
+            return TextFieldState.Success
+        }
+    }
+
+    fun checkName(name: String):TextFieldState{
+        return if(name.isBlank())
+            TextFieldState.Failure(RegErrors.NAME_ERR)
+        else
+            TextFieldState.Success
+    }
+
+
+    sealed class TextFieldState {
+        data class Failure(val error: String) : TextFieldState()
+        object Success : TextFieldState()
+        object None : TextFieldState()
+    }
 }
 
