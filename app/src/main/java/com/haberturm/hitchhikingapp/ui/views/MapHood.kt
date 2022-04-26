@@ -63,17 +63,13 @@ fun MapHood(
             StrokeText("Выберите конечную точку")
         }
 
-
-
         Box(
             modifier = Modifier.fillMaxSize(),
             contentAlignment = Alignment.BottomCenter
 
         ) {
             val checkedState = remember { mutableStateOf(false) } // true - driver, false - companion
-            if (viewModel.currentUserMode.collectAsState().value is
-                        UserMode.Driver
-            ) {
+            if (viewModel.currentUserMode.collectAsState().value is UserMode.Driver) {
                 checkedState.value = true
             } else {
                 checkedState.value = false
@@ -81,7 +77,6 @@ fun MapHood(
             Switch(
                 checked = checkedState.value,
                 onCheckedChange = {
-
                     val mode = if(!checkedState.value){
                         UserMode.Driver
                     }else{

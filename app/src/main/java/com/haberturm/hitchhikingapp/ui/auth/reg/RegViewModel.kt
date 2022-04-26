@@ -39,6 +39,16 @@ class RegViewModel @Inject constructor(
     private val _nameFieldState = MutableStateFlow<Util.TextFieldState>(Util.TextFieldState.None)
     val nameFieldState = _nameFieldState.asStateFlow()
 
+    //surname
+    private val _surname = MutableStateFlow<String>("")
+    val surname = _surname .asStateFlow()
+
+    private val _surnameFieldFocusState = MutableStateFlow<Boolean>(false) // true - onFocus, false - is not focused
+    val surnameFieldFocusState = _surnameFieldFocusState.asStateFlow()
+
+    private val _surnameFieldState = MutableStateFlow<Util.TextFieldState>(Util.TextFieldState.None)
+    val surnameFieldState = _nameFieldState.asStateFlow()
+
     //password
     private val _passwordFieldFocusState =
         MutableStateFlow<Boolean>(false) // true - onFocus, false - is not focused
@@ -107,6 +117,13 @@ class RegViewModel @Inject constructor(
             }
             is RegEvent.UpdateName ->{
                 _name.value = event.name
+            }
+            //surname
+            is RegEvent.OnSurnameFieldFocused -> {
+                _surnameFieldFocusState.value = event.focusState
+            }
+            is RegEvent.UpdateSurname ->{
+                _surname.value = event.surname
             }
             //password
             is RegEvent.UpdatePassword -> {
