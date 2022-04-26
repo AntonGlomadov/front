@@ -18,4 +18,8 @@ object AllApi {
     const val BASE_URL_DRIVER = "http://localhost:1256/"
     private const val DRIVER_PATH = "companion/createDrive/"
     const val DRIVE_CREATE = DRIVER_PATH
+
+    const val BASE_URL_SIGNUP = "http://localhost:1212/"
+    private const val SIGNUP_PATH = "registration/"
+    const val SIGNUP = SIGNUP_PATH
 }

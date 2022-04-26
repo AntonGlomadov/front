@@ -1,16 +1,23 @@
 package com.haberturm.hitchhikingapp.ui.auth.reg
 
 import android.util.Log
+import androidx.compose.ui.platform.LocalDensity
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
+import androidx.lifecycle.viewModelScope
+import com.haberturm.hitchhikingapp.data.network.backend.auth.pojo.SignUpRequest
 import com.haberturm.hitchhikingapp.data.repositories.auth.AuthRepository
 import com.haberturm.hitchhikingapp.ui.auth.login.TAG
+import com.haberturm.hitchhikingapp.ui.home.HomeEvent
 import com.haberturm.hitchhikingapp.ui.home.HomeRoute
 import com.haberturm.hitchhikingapp.ui.nav.RouteNavigator
 import com.haberturm.hitchhikingapp.ui.util.Util
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.*
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import javax.inject.Inject
 
 @HiltViewModel
@@ -19,11 +26,16 @@ class RegViewModel @Inject constructor(
     private val routeNavigator: RouteNavigator,
     private val repository: AuthRepository
 ) : ViewModel(), RouteNavigator by routeNavigator {
+
+    private val _uiEvent = Channel<RegEvent>()
+    val uiEvent = _uiEvent.receiveAsFlow()
+
     //phone number
     private val _phoneNumber = MutableStateFlow<String>("")
     val phoneNumber = _phoneNumber.asStateFlow()
 
-    private val _phoneFieldFocusState = MutableStateFlow<Boolean>(false) // true - onFocus, false - is not focused
+    private val _phoneFieldFocusState =
+        MutableStateFlow<Boolean>(false) // true - onFocus, false - is not focused
     val phoneFieldFocusState = _phoneFieldFocusState.asStateFlow()
 
     private val _phoneFieldState = MutableStateFlow<Util.TextFieldState>(Util.TextFieldState.None)
@@ -33,7 +45,8 @@ class RegViewModel @Inject constructor(
     private val _name = MutableStateFlow<String>("")
     val name = _name.asStateFlow()
 
-    private val _nameFieldFocusState = MutableStateFlow<Boolean>(false) // true - onFocus, false - is not focused
+    private val _nameFieldFocusState =
+        MutableStateFlow<Boolean>(false) // true - onFocus, false - is not focused
     val nameFieldFocusState = _nameFieldFocusState.asStateFlow()
 
     private val _nameFieldState = MutableStateFlow<Util.TextFieldState>(Util.TextFieldState.None)
@@ -41,9 +54,10 @@ class RegViewModel @Inject constructor(
 
     //surname
     private val _surname = MutableStateFlow<String>("")
-    val surname = _surname .asStateFlow()
+    val surname = _surname.asStateFlow()
 
-    private val _surnameFieldFocusState = MutableStateFlow<Boolean>(false) // true - onFocus, false - is not focused
+    private val _surnameFieldFocusState =
+        MutableStateFlow<Boolean>(false) // true - onFocus, false - is not focused
     val surnameFieldFocusState = _surnameFieldFocusState.asStateFlow()
 
     private val _surnameFieldState = MutableStateFlow<Util.TextFieldState>(Util.TextFieldState.None)
@@ -54,7 +68,8 @@ class RegViewModel @Inject constructor(
         MutableStateFlow<Boolean>(false) // true - onFocus, false - is not focused
     val passwordFieldFocusState = _passwordFieldFocusState.asStateFlow()
 
-    private val _passwordFieldState = MutableStateFlow<Util.TextFieldState>(Util.TextFieldState.None)
+    private val _passwordFieldState =
+        MutableStateFlow<Util.TextFieldState>(Util.TextFieldState.None)
     val passwordFieldState = _passwordFieldState.asStateFlow()
 
     private val _password = MutableStateFlow<String>("")
@@ -69,7 +84,8 @@ class RegViewModel @Inject constructor(
         MutableStateFlow<Boolean>(false) // true - onFocus, false - is not focused
     val repeatPasswordFieldFocusState = _repeatPasswordFieldFocusState.asStateFlow()
 
-    private val _repeatPasswordFieldState = MutableStateFlow<Util.TextFieldState>(Util.TextFieldState.None)
+    private val _repeatPasswordFieldState =
+        MutableStateFlow<Util.TextFieldState>(Util.TextFieldState.None)
     val repeatPasswordFieldState = _repeatPasswordFieldState.asStateFlow()
 
     private val _repeatPassword = MutableStateFlow<String>("")
@@ -78,20 +94,24 @@ class RegViewModel @Inject constructor(
     private val _repeatPasswordVisibilityState =
         MutableStateFlow<Boolean>(false) // true - visible, false - invisible
     val repeatPasswordVisibilityState = _repeatPasswordVisibilityState.asStateFlow()
+
     //birth
     private val _birth = MutableStateFlow<String>("")
     val birth = _birth.asStateFlow()
 
-    private val _birthFieldFocusState = MutableStateFlow<Boolean>(false) // true - onFocus, false - is not focused
+    private val _birthFieldFocusState =
+        MutableStateFlow<Boolean>(false) // true - onFocus, false - is not focused
     val birthFieldFocusState = _birthFieldFocusState.asStateFlow()
 
     private val _birthFieldState = MutableStateFlow<Util.TextFieldState>(Util.TextFieldState.None)
     val birthFieldState = _birthFieldState.asStateFlow()
+
     //email
     private val _email = MutableStateFlow<String>("")
     val email = _email.asStateFlow()
 
-    private val _emailFieldFocusState = MutableStateFlow<Boolean>(false) // true - onFocus, false - is not focused
+    private val _emailFieldFocusState =
+        MutableStateFlow<Boolean>(false) // true - onFocus, false - is not focused
     val emailFieldFocusState = _emailFieldFocusState.asStateFlow()
 
     private val _emailFieldState = MutableStateFlow<Util.TextFieldState>(Util.TextFieldState.None)
@@ -108,21 +128,21 @@ class RegViewModel @Inject constructor(
             is RegEvent.OnPhoneFieldFocused -> {
                 _phoneFieldFocusState.value = event.focusState
             }
-            is RegEvent.UpdateNumber ->{
+            is RegEvent.UpdateNumber -> {
                 _phoneNumber.value = event.number
             }
             //name
             is RegEvent.OnNameFieldFocused -> {
                 _nameFieldFocusState.value = event.focusState
             }
-            is RegEvent.UpdateName ->{
+            is RegEvent.UpdateName -> {
                 _name.value = event.name
             }
             //surname
             is RegEvent.OnSurnameFieldFocused -> {
                 _surnameFieldFocusState.value = event.focusState
             }
-            is RegEvent.UpdateSurname ->{
+            is RegEvent.UpdateSurname -> {
                 _surname.value = event.surname
             }
             //password
@@ -163,26 +183,46 @@ class RegViewModel @Inject constructor(
             is RegEvent.SignUp -> {
                 _phoneFieldState.value = Util.checkNumber(phoneNumber.value)
                 _passwordFieldState.value = Util.checkPassword(password.value)
-                _repeatPasswordFieldState.value = Util.repeatPasswordCheck(password.value, repeatPassword.value)
+                _repeatPasswordFieldState.value =
+                    Util.repeatPasswordCheck(password.value, repeatPassword.value)
                 _birthFieldState.value = Util.checkDate(birth.value)
                 _emailFieldState.value = Util.checkEmail(email.value)
                 _nameFieldState.value = Util.checkName(name.value)
                 if (
                     !(phoneFieldState.value != Util.TextFieldState.Success ||
-                    passwordFieldState.value != Util.TextFieldState.Success ||
-                    repeatPasswordFieldState.value != Util.TextFieldState.Success ||
-                    birthFieldState.value != Util.TextFieldState.Success ||
-                    emailFieldState.value != Util.TextFieldState.Success ||
-                    nameFieldState.value != Util.TextFieldState.Success)
-                ){
-                    repository.signUp(
-                        phoneNumber = phoneNumber.value,
-                        name = name.value,
-                        password = password.value,
-                        birth = birth.value,
-                        email = email.value
-                    )
-                    navigateToRoute(HomeRoute.get(0))
+                            passwordFieldState.value != Util.TextFieldState.Success ||
+                            repeatPasswordFieldState.value != Util.TextFieldState.Success ||
+                            birthFieldState.value != Util.TextFieldState.Success ||
+                            emailFieldState.value != Util.TextFieldState.Success ||
+                            nameFieldState.value != Util.TextFieldState.Success)
+                ) {
+                    viewModelScope.launch {
+                        withContext(Dispatchers.IO) {
+                            try {
+                                val a = repository.signUp(
+                                    SignUpRequest(
+                                        name = name.value,
+                                        surname = surname.value,
+                                        email = email.value,
+                                        password = password.value,
+                                        birth = birth.value,
+                                        phoneNumber = phoneNumber.value,
+                                    )
+                                )
+
+                                a.catch { e ->
+                                    throw (e)
+                                }
+                                    .collect {
+                                        Log.i("REG", it)
+                                        navigateToRoute(HomeRoute.get(0))
+                                    }
+                            } catch (e: Exception) {
+                                Log.i("REGERR", e.toString())
+                                sendUiEvent(RegEvent.Error("Ошибка"))
+                            }
+                        }
+                    }
                 }
             }
         }
@@ -190,5 +230,11 @@ class RegViewModel @Inject constructor(
 
     private fun getPhoneNumber(savedStateHandle: SavedStateHandle): String {
         return RegRoute.getArgFrom(savedStateHandle)
+    }
+
+    private fun sendUiEvent(event: RegEvent) {
+        viewModelScope.launch {
+            _uiEvent.send(event)
+        }
     }
 }

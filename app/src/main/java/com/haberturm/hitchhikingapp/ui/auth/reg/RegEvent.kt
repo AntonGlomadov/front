@@ -26,6 +26,7 @@ sealed class RegEvent{
     data class OnEmailFieldFocused(val focusState: Boolean) : RegEvent()
 
     object SignUp : RegEvent()
+    data class Error(val error:String) : RegEvent()
 }
 
 object RegErrors{

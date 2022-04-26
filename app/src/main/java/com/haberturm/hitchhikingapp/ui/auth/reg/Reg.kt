@@ -37,11 +37,10 @@ import com.haberturm.hitchhikingapp.ui.nav.NavRoute
 import com.haberturm.hitchhikingapp.ui.nav.getOrThrow
 import com.haberturm.hitchhikingapp.ui.util.PhoneNumberVisualTransformation
 import com.haberturm.hitchhikingapp.ui.util.Util
-import com.haberturm.hitchhikingapp.ui.views.HintText
-import com.haberturm.hitchhikingapp.ui.views.OvalButton
-import com.haberturm.hitchhikingapp.ui.views.ProperTextField
+import com.haberturm.hitchhikingapp.ui.views.*
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 const val PHONE_NUMBER = "PHONE_NUMBER"
@@ -90,6 +89,30 @@ private fun Reg(viewModel: RegViewModel) {
             )
         },
         content = {
+            val error = remember {
+                mutableStateOf("")
+            }
+            LaunchedEffect(key1 = true, block = {
+                viewModel.uiEvent.collect{event->
+                    when(event){
+                        is RegEvent.Error ->{
+                            error.value = event.error
+                        }
+                        else -> {Unit}
+                    }
+                }
+            })
+
+            if(error.value.isNotEmpty()){
+                ErrorAlertDialog(
+                    title = "Ошибка",
+                    text = error.value,
+                    button1Text = "ok",
+                    button2Text = "ok"
+                ) {
+                    error.value = ""
+                }
+            }
             val focusManager = LocalFocusManager.current
             Column(
                 modifier = Modifier
