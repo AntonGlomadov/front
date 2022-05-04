@@ -31,6 +31,8 @@ sealed class HomeEvent {
     data class UpdateCarNumberTextValue(val textValue:String) : HomeEvent()
     data class UpdateCarInfoTextValue(val textValue:String) : HomeEvent()
     data class UpdateCarColorTextValue(val textValue:String) : HomeEvent()
+    object SendAdditionalInfo : HomeEvent()
+    object OnDismissAdditionalInfo : HomeEvent()
 
 }
 

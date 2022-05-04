@@ -16,7 +16,7 @@ import com.haberturm.hitchhikingapp.ui.auth.reg.RegRoute
 fun ScreenHolder(navHostController: NavHostController, paddingValues: PaddingValues) {
     NavHost(
         navController = navHostController,
-        startDestination = LoginRoute.route,
+        startDestination = HomeRoute.route,
         modifier = Modifier.padding(paddingValues)
     ) {
         LoginRoute.composable(this, navHostController)

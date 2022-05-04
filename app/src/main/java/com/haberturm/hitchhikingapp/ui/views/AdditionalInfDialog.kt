@@ -27,12 +27,16 @@ fun AdditionalInfDialog(
     carInfoOnValueChange: (String) -> Unit,
     carColorTextValue: String,
     carColorOnValueChange: (String) -> Unit,
-
-    ) {
+    sendAdditionalInfo: () -> Unit,
+    onDismiss: () -> Unit
+) {
     val openDialog = remember { mutableStateOf(true) }
     if (openDialog.value) {
         AlertDialog(
-            onDismissRequest = { openDialog.value = false },
+            onDismissRequest = {
+                onDismiss()
+                openDialog.value = false
+            },
             title = {
                 Text(
                     text = "Заполните дополнитнльную информацию",
@@ -85,7 +89,10 @@ fun AdditionalInfDialog(
             },
             buttons = {
                 OvalButton(
-                    onClick = { /*TODO*/ },
+                    onClick = {
+                        sendAdditionalInfo()
+                        openDialog.value = false
+                    },
                     text = "Отправить",
                     modifier = Modifier
                         .padding(
@@ -110,6 +117,8 @@ fun AdditionalInfDialogPrev() {
         "",
         {},
         "",
+        {},
+        {},
         {}
     )
 }
