@@ -1,4 +1,4 @@
-package com.haberturm.hitchhikingapp.ui.home
+package com.haberturm.hitchhikingapp.ui.screens.home
 
 import android.annotation.SuppressLint
 import android.content.Context

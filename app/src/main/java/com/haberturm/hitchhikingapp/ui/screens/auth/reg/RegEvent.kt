@@ -1,4 +1,4 @@
-package com.haberturm.hitchhikingapp.ui.auth.reg
+package com.haberturm.hitchhikingapp.ui.screens.auth.reg
 
 sealed class RegEvent{
     //phone

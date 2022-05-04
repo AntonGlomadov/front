@@ -17,8 +17,8 @@ import com.google.android.gms.maps.model.LatLngBounds
 import com.google.maps.android.compose.CameraPositionState
 import com.haberturm.hitchhikingapp.R
 import com.haberturm.hitchhikingapp.data.network.googleApi.pojo.reverseGeocode.ReverseGeocodeResponse
-import com.haberturm.hitchhikingapp.ui.auth.login.PhoneErrors
-import com.haberturm.hitchhikingapp.ui.auth.reg.RegErrors
+import com.haberturm.hitchhikingapp.ui.screens.auth.login.PhoneErrors
+import com.haberturm.hitchhikingapp.ui.screens.auth.reg.RegErrors
 import com.haberturm.hitchhikingapp.ui.model.GeocodeUiModel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.launch

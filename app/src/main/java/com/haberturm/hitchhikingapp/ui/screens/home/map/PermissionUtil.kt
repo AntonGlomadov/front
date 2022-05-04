@@ -1,4 +1,4 @@
-package com.haberturm.hitchhikingapp.ui.home.map
+package com.haberturm.hitchhikingapp.ui.screens.home.map
 
 import android.Manifest
 import android.util.Log

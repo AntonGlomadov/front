@@ -9,7 +9,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.maps.model.LatLng
 import com.haberturm.hitchhikingapp.data.repositories.searchDirection.SearchDirectionRepository
-import com.haberturm.hitchhikingapp.ui.home.HomeEvent
+import com.haberturm.hitchhikingapp.ui.screens.home.HomeEvent
 import com.haberturm.hitchhikingapp.ui.nav.RouteNavigator
 import com.haberturm.hitchhikingapp.ui.util.Util.toUiModel
 import dagger.hilt.android.lifecycle.HiltViewModel

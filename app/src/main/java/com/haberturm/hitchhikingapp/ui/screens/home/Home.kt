@@ -1,40 +1,33 @@
-package com.haberturm.hitchhikingapp.ui.home
+package com.haberturm.hitchhikingapp.ui.screens.home
 
 import android.Manifest
 import android.util.Log
-import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.EnterTransition
 import androidx.compose.animation.fadeOut
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.*
-import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.compose.ui.res.dimensionResource
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.haberturm.hitchhikingapp.R
-import com.haberturm.hitchhikingapp.ui.home.map.GetPermissions
-import com.haberturm.hitchhikingapp.ui.home.map.isPermanentlyDenied
+import com.haberturm.hitchhikingapp.ui.screens.home.map.GetPermissions
+import com.haberturm.hitchhikingapp.ui.screens.home.map.isPermanentlyDenied
 import com.haberturm.hitchhikingapp.ui.nav.NavRoute
 import com.haberturm.hitchhikingapp.ui.views.ErrorAlertDialog
-import com.haberturm.hitchhikingapp.ui.home.map.*
+import com.haberturm.hitchhikingapp.ui.screens.home.map.*
 import com.haberturm.hitchhikingapp.ui.nav.NavConst
 import com.haberturm.hitchhikingapp.ui.views.BottomNavBar
 import com.haberturm.hitchhikingapp.ui.views.SelectModeDialog
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
-import user.userdb.UserEntity
 
 
 const val KEY_HOME_INDEX = "HOME_PAGE_INDEX"

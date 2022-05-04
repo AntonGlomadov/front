@@ -1,7 +1,6 @@
-package com.haberturm.hitchhikingapp.ui.home.map
+package com.haberturm.hitchhikingapp.ui.screens.home.map
 
 import android.os.Bundle
-import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.remember
@@ -10,7 +9,6 @@ import androidx.compose.ui.platform.LocalLifecycleOwner
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
-import com.google.accompanist.permissions.MultiplePermissionsState
 import com.google.android.libraries.maps.MapView
 
 @OptIn(ExperimentalPermissionsApi::class)

@@ -1,12 +1,11 @@
-package com.haberturm.hitchhikingapp.ui.auth.login
+package com.haberturm.hitchhikingapp.ui.screens.auth.login
 
 import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.haberturm.hitchhikingapp.data.repositories.auth.AuthRepository
-import com.haberturm.hitchhikingapp.ui.auth.password.PasswordRoute
-import com.haberturm.hitchhikingapp.ui.auth.reg.RegRoute
-import com.haberturm.hitchhikingapp.ui.home.HomeRoute
+import com.haberturm.hitchhikingapp.ui.screens.auth.password.PasswordRoute
+import com.haberturm.hitchhikingapp.ui.screens.auth.reg.RegRoute
 import com.haberturm.hitchhikingapp.ui.nav.RouteNavigator
 import com.haberturm.hitchhikingapp.ui.util.Util
 import dagger.hilt.android.lifecycle.HiltViewModel

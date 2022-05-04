@@ -1,9 +1,7 @@
-package com.haberturm.hitchhikingapp.ui.home
+package com.haberturm.hitchhikingapp.ui.screens.home
 
 import android.content.Context
 import com.google.android.gms.maps.model.LatLng
-import com.haberturm.hitchhikingapp.data.network.ApiState
-import java.lang.Exception
 
 sealed class HomeEvent {
     data class IsMapReady(val isLocationReady: Boolean, val isMapReady: Boolean) : HomeEvent()

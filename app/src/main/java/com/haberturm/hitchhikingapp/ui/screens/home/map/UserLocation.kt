@@ -1,4 +1,4 @@
-package com.haberturm.hitchhikingapp.ui.home.map
+package com.haberturm.hitchhikingapp.ui.screens.home.map
 
 //I WILL USE IT LATER
 

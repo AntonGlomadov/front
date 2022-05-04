@@ -1,4 +1,4 @@
-package com.haberturm.hitchhikingapp.ui.auth.password
+package com.haberturm.hitchhikingapp.ui.screens.auth.password
 
 
 sealed class PasswordEvent{
