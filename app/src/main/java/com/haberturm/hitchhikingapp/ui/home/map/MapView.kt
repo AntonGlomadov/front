@@ -29,10 +29,7 @@ import com.haberturm.hitchhikingapp.ui.nav.NavigationState
 import com.haberturm.hitchhikingapp.ui.util.Util
 import com.haberturm.hitchhikingapp.ui.util.Util.defaultZoom
 import com.haberturm.hitchhikingapp.ui.util.Util.moveCamera
-import com.haberturm.hitchhikingapp.ui.views.ErrorAlertDialog
-import com.haberturm.hitchhikingapp.ui.views.MapHood
-import com.haberturm.hitchhikingapp.ui.views.MovingMarker
-import com.haberturm.hitchhikingapp.ui.views.UserLocationMarker
+import com.haberturm.hitchhikingapp.ui.views.*
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
@@ -116,7 +113,7 @@ fun GoogleMapView(
                         event.animation
                     )
                 }
-                is HomeEvent.ShowError ->{
+                is HomeEvent.ShowError -> {
                     error.value = event.e.message ?: "unknown error"
                 }
                 else -> {
@@ -124,7 +121,7 @@ fun GoogleMapView(
             }
         }
     }
-    if(error.value.isNotEmpty()){
+    if (error.value.isNotEmpty()) {
         ErrorAlertDialog(
             title = "Ошибка",
             text = error.value,
@@ -134,6 +131,24 @@ fun GoogleMapView(
             error.value = ""
         }
     }
+    val showAdditionalRegistration = viewModel.showAdditionalRegistration.collectAsState().value
+    if (showAdditionalRegistration) {
+        AdditionalInfDialog(
+            carNumberTextValue = viewModel.carNumberTextValue.collectAsState().value,
+            carNumberOnValueChange = fun(valueText: String) {
+                viewModel.onEvent(HomeEvent.UpdateCarNumberTextValue(valueText))
+            },
+            carInfoTextValue = viewModel.carInfoTextValue.collectAsState().value,
+            carInfoOnValueChange =fun(valueText: String) {
+                viewModel.onEvent(HomeEvent.UpdateCarInfoTextValue(valueText))
+            },
+            carColorTextValue = viewModel.carColorTextValue.collectAsState().value,
+            carColorOnValueChange = fun(valueText: String) {
+                viewModel.onEvent(HomeEvent.UpdateCarColorTextValue(valueText))
+            },
+        )
+    }
+
 
     val currentMarker = viewModel.currentMarkerRes.collectAsState()
     val coroutineScope = rememberCoroutineScope()

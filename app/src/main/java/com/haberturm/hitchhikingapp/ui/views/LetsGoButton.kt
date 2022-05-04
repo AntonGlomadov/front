@@ -15,7 +15,7 @@ import androidx.compose.ui.unit.dp
 @Composable
 fun OvalButton(
     onClick: () -> Unit,
-    text: String = "Поехали!",
+    text: String,
     /**float size, % of screen size (ex: 0.5f - half screen width)*/
     modifier: Modifier
 
@@ -44,9 +44,11 @@ fun LetsGoButtonPrev() {
     val configuration = LocalConfiguration.current
     OvalButton(
         {},
-        modifier = Modifier.width(
-            configuration.screenWidthDp.dp * 0.5f
-        )
+        modifier = Modifier
+            .width(
+                configuration.screenWidthDp.dp * 0.5f
+            )
             .height(50.dp),
+        text = "Поехали!"
     )
 }
