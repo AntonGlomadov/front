@@ -57,6 +57,10 @@ class HomeRepositoryImpl(
         return flow { DriverRetrofit.driverRetrofit.postCreateDrive(data) }
     }
 
+    override fun checkIfDriverExist(phoneNumber: String): Boolean {
+        return false
+    }
+
 
     @SuppressLint("MissingPermission")
     override suspend fun getUserLocationWithApi(context: Context, coroutineScope: CoroutineScope) {

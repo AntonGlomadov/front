@@ -26,6 +26,12 @@ sealed class HomeEvent {
     data class ChangeUserMode(val mode: UserMode) : HomeEvent()
 
     data class ShowError(val e: Throwable): HomeEvent()
+
+    //additional dialog
+    data class UpdateCarNumberTextValue(val textValue:String) : HomeEvent()
+    data class UpdateCarInfoTextValue(val textValue:String) : HomeEvent()
+    data class UpdateCarColorTextValue(val textValue:String) : HomeEvent()
+
 }
 
 const val A_MARKER_KEY = "A_MARKER"

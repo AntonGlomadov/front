@@ -37,11 +37,10 @@ import com.haberturm.hitchhikingapp.ui.nav.NavRoute
 import com.haberturm.hitchhikingapp.ui.nav.getOrThrow
 import com.haberturm.hitchhikingapp.ui.util.PhoneNumberVisualTransformation
 import com.haberturm.hitchhikingapp.ui.util.Util
-import com.haberturm.hitchhikingapp.ui.views.HintText
-import com.haberturm.hitchhikingapp.ui.views.OvalButton
-import com.haberturm.hitchhikingapp.ui.views.ProperTextField
+import com.haberturm.hitchhikingapp.ui.views.*
 import kotlinx.coroutines.coroutineScope
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 
 const val PHONE_NUMBER = "PHONE_NUMBER"
@@ -90,6 +89,30 @@ private fun Reg(viewModel: RegViewModel) {
             )
         },
         content = {
+            val error = remember {
+                mutableStateOf("")
+            }
+            LaunchedEffect(key1 = true, block = {
+                viewModel.uiEvent.collect{event->
+                    when(event){
+                        is RegEvent.Error ->{
+                            error.value = event.error
+                        }
+                        else -> {Unit}
+                    }
+                }
+            })
+
+            if(error.value.isNotEmpty()){
+                ErrorAlertDialog(
+                    title = "Ошибка",
+                    text = error.value,
+                    button1Text = "ok",
+                    button2Text = "ok"
+                ) {
+                    error.value = ""
+                }
+            }
             val focusManager = LocalFocusManager.current
             Column(
                 modifier = Modifier
@@ -99,13 +122,14 @@ private fun Reg(viewModel: RegViewModel) {
                         detectTapGestures(onTap = {
                             focusManager.clearFocus()
                         })
-                    },
+                    }
+                    .verticalScroll(rememberScrollState()),
                 verticalArrangement = Arrangement.SpaceBetween,
             ) {
                 Column(
                     Modifier
                         .imePadding()
-                        .navigationBarsPadding()) {
+                ) {
                     Spacer(modifier = Modifier
                         .fillMaxWidth()
                         .height(1.dp)
@@ -117,7 +141,30 @@ private fun Reg(viewModel: RegViewModel) {
                         modifier = Modifier.padding(8.dp)
                     )
                     PhoneNumberTextField(viewModel = viewModel)
-                    NameTextField(viewModel = viewModel)
+                    //name
+                    NameTextField(
+                        fieldState = viewModel.nameFieldState.collectAsState().value,
+                        valueText = viewModel.name.collectAsState().value,
+                        onFocus = fun(focusState: Boolean) {
+                            viewModel.onEvent(RegEvent.OnNameFieldFocused(focusState))
+                        },
+                        onValueChange = fun(name: String) {
+                            viewModel.onEvent(RegEvent.UpdateName(name))
+                        },
+                        placeholder = stringResource(id = R.string.enter_name_placeholder)
+                    )
+                    //surname
+                    NameTextField(
+                        fieldState = viewModel.surnameFieldState.collectAsState().value,
+                        valueText = viewModel.surname.collectAsState().value,
+                        onFocus = fun(focusState: Boolean) {
+                            viewModel.onEvent(RegEvent.OnSurnameFieldFocused(focusState))
+                        },
+                        onValueChange = fun(surname: String) {
+                            viewModel.onEvent(RegEvent.UpdateSurname(surname))
+                        },
+                        placeholder = stringResource(id = R.string.enter_surname_placeholder)
+                    )
                     //password
                     PasswordTextField(
                         fieldState = viewModel.passwordFieldState.collectAsState().value,
@@ -236,13 +283,19 @@ private fun PhoneNumberTextField(viewModel: RegViewModel) {
 }
 
 @Composable
-private fun NameTextField(viewModel: RegViewModel) {
+private fun NameTextField(
+    fieldState: Util.TextFieldState,
+    valueText: String,
+    onFocus: (Boolean) -> Unit,
+    onValueChange: (String) -> Unit,
+    placeholder: String
+) {
     val nameFieldError = remember {
         mutableStateOf("")
     }
-    if (viewModel.nameFieldState.collectAsState().value is Util.TextFieldState.Failure) {
+    if (fieldState is Util.TextFieldState.Failure) {
         nameFieldError.value =
-            (viewModel.nameFieldState.collectAsState().value as Util.TextFieldState.Failure).error
+            (fieldState as Util.TextFieldState.Failure).error
     }
     ProperTextField(
         modifier = Modifier
@@ -261,15 +314,11 @@ private fun NameTextField(viewModel: RegViewModel) {
             keyboardType = KeyboardType.Text,
             imeAction = ImeAction.Next
         ),
-        valueText = viewModel.name.collectAsState().value,
+        valueText = valueText,
         isPhoneInput = false,
-        placeholder = stringResource(R.string.enter_name_placeholder),
-        onFocus = fun(focusState: Boolean) {
-            viewModel.onEvent(RegEvent.OnNameFieldFocused(focusState))
-        },
-        onValueChange = fun(name: String) {
-            viewModel.onEvent(RegEvent.UpdateName(name))
-        },
+        placeholder = placeholder,
+        onFocus = onFocus,
+        onValueChange = onValueChange,
         error = nameFieldError.value
     )
 }

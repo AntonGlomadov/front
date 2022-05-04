@@ -7,6 +7,9 @@ sealed class RegEvent{
     //name
     data class OnNameFieldFocused(val focusState: Boolean) : RegEvent()
     data class UpdateName(val name: String) : RegEvent()
+    //surname
+    data class OnSurnameFieldFocused(val focusState: Boolean) : RegEvent()
+    data class UpdateSurname(val surname: String) : RegEvent()
     //password
     data class UpdatePassword(val password:String) : RegEvent()
     data class OnPasswordFieldFocused(val focusState: Boolean) : RegEvent()
@@ -23,6 +26,7 @@ sealed class RegEvent{
     data class OnEmailFieldFocused(val focusState: Boolean) : RegEvent()
 
     object SignUp : RegEvent()
+    data class Error(val error:String) : RegEvent()
 }
 
 object RegErrors{

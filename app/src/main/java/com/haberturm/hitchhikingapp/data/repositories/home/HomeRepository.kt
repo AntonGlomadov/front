@@ -19,4 +19,5 @@ interface HomeRepository {
     fun getDirection(destination: String, origin: String): Flow<Direction>
     fun postCompanionFind(data: CompanionFindRequestData): Flow<List<CompanionFindResponseData>>
     fun postCreateDrive(data: DriveCreateRequestData): Flow<String>
+    fun checkIfDriverExist(phoneNumber: String): Boolean
 }

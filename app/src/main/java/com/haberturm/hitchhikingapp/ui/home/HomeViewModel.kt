@@ -102,6 +102,21 @@ class HomeViewModel @Inject constructor(
     private val _isDark = MutableStateFlow<Boolean>(false)
     val isDark: StateFlow<Boolean> = _isDark
 
+
+
+    //additional dialog
+    private val _showAdditionalRegistration = MutableStateFlow<Boolean>(false)
+    val showAdditionalRegistration: StateFlow<Boolean> = _showAdditionalRegistration
+
+    private val _carNumberTextValue = MutableStateFlow<String>("")
+    val carNumberTextValue = _carNumberTextValue.asStateFlow()
+
+    private val _carInfoTextValue = MutableStateFlow<String>("")
+    val carInfoTextValue = _carInfoTextValue.asStateFlow()
+
+    private val _carColorTextValue = MutableStateFlow<String>("")
+    val carColorTextValue = _carColorTextValue.asStateFlow()
+
     init {
         viewModelScope.launch {
             repository.homeRepositoryEvent.collect { event ->
@@ -339,43 +354,56 @@ class HomeViewModel @Inject constructor(
             }
 
             is HomeEvent.ChangeUserMode -> {
-                _currentUserMode.value = event.mode
-                sendUiEvent(
-                    HomeEvent.RelocateMarker(
-                        location = LatLng(location.value.latitude, location.value.longitude),
-                        animation = false
+                if(repository.checkIfDriverExist("ddd")){
+                    _currentUserMode.value = event.mode
+                    sendUiEvent(
+                        HomeEvent.RelocateMarker(
+                            location = LatLng(location.value.latitude, location.value.longitude),
+                            animation = false
+                        )
                     )
-                )
-                viewModelScope.launch {
-                    Log.i("modes", "in handler $event")
-                    delay(10)
-                    if (currentUserMode.value is UserMode.Driver) {
-                        _markerPicked.value = MarkerPicked.MarkerBPicked
-                        _aMarkerLocation.value =
-                            LatLng(location.value.latitude, location.value.longitude)
-                        _markerPlacedState.value = MarkerPlacedState(
-                            aPlaced = true,
-                            bPlaced = false
-                        )
-                        emitMarkerEvent(HomeEvent.MarkerPlaced(A_MARKER_KEY))
-                        if (isDark.value) {
-                            _currentMarkerRes.value = Util.bMarkerDark
+                    viewModelScope.launch {
+                        Log.i("modes", "in handler $event")
+                        delay(10)
+                        if (currentUserMode.value is UserMode.Driver) {
+                            _markerPicked.value = MarkerPicked.MarkerBPicked
+                            _aMarkerLocation.value =
+                                LatLng(location.value.latitude, location.value.longitude)
+                            _markerPlacedState.value = MarkerPlacedState(
+                                aPlaced = true,
+                                bPlaced = false
+                            )
+                            emitMarkerEvent(HomeEvent.MarkerPlaced(A_MARKER_KEY))
+                            if (isDark.value) {
+                                _currentMarkerRes.value = Util.bMarkerDark
+                            } else {
+                                _currentMarkerRes.value = Util.bMarkerLight
+                            }
                         } else {
-                            _currentMarkerRes.value = Util.bMarkerLight
-                        }
-                    } else {
-                        _markerPicked.value = MarkerPicked.MarkerAPicked
-                        _markerPlacedState.value = MarkerPlacedState(
-                            aPlaced = false,
-                            bPlaced = false
-                        )
-                        if (isDark.value) {
-                            _currentMarkerRes.value = Util.aMarkerDark
-                        } else {
-                            _currentMarkerRes.value = Util.aMarkerLight
+                            _markerPicked.value = MarkerPicked.MarkerAPicked
+                            _markerPlacedState.value = MarkerPlacedState(
+                                aPlaced = false,
+                                bPlaced = false
+                            )
+                            if (isDark.value) {
+                                _currentMarkerRes.value = Util.aMarkerDark
+                            } else {
+                                _currentMarkerRes.value = Util.aMarkerLight
+                            }
                         }
                     }
+                }else{
+                    _showAdditionalRegistration.value = true
                 }
+            }
+            is HomeEvent.UpdateCarNumberTextValue -> {
+                _carNumberTextValue.value = event.textValue
+            }
+            is HomeEvent.UpdateCarInfoTextValue -> {
+                _carInfoTextValue.value = event.textValue
+            }
+            is HomeEvent.UpdateCarColorTextValue -> {
+                _carColorTextValue.value = event.textValue
             }
             else -> Unit
         }

@@ -167,7 +167,9 @@ fun SearchDirection(
                 OvalButton({}, modifier = Modifier.width(
                     configuration.screenWidthDp.dp * 0.5f
                 )
-                    .height(50.dp),)
+                    .height(50.dp),
+                    text = "Поехали!"
+                )
             }
         }
     }
