@@ -128,6 +128,7 @@ fun GoogleMapView(
             button1Text = "ok",
             button2Text = "ok"
         ) {
+            viewModel.onEvent(HomeEvent.RecreateAfterError)
             error.value = ""
         }
     }

@@ -21,7 +21,7 @@ fun StrokeText(
         isAntiAlias = true
         style = android.graphics.Paint.Style.STROKE
         textSize = sizeOfText
-        color = android.graphics.Color.LTGRAY
+        color = android.graphics.Color.BLACK
         strokeWidth = 6f
         strokeMiter= 5f
         strokeJoin = android.graphics.Paint.Join.ROUND
@@ -39,13 +39,9 @@ fun StrokeText(
         modifier = Modifier
             .fillMaxWidth()
             .height(200.dp)
-            //.wrapContentSize(align = Alignment.Center)
-
         ,
 
     ){
-        //(size.width-sizeOfText*(text.length-1))
-        //textPaint.textSize
         drawIntoCanvas {
             it.nativeCanvas.drawText(
                 text,
@@ -68,28 +64,8 @@ fun StrokeText(
 @Preview
 fun StrokeTextPrev(){
     Row(
-//        Modifier.fillMaxWidth(),
-//        horizontalArrangement = Arrangement.Center
     ) {
         StrokeText()
     }
-
-//    onDraw = {
-//        drawIntoCanvas {
-//            it.nativeCanvas.drawText(
-//                text,
-//                5f,
-//                20.dp.toPx(),
-//                textPaintStroke
-//            )
-//            it.nativeCanvas.drawText(
-//                text,
-//                5f,
-//                20.dp.toPx(),
-//                textPaint
-//            )
-//        }
-//    },
-
 }
 
