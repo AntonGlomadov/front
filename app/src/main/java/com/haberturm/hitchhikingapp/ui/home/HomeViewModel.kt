@@ -101,7 +101,7 @@ class HomeViewModel @Inject constructor(
 
 
     //additional dialog
-    private val _showAdditionalRegistration = MutableStateFlow<Boolean>(false)
+    private val _showAdditionalRegistration = MutableStateFlow<Boolean>(true) //TODO change to false
     val showAdditionalRegistration: StateFlow<Boolean> = _showAdditionalRegistration
 
     private val _carNumberTextValue = MutableStateFlow<String>("")
@@ -358,10 +358,10 @@ class HomeViewModel @Inject constructor(
                     )
                 )
                 viewModelScope.launch {
-                    Log.i("modes", "in handler $event")
+                    //_showAdditionalRegistration.value = repository.checkIfDriverExist("ddd") //TODO uncomment,
                     delay(10)
                     if (currentUserMode.value is UserMode.Driver) {
-                        if (repository.checkIfDriverExist("ddd")) {
+                        if (!showAdditionalRegistration.value) {
                             _markerPicked.value = MarkerPicked.MarkerBPicked
                             _aMarkerLocation.value =
                                 LatLng(location.value.latitude, location.value.longitude)
@@ -404,10 +404,15 @@ class HomeViewModel @Inject constructor(
             is HomeEvent.SendAdditionalInfo -> {
                 //TODO update registration via repository.sendAdditionalInfo
                 _showAdditionalRegistration.value = false
+                onEvent(HomeEvent.ChangeUserMode(mode = UserMode.Driver))
             }
             is HomeEvent.OnDismissAdditionalInfo -> {
                 _showAdditionalRegistration.value = false
                 onEvent(HomeEvent.ChangeUserMode(mode = UserMode.Companion))
+            }
+            is HomeEvent.RecreateAfterError -> {
+                onEvent(HomeEvent.ChangeUserMode(mode = currentUserMode.value))
+                _shouldShowDirection.value = false
             }
             else -> Unit
         }

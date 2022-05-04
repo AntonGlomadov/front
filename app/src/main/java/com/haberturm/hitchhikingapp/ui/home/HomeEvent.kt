@@ -26,6 +26,7 @@ sealed class HomeEvent {
     data class ChangeUserMode(val mode: UserMode) : HomeEvent()
 
     data class ShowError(val e: Throwable): HomeEvent()
+    object RecreateAfterError : HomeEvent()
 
     //additional dialog
     data class UpdateCarNumberTextValue(val textValue:String) : HomeEvent()
@@ -33,6 +34,8 @@ sealed class HomeEvent {
     data class UpdateCarColorTextValue(val textValue:String) : HomeEvent()
     object SendAdditionalInfo : HomeEvent()
     object OnDismissAdditionalInfo : HomeEvent()
+
+
 
 }
 

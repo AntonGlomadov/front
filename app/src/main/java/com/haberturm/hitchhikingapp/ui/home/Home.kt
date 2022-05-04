@@ -75,10 +75,12 @@ object HomeRoute : NavRoute<HomeViewModel> {
 private fun Home(
     viewModel: HomeViewModel
 ) {
-    SelectModeDialog(
-        changeUserModeToCompanion = { viewModel.onEvent(HomeEvent.ChangeUserMode(UserMode.Companion)) },
-        changeUserModeToDriver = { viewModel.onEvent(HomeEvent.ChangeUserMode(UserMode.Driver)) },
-    )
+    if(viewModel.currentUserMode.collectAsState().value is UserMode.Undefined){
+        SelectModeDialog(
+            changeUserModeToCompanion = { viewModel.onEvent(HomeEvent.ChangeUserMode(UserMode.Companion)) },
+            changeUserModeToDriver = { viewModel.onEvent(HomeEvent.ChangeUserMode(UserMode.Driver)) },
+        )
+    }
     val permissions = GetPermissions()
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(
