@@ -61,6 +61,15 @@ class HomeRepositoryImpl(
         return false
     }
 
+    override fun sendAdditionalInfo(
+        phoneNumber: String,
+        carNumber: String,
+        carInfo: String,
+        carColor: String
+    ) {
+        TODO("Not yet implemented")
+    }
+
 
     @SuppressLint("MissingPermission")
     override suspend fun getUserLocationWithApi(context: Context, coroutineScope: CoroutineScope) {

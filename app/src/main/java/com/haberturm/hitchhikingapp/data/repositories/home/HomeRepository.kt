@@ -20,4 +20,10 @@ interface HomeRepository {
     fun postCompanionFind(data: CompanionFindRequestData): Flow<List<CompanionFindResponseData>>
     fun postCreateDrive(data: DriveCreateRequestData): Flow<String>
     fun checkIfDriverExist(phoneNumber: String): Boolean
+    fun sendAdditionalInfo(
+        phoneNumber: String,
+        carNumber: String,
+        carInfo: String,
+        carColor: String
+    )
 }

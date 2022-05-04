@@ -57,8 +57,6 @@ class HomeViewModel @Inject constructor(
     private val _markerEvent = MutableSharedFlow<HomeEvent>()
     val markerEvent = _markerEvent.asSharedFlow()
 
-    //    var location: Flow<UserEntity> = repository.getUserLocation()
-//        private set
     private val _location = MutableStateFlow<UserEntity>(UserEntity(0, 1.0, 1.0))
     val location: StateFlow<UserEntity> = _location
 
@@ -80,7 +78,6 @@ class HomeViewModel @Inject constructor(
         MutableStateFlow<MarkerPlacedState>(MarkerPlacedState(aPlaced = false, bPlaced = false))
     val markerPlacedState: StateFlow<MarkerPlacedState> = _markerPlacedState
 
-
     private val _userLocationStatus =
         MutableStateFlow(HomeEvent.IsMapReady(isLocationReady = false, isMapReady = false))
     val userLocationStatus: StateFlow<HomeEvent.IsMapReady> = _userLocationStatus
@@ -101,7 +98,6 @@ class HomeViewModel @Inject constructor(
 
     private val _isDark = MutableStateFlow<Boolean>(false)
     val isDark: StateFlow<Boolean> = _isDark
-
 
 
     //additional dialog
@@ -269,7 +265,7 @@ class HomeViewModel @Inject constructor(
                                 _shouldShowDirection.value = true
                             }
                             .launchIn(this)
-                        if(currentUserMode.value is UserMode.Companion){
+                        if (currentUserMode.value is UserMode.Companion) {
                             try {
                                 Log.i("POST_COMPANION", "here")
                                 val a = repository.postCompanionFind(
@@ -295,8 +291,8 @@ class HomeViewModel @Inject constructor(
                                 Log.i("EXCEPTION_POST_COMPANION", "$e")
                                 sendUiEvent(HomeEvent.ShowError(e))
                             }
-                        }else if(currentUserMode.value is UserMode.Driver){
-                            try{
+                        } else if (currentUserMode.value is UserMode.Driver) {
+                            try {
                                 val a = repository.postCreateDrive(
                                     DriveCreateRequestData(
                                         id = "1",
@@ -316,7 +312,7 @@ class HomeViewModel @Inject constructor(
                                 a.collect {
                                     Log.i("POST_COMPANION", it)
                                 }
-                            }catch (e:Exception){
+                            } catch (e: Exception) {
                                 Log.i("EXCEPTION_POST_DRIVE", "$e")
                                 sendUiEvent(HomeEvent.ShowError(e))
                             }
@@ -354,18 +350,18 @@ class HomeViewModel @Inject constructor(
             }
 
             is HomeEvent.ChangeUserMode -> {
-                if(repository.checkIfDriverExist("ddd")){
-                    _currentUserMode.value = event.mode
-                    sendUiEvent(
-                        HomeEvent.RelocateMarker(
-                            location = LatLng(location.value.latitude, location.value.longitude),
-                            animation = false
-                        )
+                _currentUserMode.value = event.mode
+                sendUiEvent(
+                    HomeEvent.RelocateMarker(
+                        location = LatLng(location.value.latitude, location.value.longitude),
+                        animation = false
                     )
-                    viewModelScope.launch {
-                        Log.i("modes", "in handler $event")
-                        delay(10)
-                        if (currentUserMode.value is UserMode.Driver) {
+                )
+                viewModelScope.launch {
+                    Log.i("modes", "in handler $event")
+                    delay(10)
+                    if (currentUserMode.value is UserMode.Driver) {
+                        if (repository.checkIfDriverExist("ddd")) {
                             _markerPicked.value = MarkerPicked.MarkerBPicked
                             _aMarkerLocation.value =
                                 LatLng(location.value.latitude, location.value.longitude)
@@ -380,20 +376,20 @@ class HomeViewModel @Inject constructor(
                                 _currentMarkerRes.value = Util.bMarkerLight
                             }
                         } else {
-                            _markerPicked.value = MarkerPicked.MarkerAPicked
-                            _markerPlacedState.value = MarkerPlacedState(
-                                aPlaced = false,
-                                bPlaced = false
-                            )
-                            if (isDark.value) {
-                                _currentMarkerRes.value = Util.aMarkerDark
-                            } else {
-                                _currentMarkerRes.value = Util.aMarkerLight
-                            }
+                            _showAdditionalRegistration.value = true
+                        }
+                    } else {
+                        _markerPicked.value = MarkerPicked.MarkerAPicked
+                        _markerPlacedState.value = MarkerPlacedState(
+                            aPlaced = false,
+                            bPlaced = false
+                        )
+                        if (isDark.value) {
+                            _currentMarkerRes.value = Util.aMarkerDark
+                        } else {
+                            _currentMarkerRes.value = Util.aMarkerLight
                         }
                     }
-                }else{
-                    _showAdditionalRegistration.value = true
                 }
             }
             is HomeEvent.UpdateCarNumberTextValue -> {
@@ -404,6 +400,14 @@ class HomeViewModel @Inject constructor(
             }
             is HomeEvent.UpdateCarColorTextValue -> {
                 _carColorTextValue.value = event.textValue
+            }
+            is HomeEvent.SendAdditionalInfo -> {
+                //TODO update registration via repository.sendAdditionalInfo
+                _showAdditionalRegistration.value = false
+            }
+            is HomeEvent.OnDismissAdditionalInfo -> {
+                _showAdditionalRegistration.value = false
+                onEvent(HomeEvent.ChangeUserMode(mode = UserMode.Companion))
             }
             else -> Unit
         }

@@ -146,6 +146,8 @@ fun GoogleMapView(
             carColorOnValueChange = fun(valueText: String) {
                 viewModel.onEvent(HomeEvent.UpdateCarColorTextValue(valueText))
             },
+            sendAdditionalInfo = {viewModel.onEvent(HomeEvent.SendAdditionalInfo)},
+            onDismiss = {viewModel.onEvent(HomeEvent.OnDismissAdditionalInfo)}
         )
     }
 
