@@ -42,14 +42,15 @@ fun HistoryInfo(
                     if (showHistory) {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_baseline_keyboard_arrow_up_24),
-                            contentDescription = "show less"
+                            contentDescription = "show less",
+                            tint = MaterialTheme.colors.primary
                         )
                     } else {
                         Icon(
                             painter = painterResource(id = R.drawable.ic_baseline_keyboard_arrow_down_24),
-                            contentDescription = "show more"
+                            contentDescription = "show more",
+                            tint = MaterialTheme.colors.primary
                         )
-
                     }
                 }
             }

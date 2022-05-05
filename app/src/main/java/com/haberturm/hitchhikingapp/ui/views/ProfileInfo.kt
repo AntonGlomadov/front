@@ -48,7 +48,7 @@ fun ProfileInfoItem(
                     )
                 Text(
                     text = phoneNumber,
-                    color = Color.LightGray,
+                    color = Color.Gray,
                     fontSize = 24.sp,
                 )
 
