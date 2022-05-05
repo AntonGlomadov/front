@@ -1,7 +1,9 @@
 package com.haberturm.hitchhikingapp.ui.screens.home
 
 import android.content.Context
+import android.os.Parcelable
 import com.google.android.gms.maps.model.LatLng
+import kotlinx.parcelize.Parcelize
 
 sealed class HomeEvent {
     data class IsMapReady(val isLocationReady: Boolean, val isMapReady: Boolean) : HomeEvent()

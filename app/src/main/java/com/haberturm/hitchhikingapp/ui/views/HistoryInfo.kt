@@ -1,5 +1,6 @@
 package com.haberturm.hitchhikingapp.ui.views
 
+import androidx.compose.animation.animateContentSize
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.*
 import androidx.compose.runtime.Composable
@@ -21,25 +22,39 @@ fun HistoryInfo(
         modifier = Modifier.fillMaxWidth(),
         elevation = 10.dp,
     ) {
-        Row(
+        Column(
             modifier = Modifier
                 .fillMaxWidth()
                 .padding(8.dp)
-            ,
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.SpaceBetween
+                .animateContentSize(),
         ) {
-            Text(
-                text = "История поездок",
-                fontSize = 20.sp
-            )
-            IconButton(onClick = { updateDropDownState() }) {
-                if(showHistory){
-                    Icon(painter = painterResource(id = R.drawable.ic_baseline_keyboard_arrow_up_24), contentDescription = "show less")
-                }else{
-                    Icon(painter = painterResource(id = R.drawable.ic_baseline_keyboard_arrow_down_24), contentDescription = "show more")
+            Row(
+                modifier = Modifier
+                    .fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.SpaceBetween
+            ) {
+                Text(
+                    text = "История поездок",
+                    fontSize = 20.sp
+                )
+                IconButton(onClick = { updateDropDownState() }) {
+                    if (showHistory) {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_baseline_keyboard_arrow_up_24),
+                            contentDescription = "show less"
+                        )
+                    } else {
+                        Icon(
+                            painter = painterResource(id = R.drawable.ic_baseline_keyboard_arrow_down_24),
+                            contentDescription = "show more"
+                        )
 
+                    }
                 }
+            }
+            if (showHistory) {
+                Text(text = "Здесь будет история поездок")
             }
         }
     }

@@ -14,6 +14,7 @@ import com.haberturm.hitchhikingapp.ui.nav.NavRoute
 import com.haberturm.hitchhikingapp.ui.nav.getOrThrow
 import com.haberturm.hitchhikingapp.ui.screens.auth.password.Password
 import com.haberturm.hitchhikingapp.ui.screens.auth.password.PasswordViewModel
+import com.haberturm.hitchhikingapp.ui.screens.home.UserMode
 import com.haberturm.hitchhikingapp.ui.views.HistoryInfo
 import com.haberturm.hitchhikingapp.ui.views.ModeInfoPicker
 import com.haberturm.hitchhikingapp.ui.views.ProfileInfoItem
@@ -55,11 +56,24 @@ private fun Profile(
             image = "https://cdn.jsdelivr.net/gh/akabab/superhero-api@0.3.0/api/images/sm/1-a-bomb.jpg",
         )
         Spacer(modifier = Modifier.height(8.dp))
-        ModeInfoPicker(mode = "Водитель")
+        ModeInfoPicker(
+            mode = when(viewModel.userMode.collectAsState().value){
+                is UserMode.Companion -> {ModeUiPresentation.COMPANION.mode}
+                is UserMode.Driver -> {ModeUiPresentation.DRIVER.mode}
+                else -> {""} //impossible case
+            },
+            checked = viewModel.modeSwitchState.collectAsState().value,
+            onCheckedChange = {viewModel.onEvent(ProfileEvent.UpdateModeSwitchState)}
+        )
         Spacer(modifier = Modifier.height(8.dp))
         HistoryInfo(
             showHistory = viewModel.dropDownState.collectAsState().value,
             updateDropDownState = {viewModel.onEvent(ProfileEvent.UpdateDropDownState)}
         )
     }
+}
+
+enum class ModeUiPresentation(val mode:String){
+    DRIVER("Водитель"),
+    COMPANION("Попутчик")
 }
