@@ -16,6 +16,10 @@ import androidx.compose.ui.res.stringResource
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.LifecycleEventObserver
+import androidx.lifecycle.SavedStateHandle
+import androidx.navigation.NamedNavArgument
+import androidx.navigation.NavType
+import androidx.navigation.navArgument
 import com.google.accompanist.permissions.ExperimentalPermissionsApi
 import com.haberturm.hitchhikingapp.R
 import com.haberturm.hitchhikingapp.ui.screens.home.map.GetPermissions
@@ -24,33 +28,33 @@ import com.haberturm.hitchhikingapp.ui.nav.NavRoute
 import com.haberturm.hitchhikingapp.ui.views.ErrorAlertDialog
 import com.haberturm.hitchhikingapp.ui.screens.home.map.*
 import com.haberturm.hitchhikingapp.ui.nav.NavConst
+import com.haberturm.hitchhikingapp.ui.nav.getOrThrow
+import com.haberturm.hitchhikingapp.ui.screens.profile.ProfileRoute
+import com.haberturm.hitchhikingapp.ui.util.Constants
 import com.haberturm.hitchhikingapp.ui.views.BottomNavBar
+import com.haberturm.hitchhikingapp.ui.views.Items
 import com.haberturm.hitchhikingapp.ui.views.SelectModeDialog
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 
 
-const val KEY_HOME_INDEX = "HOME_PAGE_INDEX"
+const val MODE = "MODE"
 
 object HomeRoute : NavRoute<HomeViewModel> {
-    override val route: String = NavConst.HOME + "{$KEY_HOME_INDEX}/"
+    override val route: String = NavConst.HOME + "{$MODE}/"
 
-    /**
-     * Returns the route that can be used for navigating to this page.
-     */
-    fun get(index: Int): String = route.replace("{$KEY_HOME_INDEX}", "$index")
+    fun get(mode: String): String = route.replace("{$MODE}", mode)
 
-//    fun getIndexFrom(savedStateHandle: SavedStateHandle) =
-//        savedStateHandle.getOrThrow<Int>(KEY_HOME_INDEX)
-
-    /*
-    not used yet
-
+    fun getArgFrom(savedStateHandle: SavedStateHandle) =
+        savedStateHandle.getOrThrow<String>(MODE)
 
 
     override fun getArguments(): List<NamedNavArgument> = listOf(
-        navArgument(KEY_CONTENT_PAGE_INDEX) { type = NavType.IntType })
-    */
+        navArgument(MODE) {
+            type = NavType.StringType
+            defaultValue = Constants.NavArgConst.UNDEFINED.arg
+        })
+
     @Composable
     override fun Content(viewModel: HomeViewModel) = Home(viewModel)
 
@@ -68,10 +72,11 @@ object HomeRoute : NavRoute<HomeViewModel> {
 private fun Home(
     viewModel: HomeViewModel
 ) {
-    if(viewModel.currentUserMode.collectAsState().value is UserMode.Undefined){
+    val userMode = viewModel.currentUserMode.collectAsState().value
+    if (viewModel.currentUserMode.collectAsState().value is Constants.UserMode.Undefined) {
         SelectModeDialog(
-            changeUserModeToCompanion = { viewModel.onEvent(HomeEvent.ChangeUserMode(UserMode.Companion)) },
-            changeUserModeToDriver = { viewModel.onEvent(HomeEvent.ChangeUserMode(UserMode.Driver)) },
+            changeUserModeToCompanion = { viewModel.onEvent(HomeEvent.ChangeUserMode(Constants.UserMode.Companion)) },
+            changeUserModeToDriver = { viewModel.onEvent(HomeEvent.ChangeUserMode(Constants.UserMode.Driver)) },
         )
     }
     val permissions = GetPermissions()
@@ -91,7 +96,7 @@ private fun Home(
             }
         }
     )
-
+    Log.i("DEBUG_LOAD", "${viewModel.userLocationStatus.collectAsState().value}")
     var isMapAndLocLoaded by remember { mutableStateOf(false) }
     var isLocReady by remember { mutableStateOf(false) }
     LaunchedEffect(key1 = true) {
@@ -137,9 +142,13 @@ private fun Home(
                 Manifest.permission.ACCESS_FINE_LOCATION -> {
                     when {
                         perm.hasPermission -> {
+                            Log.i("PERM_DEBUG", "has permission")
                             permissionStatus = PermissionStatus.PermissionAccepted
                             viewModel.getUserLocation(LocalContext.current)
-                            if (isLocReady) {
+                            Log.i("PERM_DEBUG", "${viewModel.userLocationStatus.collectAsState().value.isLocationReady}")
+                            if (viewModel.userLocationStatus.collectAsState().value.isLocationReady) {
+                                Log.i("PERM_DEBUG", "location ready")
+
                                 val userLocation = viewModel.location.collectAsState().value
                                 GoogleMapView(
                                     userLocation.latitude,
@@ -210,7 +219,23 @@ private fun Home(
         }
     }
 
-    BottomNavBar()
+    BottomNavBar(
+        navigateToProfile = {
+            viewModel.onEvent(
+                HomeEvent.NavigateTo(
+                    ProfileRoute.get(
+                        when(userMode){
+                            is Constants.UserMode.Companion -> { Constants.NavArgConst.COMPANION.arg }
+                            is Constants.UserMode.Driver -> {Constants.NavArgConst.DRIVER.arg}
+                            else -> {""} //impossible, i hope ;)
+                        }
+                    )
+                )
+            )
+        },
+        navigateToMap = {},
+        currentItem = Items.MAP
+    )
 }
 
 

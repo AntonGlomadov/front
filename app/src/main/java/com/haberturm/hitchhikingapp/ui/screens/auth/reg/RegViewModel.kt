@@ -212,7 +212,7 @@ class RegViewModel @Inject constructor(
                                 }
                                     .collect {
                                         Log.i("REG", it)
-                                        navigateToRoute(HomeRoute.get(0))
+                                        navigateToRoute(HomeRoute.route)
                                     }
                             } catch (e: Exception) {
                                 Log.i("REGERR", e.toString())

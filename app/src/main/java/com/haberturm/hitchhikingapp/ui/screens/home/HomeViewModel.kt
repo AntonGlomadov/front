@@ -3,6 +3,8 @@ package com.haberturm.hitchhikingapp.ui.screens.home
 import android.annotation.SuppressLint
 import android.content.Context
 import android.util.Log
+import androidx.compose.runtime.collectAsState
+import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.maps.model.LatLng
@@ -19,6 +21,7 @@ import com.haberturm.hitchhikingapp.data.repositories.home.HomeRepository
 import com.haberturm.hitchhikingapp.data.repositories.home.HomeRepositoryEvent
 import com.haberturm.hitchhikingapp.ui.nav.RouteNavigator
 import com.haberturm.hitchhikingapp.ui.searchDirection.SearchDirectionRoute
+import com.haberturm.hitchhikingapp.ui.util.Constants
 import com.haberturm.hitchhikingapp.ui.util.Util
 import com.haberturm.hitchhikingapp.ui.util.Util.isInRadius
 import com.haberturm.hitchhikingapp.ui.util.Util.toUiModel
@@ -45,10 +48,11 @@ data class MarkerPlacedState(
 class HomeViewModel @Inject constructor(
     private val routeNavigator: RouteNavigator,
     private val repository: HomeRepository,
+    savedStateHandle: SavedStateHandle
 ) : ViewModel(), RouteNavigator by routeNavigator {
 
-    private val _currentUserMode = MutableStateFlow<UserMode>(UserMode.Undefined)
-    val currentUserMode: StateFlow<UserMode> = _currentUserMode
+    private val _currentUserMode = MutableStateFlow<Constants.UserMode>(Constants.UserMode.Undefined)
+    val currentUserMode: StateFlow<Constants.UserMode> = _currentUserMode
 
 
     private val _uiEvent = Channel<HomeEvent>()
@@ -101,7 +105,7 @@ class HomeViewModel @Inject constructor(
 
 
     //additional dialog
-    private val _showAdditionalRegistration = MutableStateFlow<Boolean>(true) //TODO change to false
+    private val _showAdditionalRegistration = MutableStateFlow<Boolean>(false) //TODO change to false
     val showAdditionalRegistration: StateFlow<Boolean> = _showAdditionalRegistration
 
     private val _carNumberTextValue = MutableStateFlow<String>("")
@@ -115,29 +119,38 @@ class HomeViewModel @Inject constructor(
 
     init {
         viewModelScope.launch {
+            initUserMode(savedStateHandle)
             repository.homeRepositoryEvent.collect { event ->
-                Log.i("Event", "INIT_VM $event")
+                //Log.i("Event", "INIT_VM $event")
                 when (event) {
                     is HomeRepositoryEvent.UserLocationStatus -> if (getLocationStatus(event)) {
                         repository.getUserLocation()
+                            .catch { e->
+                                Log.i("DEBUG_LOAD", "exc $e")
+                            }
                             .onEach { userEntity ->
                                 _location.value = userEntity
+                                delay(1_500) // TODO: smells like shit. Think about proper synchronization
                                 _userLocationStatus.value = HomeEvent.IsMapReady(
                                     isLocationReady = true,
                                     isMapReady = userLocationStatus.value.isMapReady
                                 )
+                                Log.i("DEBUG_LOAD", "in VM ${userLocationStatus.value}")
+
                             }
                             .launchIn(this)
+
                     }
                 }
             }
+            onEvent(HomeEvent.ChangeUserMode(currentUserMode.value))
         }
     }
 
     fun onEvent(event: HomeEvent) {
         when (event) {
             is HomeEvent.MapReady -> {
-                Log.i("Event", "ON_EVENT_VM $event")
+                Log.i("DEBUG_LOAD", "in EVENT ${userLocationStatus.value}")
                 _userLocationStatus.value = HomeEvent.IsMapReady(
                     isLocationReady = userLocationStatus.value.isLocationReady,
                     isMapReady = true
@@ -265,7 +278,7 @@ class HomeViewModel @Inject constructor(
                                 _shouldShowDirection.value = true
                             }
                             .launchIn(this)
-                        if (currentUserMode.value is UserMode.Companion) {
+                        if (currentUserMode.value is Constants.UserMode.Companion) {
                             try {
                                 Log.i("POST_COMPANION", "here")
                                 val a = repository.postCompanionFind(
@@ -291,7 +304,7 @@ class HomeViewModel @Inject constructor(
                                 Log.i("EXCEPTION_POST_COMPANION", "$e")
                                 sendUiEvent(HomeEvent.ShowError(e))
                             }
-                        } else if (currentUserMode.value is UserMode.Driver) {
+                        } else if (currentUserMode.value is Constants.UserMode.Driver) {
                             try {
                                 val a = repository.postCreateDrive(
                                     DriveCreateRequestData(
@@ -358,9 +371,9 @@ class HomeViewModel @Inject constructor(
                     )
                 )
                 viewModelScope.launch {
-                    //_showAdditionalRegistration.value = repository.checkIfDriverExist("ddd") //TODO uncomment,
+                    _showAdditionalRegistration.value = repository.checkIfDriverExist("ddd") //TODO uncomment,
                     delay(10)
-                    if (currentUserMode.value is UserMode.Driver) {
+                    if (currentUserMode.value is Constants.UserMode.Driver) {
                         if (!showAdditionalRegistration.value) {
                             _markerPicked.value = MarkerPicked.MarkerBPicked
                             _aMarkerLocation.value =
@@ -404,15 +417,24 @@ class HomeViewModel @Inject constructor(
             is HomeEvent.SendAdditionalInfo -> {
                 //TODO update registration via repository.sendAdditionalInfo
                 _showAdditionalRegistration.value = false
-                onEvent(HomeEvent.ChangeUserMode(mode = UserMode.Driver))
+                onEvent(HomeEvent.ChangeUserMode(mode = Constants.UserMode.Driver))
             }
             is HomeEvent.OnDismissAdditionalInfo -> {
                 _showAdditionalRegistration.value = false
-                onEvent(HomeEvent.ChangeUserMode(mode = UserMode.Companion))
+                onEvent(HomeEvent.ChangeUserMode(mode = Constants.UserMode.Companion))
             }
             is HomeEvent.RecreateAfterError -> {
                 onEvent(HomeEvent.ChangeUserMode(mode = currentUserMode.value))
                 _shouldShowDirection.value = false
+            }
+            is HomeEvent.NavigateTo -> {
+//                _userLocationStatus.value =
+//                    HomeEvent.IsMapReady(isLocationReady = false, isMapReady = false)
+                viewModelScope.cancel()
+                routeNavigator.navigateToRoute(event.route)
+            }
+            is HomeEvent.InitUserMode -> {
+
             }
             else -> Unit
         }
@@ -427,6 +449,12 @@ class HomeViewModel @Inject constructor(
         viewModelScope.launch {
             try {
                 repository.getUserLocationWithApi(context, viewModelScope)
+                delay(1_500) // TODO: smells like shit. Think about proper synchronization
+                //onEvent(HomeEvent.ChangeUserMode(currentUserMode.value))
+                _userLocationStatus.value = HomeEvent.IsMapReady(
+                    isLocationReady = true,
+                    isMapReady = userLocationStatus.value.isMapReady
+                )
             } catch (e: Exception) {
                 //TODO: Handle exception
                 Log.i("LOCATION_ERR", "LOCATION_ERR $e")
@@ -443,6 +471,25 @@ class HomeViewModel @Inject constructor(
     private fun sendUiEvent(event: HomeEvent) {
         viewModelScope.launch {
             _uiEvent.send(event)
+        }
+    }
+
+    private fun getMode(savedStateHandle: SavedStateHandle): String {
+        return HomeRoute.getArgFrom(savedStateHandle)
+    }
+    private fun initUserMode(savedStateHandle: SavedStateHandle){
+        when(getMode(savedStateHandle)){
+            Constants.NavArgConst.DRIVER.arg -> {
+                _currentUserMode.value = Constants.UserMode.Driver
+                //onEvent(HomeEvent.ChangeUserMode(Constants.UserMode.Driver))
+            }
+            Constants.NavArgConst.COMPANION.arg -> {
+                _currentUserMode.value = Constants.UserMode.Companion
+                //onEvent(HomeEvent.ChangeUserMode(Constants.UserMode.Companion))
+            }
+            else -> {
+                Unit
+            }
         }
     }
 }

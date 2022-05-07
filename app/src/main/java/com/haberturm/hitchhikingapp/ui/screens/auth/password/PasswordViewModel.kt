@@ -52,7 +52,7 @@ class PasswordViewModel @Inject constructor(
             is PasswordEvent.EnterPassword -> {
                 _passwordFieldState.value = repository.checkPasswordInDB(password.value)
                 if(passwordFieldState.value is Util.TextFieldState.Success){
-                    navigateToRoute(HomeRoute.get(0))
+                    navigateToRoute(HomeRoute.route)
                 }
             }
 

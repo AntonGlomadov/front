@@ -11,7 +11,7 @@ import kotlinx.coroutines.flow.Flow
 import user.userdb.UserEntity
 
 interface HomeRepository {
-    suspend fun getUserLocationWithApi(context: Context, coroutineScope: CoroutineScope)
+    fun getUserLocationWithApi(context: Context, coroutineScope: CoroutineScope): Boolean
     fun getUserLocation(): Flow<UserEntity>
     suspend fun insertUser(id: Long?, latitude: Double, longitude: Double)
     val homeRepositoryEvent: Flow<HomeRepositoryEvent>

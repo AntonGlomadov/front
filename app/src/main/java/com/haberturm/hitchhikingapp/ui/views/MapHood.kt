@@ -19,7 +19,7 @@ import com.haberturm.hitchhikingapp.R
 import com.haberturm.hitchhikingapp.ui.screens.home.HomeEvent
 import com.haberturm.hitchhikingapp.ui.screens.home.HomeViewModel
 import com.haberturm.hitchhikingapp.ui.screens.home.MarkerPicked
-import com.haberturm.hitchhikingapp.ui.screens.home.UserMode
+import com.haberturm.hitchhikingapp.ui.util.Constants
 import com.haberturm.hitchhikingapp.ui.util.Util
 import com.haberturm.hitchhikingapp.ui.util.Util.moveCamera
 import kotlinx.coroutines.CoroutineScope
@@ -69,7 +69,7 @@ fun MapHood(
 
         ) {
             val checkedState = remember { mutableStateOf(false) } // true - driver, false - companion
-            if (viewModel.currentUserMode.collectAsState().value is UserMode.Driver) {
+            if (viewModel.currentUserMode.collectAsState().value is Constants.UserMode.Driver) {
                 checkedState.value = true
             } else {
                 checkedState.value = false
@@ -78,9 +78,9 @@ fun MapHood(
                 checked = checkedState.value,
                 onCheckedChange = {
                     val mode = if(!checkedState.value){
-                        UserMode.Driver
+                        Constants.UserMode.Driver
                     }else{
-                        UserMode.Companion
+                        Constants.UserMode.Companion
                     }
                     Log.i("modes", "$mode")
                     viewModel.onEvent(HomeEvent.ChangeUserMode(mode))

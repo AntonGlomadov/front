@@ -72,10 +72,10 @@ class HomeRepositoryImpl(
 
 
     @SuppressLint("MissingPermission")
-    override suspend fun getUserLocationWithApi(context: Context, coroutineScope: CoroutineScope) {
+    override fun getUserLocationWithApi(context: Context, coroutineScope: CoroutineScope): Boolean {
         val fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
         val locationResult = fusedLocationProviderClient.lastLocation
-        _homeRepositoryEvent.send(HomeRepositoryEvent.UserLocationStatus(isDone = false))
+        coroutineScope.launch {_homeRepositoryEvent.send(HomeRepositoryEvent.UserLocationStatus(isDone = false))  }
         locationResult.addOnCompleteListener { task ->
             if (task.isSuccessful) {
                 val lastKnownLocation =
@@ -86,9 +86,12 @@ class HomeRepositoryImpl(
                     }.await()
                 }
             } else {
+
+                Log.i("EXCEPTION-inGetUserLocation_rep", "${task.exception}")
                 //TODO handle err
             }
         }
+        return true
     }
 
     //TODO mb make following function private
