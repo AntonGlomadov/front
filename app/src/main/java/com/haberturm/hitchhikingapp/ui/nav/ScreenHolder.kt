@@ -6,11 +6,12 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
-import com.haberturm.hitchhikingapp.ui.auth.login.LoginRoute
-import com.haberturm.hitchhikingapp.ui.auth.password.PasswordRoute
-import com.haberturm.hitchhikingapp.ui.home.HomeRoute
+import com.haberturm.hitchhikingapp.ui.screens.auth.login.LoginRoute
+import com.haberturm.hitchhikingapp.ui.screens.auth.password.PasswordRoute
+import com.haberturm.hitchhikingapp.ui.screens.home.HomeRoute
 import com.haberturm.hitchhikingapp.ui.searchDirection.SearchDirectionRoute
-import com.haberturm.hitchhikingapp.ui.auth.reg.RegRoute
+import com.haberturm.hitchhikingapp.ui.screens.auth.reg.RegRoute
+import com.haberturm.hitchhikingapp.ui.screens.profile.ProfileRoute
 
 @Composable
 fun ScreenHolder(navHostController: NavHostController, paddingValues: PaddingValues) {
@@ -24,5 +25,6 @@ fun ScreenHolder(navHostController: NavHostController, paddingValues: PaddingVal
         SearchDirectionRoute.composable(this, navHostController)
         PasswordRoute.composable(this, navHostController)
         RegRoute.composable(this, navHostController)
+        ProfileRoute.composable(this, navHostController)
     }
 }

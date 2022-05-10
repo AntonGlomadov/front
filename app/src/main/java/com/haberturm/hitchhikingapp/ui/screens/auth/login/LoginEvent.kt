@@ -1,4 +1,4 @@
-package com.haberturm.hitchhikingapp.ui.auth.login
+package com.haberturm.hitchhikingapp.ui.screens.auth.login
 
 sealed class LoginEvent {
     data class OnPhoneFieldFocused(val focusState: Boolean) : LoginEvent()

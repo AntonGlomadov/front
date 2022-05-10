@@ -15,8 +15,8 @@ import androidx.compose.ui.unit.dp
 import com.google.android.gms.maps.model.LatLng
 import com.google.android.gms.maps.model.LatLngBounds
 import com.google.maps.android.compose.CameraPositionState
-import com.haberturm.hitchhikingapp.ui.home.HomeEvent
-import com.haberturm.hitchhikingapp.ui.home.HomeViewModel
+import com.haberturm.hitchhikingapp.ui.screens.home.HomeEvent
+import com.haberturm.hitchhikingapp.ui.screens.home.HomeViewModel
 import com.haberturm.hitchhikingapp.ui.util.Util
 import com.haberturm.hitchhikingapp.ui.util.Util.moveCamera
 import kotlinx.coroutines.CoroutineScope

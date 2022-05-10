@@ -1,10 +1,10 @@
-package com.haberturm.hitchhikingapp.ui.auth.password
+package com.haberturm.hitchhikingapp.ui.screens.auth.password
 
 import android.util.Log
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import com.haberturm.hitchhikingapp.data.repositories.auth.AuthRepository
-import com.haberturm.hitchhikingapp.ui.home.HomeRoute
+import com.haberturm.hitchhikingapp.ui.screens.home.HomeRoute
 import com.haberturm.hitchhikingapp.ui.nav.RouteNavigator
 import com.haberturm.hitchhikingapp.ui.util.Util
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -52,7 +52,7 @@ class PasswordViewModel @Inject constructor(
             is PasswordEvent.EnterPassword -> {
                 _passwordFieldState.value = repository.checkPasswordInDB(password.value)
                 if(passwordFieldState.value is Util.TextFieldState.Success){
-                    navigateToRoute(HomeRoute.get(0))
+                    navigateToRoute(HomeRoute.route)
                 }
             }
 

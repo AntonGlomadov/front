@@ -1,4 +1,4 @@
-package com.haberturm.hitchhikingapp.ui.auth.password
+package com.haberturm.hitchhikingapp.ui.screens.auth.password
 
 import androidx.compose.foundation.gestures.detectTapGestures
 import androidx.compose.foundation.layout.*

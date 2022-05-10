@@ -1,15 +1,12 @@
-package com.haberturm.hitchhikingapp.ui.auth.reg
+package com.haberturm.hitchhikingapp.ui.screens.auth.reg
 
 import android.util.Log
-import androidx.compose.ui.platform.LocalDensity
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.haberturm.hitchhikingapp.data.network.backend.auth.pojo.SignUpRequest
 import com.haberturm.hitchhikingapp.data.repositories.auth.AuthRepository
-import com.haberturm.hitchhikingapp.ui.auth.login.TAG
-import com.haberturm.hitchhikingapp.ui.home.HomeEvent
-import com.haberturm.hitchhikingapp.ui.home.HomeRoute
+import com.haberturm.hitchhikingapp.ui.screens.home.HomeRoute
 import com.haberturm.hitchhikingapp.ui.nav.RouteNavigator
 import com.haberturm.hitchhikingapp.ui.util.Util
 import dagger.hilt.android.lifecycle.HiltViewModel
@@ -215,7 +212,7 @@ class RegViewModel @Inject constructor(
                                 }
                                     .collect {
                                         Log.i("REG", it)
-                                        navigateToRoute(HomeRoute.get(0))
+                                        navigateToRoute(HomeRoute.route)
                                     }
                             } catch (e: Exception) {
                                 Log.i("REGERR", e.toString())

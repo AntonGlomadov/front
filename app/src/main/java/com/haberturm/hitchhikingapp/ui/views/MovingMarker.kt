@@ -4,8 +4,8 @@ import androidx.compose.runtime.Composable
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
 import com.google.maps.android.compose.CameraPositionState
 import com.google.maps.android.compose.Marker
-import com.haberturm.hitchhikingapp.ui.home.HomeEvent
-import com.haberturm.hitchhikingapp.ui.home.HomeViewModel
+import com.haberturm.hitchhikingapp.ui.screens.home.HomeEvent
+import com.haberturm.hitchhikingapp.ui.screens.home.HomeViewModel
 
 @Composable
 fun MovingMarker(

@@ -1,19 +1,23 @@
-package com.haberturm.hitchhikingapp.ui.home
+package com.haberturm.hitchhikingapp.ui.screens.home
 
 import android.content.Context
+import android.os.Parcelable
 import com.google.android.gms.maps.model.LatLng
-import com.haberturm.hitchhikingapp.data.network.ApiState
-import java.lang.Exception
+import com.haberturm.hitchhikingapp.ui.util.Constants
+import kotlinx.parcelize.Parcelize
 
 sealed class HomeEvent {
     data class IsMapReady(val isLocationReady: Boolean, val isMapReady: Boolean) : HomeEvent()
     object MapReady : HomeEvent()
     data class ObserveMovingMarkerLocation(val location: LatLng) : HomeEvent()
     data class OnMyLocationClicked(val context: Context) : HomeEvent()
+    //unused
     data class NavigateToSearchDirection(
         val startLocation: LatLng,
         val endLocation: LatLng
     ) : HomeEvent()
+    //
+    data class NavigateTo(val route: String): HomeEvent()
 
     data class GetGeocodeLocation(val address: String) : HomeEvent()
     data class RelocateMarker(val location: LatLng, val animation: Boolean) : HomeEvent()
@@ -23,10 +27,11 @@ sealed class HomeEvent {
     data class MakeMarkerMovable(val keyOfMarker: String) : HomeEvent()
     data class ChangeCurrentMarkerRes(val res: Int) : HomeEvent()
     data class ColorModeChanged(val colorMode: Boolean) : HomeEvent() // true - dark, false - light
-    data class ChangeUserMode(val mode: UserMode) : HomeEvent()
+    data class ChangeUserMode(val mode: Constants.UserMode) : HomeEvent()
 
     data class ShowError(val e: Throwable): HomeEvent()
     object RecreateAfterError : HomeEvent()
+    object InitUserMode: HomeEvent()
 
     //additional dialog
     data class UpdateCarNumberTextValue(val textValue:String) : HomeEvent()
@@ -49,8 +54,4 @@ sealed class PermissionStatus {
     object PermissionPermanentlyDenied : PermissionStatus()
 }
 
-sealed class UserMode{
-    object Companion : UserMode()
-    object Driver : UserMode()
-    object Undefined : UserMode()
-}
+

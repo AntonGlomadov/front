@@ -14,10 +14,20 @@ import androidx.compose.ui.res.dimensionResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.navigation.NavController
+import androidx.navigation.compose.NavHost
 import com.haberturm.hitchhikingapp.R
+import com.haberturm.hitchhikingapp.ui.nav.NavigationState
+enum class Items{
+    MAP, MESSAGE, ACCOUNT
+}
 
 @Composable
-fun BottomNavBar(){
+fun BottomNavBar(
+    navigateToMap: () -> Unit,
+    navigateToProfile: () -> Unit,
+    currentItem: Items
+){
     Column(
         Modifier
             .fillMaxSize()
@@ -37,7 +47,7 @@ fun BottomNavBar(){
            // verticalAlignment = Alignment.Bottom,
             horizontalArrangement = Arrangement.SpaceBetween
         ) {
-            IconButton(onClick = { /*TODO*/ }) {
+            IconButton(onClick = { navigateToMap() }) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
@@ -46,11 +56,19 @@ fun BottomNavBar(){
                         contentDescription = "map_icon",
                         modifier = Modifier
                             .size(32.dp),
-                        tint = MaterialTheme.colors.primary
+                        tint = if(currentItem == Items.MAP) {
+                            MaterialTheme.colors.primary
+                        }else{
+                            Color.LightGray
+                        }
                     )
                     Text(
                         text = "Карта",
-                        color = MaterialTheme.colors.primary
+                        color = if(currentItem == Items.MAP) {
+                            MaterialTheme.colors.primary
+                        }else{
+                            Color.LightGray
+                        }
                     )
                 }
             }
@@ -65,16 +83,24 @@ fun BottomNavBar(){
                         modifier = Modifier
                             .size(32.dp)
                         ,
-                        tint = Color.LightGray
+                        tint = if(currentItem == Items.MESSAGE) {
+                            MaterialTheme.colors.primary
+                        }else{
+                            Color.LightGray
+                        }
                     )
                     Text(
                         text = "Сообщения",
-                        color = Color.LightGray
+                        color = if(currentItem == Items.MESSAGE) {
+                            MaterialTheme.colors.primary
+                        }else{
+                            Color.LightGray
+                        }
                     )
                 }
             }
 
-            IconButton(onClick = { /*TODO*/ }) {
+            IconButton(onClick = { navigateToProfile() }) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
@@ -83,11 +109,19 @@ fun BottomNavBar(){
                         contentDescription = "account_icon",
                         modifier = Modifier
                             .size(32.dp),
-                        tint = Color.LightGray
+                        tint = if(currentItem == Items.ACCOUNT) {
+                            MaterialTheme.colors.primary
+                        }else{
+                            Color.LightGray
+                        }
                     )
                     Text(
                         text = "Профиль",
-                        color = Color.LightGray
+                        color = if(currentItem == Items.ACCOUNT) {
+                            MaterialTheme.colors.primary
+                        }else{
+                            Color.LightGray
+                        }
                     )
                 }
             }
@@ -98,5 +132,5 @@ fun BottomNavBar(){
 @Composable
 @Preview
 fun BottomNavBarPrev(){
-    BottomNavBar()
+    BottomNavBar({},{}, currentItem = Items.MAP)
 }
