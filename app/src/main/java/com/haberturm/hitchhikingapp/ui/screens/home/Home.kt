@@ -31,6 +31,7 @@ import com.haberturm.hitchhikingapp.ui.nav.NavConst
 import com.haberturm.hitchhikingapp.ui.nav.getOrThrow
 import com.haberturm.hitchhikingapp.ui.screens.profile.ProfileRoute
 import com.haberturm.hitchhikingapp.ui.util.Constants
+import com.haberturm.hitchhikingapp.ui.util.Constants.ACTION_START_OR_RESUME_SERVICE
 import com.haberturm.hitchhikingapp.ui.views.BottomNavBar
 import com.haberturm.hitchhikingapp.ui.views.Items
 import com.haberturm.hitchhikingapp.ui.views.SelectModeDialog
@@ -72,6 +73,7 @@ object HomeRoute : NavRoute<HomeViewModel> {
 private fun Home(
     viewModel: HomeViewModel
 ) {
+    val context = LocalContext.current
     val userMode = viewModel.currentUserMode.collectAsState().value
     if (viewModel.currentUserMode.collectAsState().value is Constants.UserMode.Undefined) {
         SelectModeDialog(
@@ -87,6 +89,7 @@ private fun Home(
             val observer = LifecycleEventObserver { _, event ->
                 if (event == Lifecycle.Event.ON_START) {
                     permissions.launchMultiplePermissionRequest()
+                    viewModel.launchLocationService(context, ACTION_START_OR_RESUME_SERVICE)
                 }
             }
             lifecycleOwner.lifecycle.addObserver(observer)

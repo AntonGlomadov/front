@@ -2,6 +2,7 @@ package com.haberturm.hitchhikingapp.ui.screens.home
 
 import android.annotation.SuppressLint
 import android.content.Context
+import android.content.Intent
 import android.util.Log
 import androidx.compose.runtime.collectAsState
 import androidx.lifecycle.SavedStateHandle
@@ -9,6 +10,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.PolyUtil
+import com.haberturm.hitchhikingapp.LocationService
 import com.haberturm.hitchhikingapp.R
 import com.haberturm.hitchhikingapp.data.network.ApiState
 import com.haberturm.hitchhikingapp.data.network.backend.companion.pojo.companion.request.CompanionFindRequestData
@@ -490,6 +492,13 @@ class HomeViewModel @Inject constructor(
             else -> {
                 Unit
             }
+        }
+    }
+
+    fun launchLocationService(context: Context, action: String) {
+        Intent(context, LocationService::class.java).also {
+            it.action = action
+            context.startService(it)
         }
     }
 }
