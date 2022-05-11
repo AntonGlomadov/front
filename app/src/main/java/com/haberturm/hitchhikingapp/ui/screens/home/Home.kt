@@ -89,7 +89,7 @@ private fun Home(
             val observer = LifecycleEventObserver { _, event ->
                 if (event == Lifecycle.Event.ON_START) {
                     permissions.launchMultiplePermissionRequest()
-                    viewModel.launchLocationService(context, ACTION_START_OR_RESUME_SERVICE)
+
                 }
             }
             lifecycleOwner.lifecycle.addObserver(observer)
@@ -145,6 +145,7 @@ private fun Home(
                 Manifest.permission.ACCESS_FINE_LOCATION -> {
                     when {
                         perm.hasPermission -> {
+                            viewModel.launchLocationService(context, ACTION_START_OR_RESUME_SERVICE)
                             Log.i("PERM_DEBUG", "has permission")
                             permissionStatus = PermissionStatus.PermissionAccepted
                             viewModel.getUserLocation(LocalContext.current)

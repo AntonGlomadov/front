@@ -11,6 +11,7 @@ import androidx.lifecycle.viewModelScope
 import com.google.android.gms.maps.model.LatLng
 import com.google.maps.android.PolyUtil
 import com.haberturm.hitchhikingapp.LocationService
+import com.haberturm.hitchhikingapp.LocationService.Companion.locationInService
 import com.haberturm.hitchhikingapp.R
 import com.haberturm.hitchhikingapp.data.network.ApiState
 import com.haberturm.hitchhikingapp.data.network.backend.companion.pojo.companion.request.CompanionFindRequestData
