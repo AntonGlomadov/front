@@ -1,22 +1,39 @@
 package com.haberturm.hitchhikingapp
 
-import android.app.Service
+import android.app.NotificationChannel
+import android.app.NotificationManager
+import android.app.NotificationManager.IMPORTANCE_LOW
+import android.app.PendingIntent
+import android.app.PendingIntent.FLAG_UPDATE_CURRENT
+import android.content.Context
 import android.content.Intent
-import android.os.IBinder
 import android.util.Log
+import androidx.core.app.NotificationCompat
 import androidx.lifecycle.LifecycleService
 import com.haberturm.hitchhikingapp.ui.util.Constants.ACTION_PAUSE_SERVICE
+import com.haberturm.hitchhikingapp.ui.util.Constants.ACTION_SHOW_PROPER_MAP_STATE
 import com.haberturm.hitchhikingapp.ui.util.Constants.ACTION_START_OR_RESUME_SERVICE
 import com.haberturm.hitchhikingapp.ui.util.Constants.ACTION_STOP_SERVICE
+import com.haberturm.hitchhikingapp.ui.util.Constants.NOTIFICATION_CHANNEL_ID
+import com.haberturm.hitchhikingapp.ui.util.Constants.NOTIFICATION_CHANNEL_NAME
+import com.haberturm.hitchhikingapp.ui.util.Constants.NOTIFICATION_ID
 
 
 class LocationService : LifecycleService() {
     private val TAG = "LOCATION_SERVICE"
+
+    private var isFirstRun = true
+
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
         intent?.let {
             when(it.action) {
                 ACTION_START_OR_RESUME_SERVICE -> {
-                    Log.i(TAG, "Started or resumed service")
+                    if(isFirstRun) {
+                        startForegroundService()
+                        isFirstRun = false
+                    } else {
+                        Log.i(TAG, "Resuming service")
+                    }
                 }
                 ACTION_PAUSE_SERVICE -> {
                     Log.i(TAG, "Paused service")
@@ -34,16 +51,16 @@ class LocationService : LifecycleService() {
         val notificationManager = getSystemService(Context.NOTIFICATION_SERVICE)
                 as NotificationManager
 
-        if(Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-            createNotificationChannel(notificationManager)
-        }
+
+        createNotificationChannel(notificationManager)
+
 
         val notificationBuilder = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
             .setAutoCancel(false)
             .setOngoing(true)
-            .setSmallIcon(R.drawable.ic_directions_run_black_24dp)
-            .setContentTitle("Running App")
-            .setContentText("00:00:00")
+            .setSmallIcon(R.drawable.ic_baseline_car_24)
+            .setContentTitle("hitch-hiking App")
+            .setContentText("tracking location")
             .setContentIntent(getMainActivityPendingIntent())
 
         startForeground(NOTIFICATION_ID, notificationBuilder.build())
@@ -53,12 +70,11 @@ class LocationService : LifecycleService() {
         this,
         0,
         Intent(this, MainActivity::class.java).also {
-            it.action = ACTION_SHOW_TRACKING_FRAGMENT
+            it.action = ACTION_SHOW_PROPER_MAP_STATE
         },
-        FLAG_UPDATE_CURRENT
+       FLAG_UPDATE_CURRENT or PendingIntent.FLAG_IMMUTABLE
     )
 
-    @RequiresApi(Build.VERSION_CODES.O)
     private fun createNotificationChannel(notificationManager: NotificationManager) {
         val channel = NotificationChannel(
             NOTIFICATION_CHANNEL_ID,
