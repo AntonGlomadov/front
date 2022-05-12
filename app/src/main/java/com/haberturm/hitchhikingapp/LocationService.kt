@@ -39,8 +39,8 @@ class LocationService : LifecycleService() {
     lateinit var fusedLocationProviderClient: FusedLocationProviderClient
 
     companion object {
-        private val _location = MutableStateFlow<LatLng>(LatLng(0.0, 0.0))
-        val locationInService: StateFlow<LatLng> = _location.asStateFlow()
+        private val _location = MutableStateFlow<LatLng?>(null)
+        val locationInService: StateFlow<LatLng?> = _location.asStateFlow()
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {

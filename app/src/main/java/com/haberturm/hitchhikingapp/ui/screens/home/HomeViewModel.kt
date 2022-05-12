@@ -54,7 +54,8 @@ class HomeViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle
 ) : ViewModel(), RouteNavigator by routeNavigator {
 
-    private val _currentUserMode = MutableStateFlow<Constants.UserMode>(Constants.UserMode.Undefined)
+    private val _currentUserMode =
+        MutableStateFlow<Constants.UserMode>(Constants.UserMode.Undefined)
     val currentUserMode: StateFlow<Constants.UserMode> = _currentUserMode
 
 
@@ -64,9 +65,7 @@ class HomeViewModel @Inject constructor(
     private val _markerEvent = MutableSharedFlow<HomeEvent>()
     val markerEvent = _markerEvent.asSharedFlow()
 
-    private val _location = MutableStateFlow<UserEntity>(UserEntity(0, 1.0, 1.0))
-    val location: StateFlow<UserEntity> = _location
-
+    val location = locationInService
 
     private val _currentMarkerLocation = MutableStateFlow<LatLng>(LatLng(0.0, 0.0))
     val currentMarkerLocation: StateFlow<LatLng> = _currentMarkerLocation
@@ -108,7 +107,8 @@ class HomeViewModel @Inject constructor(
 
 
     //additional dialog
-    private val _showAdditionalRegistration = MutableStateFlow<Boolean>(false) //TODO change to false
+    private val _showAdditionalRegistration =
+        MutableStateFlow<Boolean>(false) //TODO change to false
     val showAdditionalRegistration: StateFlow<Boolean> = _showAdditionalRegistration
 
     private val _carNumberTextValue = MutableStateFlow<String>("")
@@ -121,33 +121,7 @@ class HomeViewModel @Inject constructor(
     val carColorTextValue = _carColorTextValue.asStateFlow()
 
     init {
-        viewModelScope.launch {
-            initUserMode(savedStateHandle)
-            repository.homeRepositoryEvent.collect { event ->
-                //Log.i("Event", "INIT_VM $event")
-                when (event) {
-                    is HomeRepositoryEvent.UserLocationStatus -> if (getLocationStatus(event)) {
-                        repository.getUserLocation()
-                            .catch { e->
-                                Log.i("DEBUG_LOAD", "exc $e")
-                            }
-                            .onEach { userEntity ->
-                                _location.value = userEntity
-                                delay(1_500) // TODO: smells like shit. Think about proper synchronization
-                                _userLocationStatus.value = HomeEvent.IsMapReady(
-                                    isLocationReady = true,
-                                    isMapReady = userLocationStatus.value.isMapReady
-                                )
-                                Log.i("DEBUG_LOAD", "in VM ${userLocationStatus.value}")
-
-                            }
-                            .launchIn(this)
-
-                    }
-                }
-            }
-            onEvent(HomeEvent.ChangeUserMode(currentUserMode.value))
-        }
+        initUserMode(savedStateHandle)
     }
 
     fun onEvent(event: HomeEvent) {
@@ -157,6 +131,12 @@ class HomeViewModel @Inject constructor(
                 _userLocationStatus.value = HomeEvent.IsMapReady(
                     isLocationReady = userLocationStatus.value.isLocationReady,
                     isMapReady = true
+                )
+            }
+            is HomeEvent.LocationReady -> {
+                _userLocationStatus.value = HomeEvent.IsMapReady(
+                    isLocationReady = true,
+                    isMapReady = userLocationStatus.value.isMapReady
                 )
             }
             is HomeEvent.NavigateToSearchDirection -> {
@@ -170,7 +150,7 @@ class HomeViewModel @Inject constructor(
                 )
             }
             is HomeEvent.OnMyLocationClicked -> {
-                getUserLocation(event.context)
+                //getUserLocation(event.context)
             }
 
             is HomeEvent.ChangeCurrentMarkerRes -> {
@@ -223,119 +203,121 @@ class HomeViewModel @Inject constructor(
             }
 
             is HomeEvent.PlaceMarker -> {
-                if (markerPicked.value == MarkerPicked.MarkerBPicked) {
-                    //place b
-                    _bMarkerLocation.value = currentMarkerLocation.value
-                    _markerPlacedState.value = MarkerPlacedState(
-                        aPlaced = markerPlacedState.value.aPlaced,
-                        bPlaced = true
-                    )
-                    if (markerPlacedState.value.aPlaced && markerPlacedState.value.bPlaced) {
-                        _markerPicked.value = MarkerPicked.AllMarkersPlaced
-                    } else {
-                        _markerPicked.value = MarkerPicked.MarkerAPicked
-                    }
-                    emitMarkerEvent(HomeEvent.MarkerPlaced(B_MARKER_KEY))
-
-                } else if (markerPicked.value == MarkerPicked.MarkerAPicked) {
-                    //place a
-                    if (!isInRadius(
-                            center = LatLng(
-                                location.value.latitude,
-                                location.value.longitude
-                            ),
-                            point = LatLng(
-                                currentMarkerLocation.value.latitude,
-                                currentMarkerLocation.value.longitude
-                            ),
-                            radius = Util.startRadius
-                        )
-                    ) {
-                        emitMarkerEvent(HomeEvent.IsNotInRadius)
-                    } else {
-                        _aMarkerLocation.value = currentMarkerLocation.value
+                if (location.value != null) {
+                    if (markerPicked.value == MarkerPicked.MarkerBPicked) {
+                        //place b
+                        _bMarkerLocation.value = currentMarkerLocation.value
                         _markerPlacedState.value = MarkerPlacedState(
-                            aPlaced = true,
-                            bPlaced = markerPlacedState.value.bPlaced
+                            aPlaced = markerPlacedState.value.aPlaced,
+                            bPlaced = true
                         )
                         if (markerPlacedState.value.aPlaced && markerPlacedState.value.bPlaced) {
                             _markerPicked.value = MarkerPicked.AllMarkersPlaced
                         } else {
-                            _markerPicked.value = MarkerPicked.MarkerBPicked
+                            _markerPicked.value = MarkerPicked.MarkerAPicked
                         }
-                        emitMarkerEvent(HomeEvent.MarkerPlaced(A_MARKER_KEY))
-                    }
-                } else {
-                    viewModelScope.launch {
-                        repository.getDirection(
-                            destination = "${bMarkerLocation.value.latitude},${bMarkerLocation.value.longitude}",
-                            origin = "${aMarkerLocation.value.latitude},${aMarkerLocation.value.longitude}"
-                        )
-                            .catch { e ->
-                                ApiState.Failure(e)
+                        emitMarkerEvent(HomeEvent.MarkerPlaced(B_MARKER_KEY))
+
+                    } else if (markerPicked.value == MarkerPicked.MarkerAPicked) {
+                        //place a
+                        if (!isInRadius(
+                                center = LatLng(
+                                    location.value!!.latitude,
+                                    location.value!!.longitude
+                                ),
+                                point = LatLng(
+                                    currentMarkerLocation.value.latitude,
+                                    currentMarkerLocation.value.longitude
+                                ),
+                                radius = Util.startRadius
+                            )
+                        ) {
+                            emitMarkerEvent(HomeEvent.IsNotInRadius)
+                        } else {
+                            _aMarkerLocation.value = currentMarkerLocation.value
+                            _markerPlacedState.value = MarkerPlacedState(
+                                aPlaced = true,
+                                bPlaced = markerPlacedState.value.bPlaced
+                            )
+                            if (markerPlacedState.value.aPlaced && markerPlacedState.value.bPlaced) {
+                                _markerPicked.value = MarkerPicked.AllMarkersPlaced
+                            } else {
+                                _markerPicked.value = MarkerPicked.MarkerBPicked
                             }
-                            .onEach { direction ->
-                                direction.routes[0].legs[0].steps.forEach {
-                                    _pathsList.value.add(PolyUtil.decode(it.polyline.points))
+                            emitMarkerEvent(HomeEvent.MarkerPlaced(A_MARKER_KEY))
+                        }
+                    } else {
+                        viewModelScope.launch {
+                            repository.getDirection(
+                                destination = "${bMarkerLocation.value.latitude},${bMarkerLocation.value.longitude}",
+                                origin = "${aMarkerLocation.value.latitude},${aMarkerLocation.value.longitude}"
+                            )
+                                .catch { e ->
+                                    ApiState.Failure(e)
                                 }
-                                _shouldShowDirection.value = true
-                            }
-                            .launchIn(this)
-                        if (currentUserMode.value is Constants.UserMode.Companion) {
-                            try {
-                                Log.i("POST_COMPANION", "here")
-                                val a = repository.postCompanionFind(
-                                    CompanionFindRequestData(
-                                        route = Route(
-                                            startPoint = StartPoint(
-                                                aMarkerLocation.value.latitude,
-                                                aMarkerLocation.value.longitude
+                                .onEach { direction ->
+                                    direction.routes[0].legs[0].steps.forEach {
+                                        _pathsList.value.add(PolyUtil.decode(it.polyline.points))
+                                    }
+                                    _shouldShowDirection.value = true
+                                }
+                                .launchIn(this)
+                            if (currentUserMode.value is Constants.UserMode.Companion) {
+                                try {
+                                    Log.i("POST_COMPANION", "here")
+                                    val a = repository.postCompanionFind(
+                                        CompanionFindRequestData(
+                                            route = Route(
+                                                startPoint = StartPoint(
+                                                    aMarkerLocation.value.latitude,
+                                                    aMarkerLocation.value.longitude
+                                                ),
+                                                endPoint = EndPoint(
+                                                    bMarkerLocation.value.latitude,
+                                                    bMarkerLocation.value.longitude
+                                                )
                                             ),
-                                            endPoint = EndPoint(
-                                                bMarkerLocation.value.latitude,
-                                                bMarkerLocation.value.longitude
-                                            )
-                                        ),
-                                        time = 15,
-                                        percent = 80
+                                            time = 15,
+                                            percent = 80
+                                        )
                                     )
-                                )
-                                a.collect {
-                                    Log.i("POST_COMPANION", "$it")
+                                    a.collect {
+                                        Log.i("POST_COMPANION", "$it")
+                                    }
+                                } catch (e: Exception) {
+                                    Log.i("EXCEPTION_POST_COMPANION", "$e")
+                                    sendUiEvent(HomeEvent.ShowError(e))
                                 }
-                            } catch (e: Exception) {
-                                Log.i("EXCEPTION_POST_COMPANION", "$e")
-                                sendUiEvent(HomeEvent.ShowError(e))
-                            }
-                        } else if (currentUserMode.value is Constants.UserMode.Driver) {
-                            try {
-                                val a = repository.postCreateDrive(
-                                    DriveCreateRequestData(
-                                        id = "1",
-                                        Calories(
-                                            startPoint = com.haberturm.hitchhikingapp.data.network.backend.driver.pojo.StartPoint(
-                                                aMarkerLocation.value.latitude,
-                                                aMarkerLocation.value.longitude
+                            } else if (currentUserMode.value is Constants.UserMode.Driver) {
+                                try {
+                                    val a = repository.postCreateDrive(
+                                        DriveCreateRequestData(
+                                            id = "1",
+                                            Calories(
+                                                startPoint = com.haberturm.hitchhikingapp.data.network.backend.driver.pojo.StartPoint(
+                                                    aMarkerLocation.value.latitude,
+                                                    aMarkerLocation.value.longitude
+                                                ),
+                                                endPoint = com.haberturm.hitchhikingapp.data.network.backend.driver.pojo.EndPoint(
+                                                    bMarkerLocation.value.latitude,
+                                                    bMarkerLocation.value.longitude
+                                                )
                                             ),
-                                            endPoint = com.haberturm.hitchhikingapp.data.network.backend.driver.pojo.EndPoint(
-                                                bMarkerLocation.value.latitude,
-                                                bMarkerLocation.value.longitude
-                                            )
-                                        ),
-                                        status = "InProgress"
+                                            status = "InProgress"
+                                        )
                                     )
-                                )
-                                a.collect {
-                                    Log.i("POST_COMPANION", it)
+                                    a.collect {
+                                        Log.i("POST_COMPANION", it)
+                                    }
+                                } catch (e: Exception) {
+                                    Log.i("EXCEPTION_POST_DRIVE", "$e")
+                                    sendUiEvent(HomeEvent.ShowError(e))
                                 }
-                            } catch (e: Exception) {
-                                Log.i("EXCEPTION_POST_DRIVE", "$e")
-                                sendUiEvent(HomeEvent.ShowError(e))
                             }
+
                         }
 
                     }
-
                 }
             }
             is HomeEvent.ObserveMovingMarkerLocation -> {
@@ -366,44 +348,50 @@ class HomeViewModel @Inject constructor(
             }
 
             is HomeEvent.ChangeUserMode -> {
-                _currentUserMode.value = event.mode
-                sendUiEvent(
-                    HomeEvent.RelocateMarker(
-                        location = LatLng(location.value.latitude, location.value.longitude),
-                        animation = false
+                if (location.value != null) {
+                    _currentUserMode.value = event.mode
+                    sendUiEvent(
+                        HomeEvent.RelocateMarker(
+                            location = LatLng(
+                                location.value!!.latitude,
+                                location.value!!.longitude
+                            ),
+                            animation = false
+                        )
                     )
-                )
-                viewModelScope.launch {
-                    _showAdditionalRegistration.value = repository.checkIfDriverExist("ddd") //TODO uncomment,
-                    delay(10)
-                    if (currentUserMode.value is Constants.UserMode.Driver) {
-                        if (!showAdditionalRegistration.value) {
-                            _markerPicked.value = MarkerPicked.MarkerBPicked
-                            _aMarkerLocation.value =
-                                LatLng(location.value.latitude, location.value.longitude)
-                            _markerPlacedState.value = MarkerPlacedState(
-                                aPlaced = true,
-                                bPlaced = false
-                            )
-                            emitMarkerEvent(HomeEvent.MarkerPlaced(A_MARKER_KEY))
-                            if (isDark.value) {
-                                _currentMarkerRes.value = Util.bMarkerDark
+                    viewModelScope.launch {
+                        _showAdditionalRegistration.value =
+                            repository.checkIfDriverExist("ddd") //TODO uncomment,
+                        delay(10)
+                        if (currentUserMode.value is Constants.UserMode.Driver) {
+                            if (!showAdditionalRegistration.value) {
+                                _markerPicked.value = MarkerPicked.MarkerBPicked
+                                _aMarkerLocation.value =
+                                    LatLng(location.value!!.latitude, location.value!!.longitude)
+                                _markerPlacedState.value = MarkerPlacedState(
+                                    aPlaced = true,
+                                    bPlaced = false
+                                )
+                                emitMarkerEvent(HomeEvent.MarkerPlaced(A_MARKER_KEY))
+                                if (isDark.value) {
+                                    _currentMarkerRes.value = Util.bMarkerDark
+                                } else {
+                                    _currentMarkerRes.value = Util.bMarkerLight
+                                }
                             } else {
-                                _currentMarkerRes.value = Util.bMarkerLight
+                                _showAdditionalRegistration.value = true
                             }
                         } else {
-                            _showAdditionalRegistration.value = true
-                        }
-                    } else {
-                        _markerPicked.value = MarkerPicked.MarkerAPicked
-                        _markerPlacedState.value = MarkerPlacedState(
-                            aPlaced = false,
-                            bPlaced = false
-                        )
-                        if (isDark.value) {
-                            _currentMarkerRes.value = Util.aMarkerDark
-                        } else {
-                            _currentMarkerRes.value = Util.aMarkerLight
+                            _markerPicked.value = MarkerPicked.MarkerAPicked
+                            _markerPlacedState.value = MarkerPlacedState(
+                                aPlaced = false,
+                                bPlaced = false
+                            )
+                            if (isDark.value) {
+                                _currentMarkerRes.value = Util.aMarkerDark
+                            } else {
+                                _currentMarkerRes.value = Util.aMarkerLight
+                            }
                         }
                     }
                 }
@@ -431,8 +419,6 @@ class HomeViewModel @Inject constructor(
                 _shouldShowDirection.value = false
             }
             is HomeEvent.NavigateTo -> {
-//                _userLocationStatus.value =
-//                    HomeEvent.IsMapReady(isLocationReady = false, isMapReady = false)
                 viewModelScope.cancel()
                 routeNavigator.navigateToRoute(event.route)
             }
@@ -446,24 +432,24 @@ class HomeViewModel @Inject constructor(
     private fun getLocationStatus(event: HomeRepositoryEvent.UserLocationStatus): Boolean {
         return event.isDone
     }
-
-    @SuppressLint("MissingPermission")
-    fun getUserLocation(context: Context) {
-        viewModelScope.launch {
-            try {
-                repository.getUserLocationWithApi(context, viewModelScope)
-                delay(1_500) // TODO: smells like shit. Think about proper synchronization
-                //onEvent(HomeEvent.ChangeUserMode(currentUserMode.value))
-                _userLocationStatus.value = HomeEvent.IsMapReady(
-                    isLocationReady = true,
-                    isMapReady = userLocationStatus.value.isMapReady
-                )
-            } catch (e: Exception) {
-                //TODO: Handle exception
-                Log.i("LOCATION_ERR", "LOCATION_ERR $e")
-            }
-        }
-    }
+//useless now
+//    @SuppressLint("MissingPermission")
+//    fun getUserLocation(context: Context) {
+//        viewModelScope.launch {
+//            try {
+//                repository.getUserLocationWithApi(context, viewModelScope)
+//               // delay(1_500) // TODO: smells like shit. Think about proper synchronization
+//                //onEvent(HomeEvent.ChangeUserMode(currentUserMode.value))
+////                _userLocationStatus.value = HomeEvent.IsMapReady(
+////                    isLocationReady = true,
+////                    isMapReady = userLocationStatus.value.isMapReady
+////                )
+//            } catch (e: Exception) {
+//                //TODO: Handle exception
+//                Log.i("LOCATION_ERR", "LOCATION_ERR $e")
+//            }
+//        }
+//    }
 
     private fun emitMarkerEvent(event: HomeEvent) {
         viewModelScope.launch {
@@ -480,15 +466,16 @@ class HomeViewModel @Inject constructor(
     private fun getMode(savedStateHandle: SavedStateHandle): String {
         return HomeRoute.getArgFrom(savedStateHandle)
     }
-    private fun initUserMode(savedStateHandle: SavedStateHandle){
-        when(getMode(savedStateHandle)){
+
+    private fun initUserMode(savedStateHandle: SavedStateHandle) {
+        when (getMode(savedStateHandle)) {
             Constants.NavArgConst.DRIVER.arg -> {
                 _currentUserMode.value = Constants.UserMode.Driver
-                //onEvent(HomeEvent.ChangeUserMode(Constants.UserMode.Driver))
+                onEvent(HomeEvent.ChangeUserMode(Constants.UserMode.Driver))
             }
             Constants.NavArgConst.COMPANION.arg -> {
                 _currentUserMode.value = Constants.UserMode.Companion
-                //onEvent(HomeEvent.ChangeUserMode(Constants.UserMode.Companion))
+                onEvent(HomeEvent.ChangeUserMode(Constants.UserMode.Companion))
             }
             else -> {
                 Unit

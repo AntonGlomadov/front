@@ -9,6 +9,7 @@ import kotlinx.parcelize.Parcelize
 sealed class HomeEvent {
     data class IsMapReady(val isLocationReady: Boolean, val isMapReady: Boolean) : HomeEvent()
     object MapReady : HomeEvent()
+    object LocationReady : HomeEvent()
     data class ObserveMovingMarkerLocation(val location: LatLng) : HomeEvent()
     data class OnMyLocationClicked(val context: Context) : HomeEvent()
     //unused
