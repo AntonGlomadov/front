@@ -21,8 +21,7 @@ class AuthRepositoryImpl : AuthRepository {
     override fun checkPasswordInDB(
         number: String,
         password: String
-    ): Flow<Response<AccessToken>> =
-        flow {
+    ): Flow<Response<AccessToken>> = flow {
             val r = AuthRetrofit.authRetrofit.getAccessToken(
                 number = number,
                 password = password
@@ -31,7 +30,8 @@ class AuthRepositoryImpl : AuthRepository {
         }.flowOn(Dispatchers.IO)
 
 
-    override fun signUp(signUpRequest: SignUpRequest): Flow<String> {
-        return flow { AuthRetrofit.authRetrofit.signUp(signUpRequest) }
-    }
+    override fun signUp(signUpRequest: SignUpRequest): Flow<Response<Unit>> = flow {
+        val r = AuthRetrofit.authRetrofit.signUp(signUpRequest)
+        emit(r)
+    }.flowOn(Dispatchers.IO)
 }

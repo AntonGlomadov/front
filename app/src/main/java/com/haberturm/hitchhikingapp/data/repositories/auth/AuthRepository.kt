@@ -11,5 +11,5 @@ interface AuthRepository {
     fun checkPasswordInDB(number: String, password:String): Flow<Response<AccessToken>>
     fun signUp(
         signUpRequest: SignUpRequest
-    ) : Flow<String>
+    ) : Flow<Response<Unit>>
 }

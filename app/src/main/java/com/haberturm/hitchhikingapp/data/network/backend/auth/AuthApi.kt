@@ -11,7 +11,7 @@ interface AuthApi {
     @POST(AllApi.SIGNUP)
     suspend fun signUp(
         @Body signUpRequest: SignUpRequest
-    ): String
+    ): Response<Unit>
 
     @FormUrlEncoded
     @POST(AllApi.GET_TOKEN)
