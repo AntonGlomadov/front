@@ -21,12 +21,13 @@ object AllApi {
 
     //auth
     private const val BASE_URL_AUTH = "http://185.93.111.89:32602/auth/realms/companion/protocol/openid-connect/"
-
-    const val BASE_URL_SIGNUP = "http://localhost:1212/"
-    private const val SIGNUP_PATH = "registration/"
-    const val SIGNUP = SIGNUP_PATH
-
-
     private const val TOKEN_PATH = "token/"
     const val GET_TOKEN = BASE_URL_AUTH + TOKEN_PATH
+
+    const val BASE_URL_SIGNUP = "http://185.93.111.89:30225/"
+    private const val SIGNUP_PATH = "registration/"
+    const val SIGNUP = BASE_URL_SIGNUP + SIGNUP_PATH
+
+
+
 }

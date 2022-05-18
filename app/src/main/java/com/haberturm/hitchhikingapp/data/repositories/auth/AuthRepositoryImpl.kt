@@ -15,7 +15,7 @@ import retrofit2.Response
 
 class AuthRepositoryImpl : AuthRepository {
     override fun checkNumberInDB(number: String): Boolean {
-        return true //TODO add proper check when server will be ready
+        return false //TODO add proper check when server will be ready
     }
 
     override fun checkPasswordInDB(
