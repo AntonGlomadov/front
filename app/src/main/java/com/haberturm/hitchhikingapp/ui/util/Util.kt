@@ -5,6 +5,7 @@ import android.graphics.Bitmap
 import android.graphics.Canvas
 import android.graphics.Color
 import android.location.Location
+import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.BlendModeColorFilterCompat
 import androidx.core.graphics.BlendModeCompat
@@ -21,6 +22,8 @@ import com.haberturm.hitchhikingapp.ui.screens.auth.login.PhoneErrors
 import com.haberturm.hitchhikingapp.ui.screens.auth.reg.RegErrors
 import com.haberturm.hitchhikingapp.ui.model.GeocodeUiModel
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.launch
 
 object Util {
@@ -228,5 +231,8 @@ object Util {
         object Success : TextFieldState()
         object None : TextFieldState()
     }
+
+    fun <T> Flow<T>.handleErrors(): Flow<T> =
+        catch { e -> Log.i("TOKEN", "$e") }
 }
 
