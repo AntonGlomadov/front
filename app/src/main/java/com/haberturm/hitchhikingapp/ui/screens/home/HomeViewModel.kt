@@ -25,6 +25,7 @@ import com.haberturm.hitchhikingapp.data.repositories.home.HomeRepositoryEvent
 import com.haberturm.hitchhikingapp.ui.nav.RouteNavigator
 import com.haberturm.hitchhikingapp.ui.searchDirection.SearchDirectionRoute
 import com.haberturm.hitchhikingapp.ui.util.Constants
+import com.haberturm.hitchhikingapp.ui.util.Constants.ACTION_STOP_SERVICE
 import com.haberturm.hitchhikingapp.ui.util.Util
 import com.haberturm.hitchhikingapp.ui.util.Util.isInRadius
 import com.haberturm.hitchhikingapp.ui.util.Util.toUiModel
@@ -119,6 +120,14 @@ class HomeViewModel @Inject constructor(
 
     private val _carColorTextValue = MutableStateFlow<String>("")
     val carColorTextValue = _carColorTextValue.asStateFlow()
+
+
+
+    private val _isRide = MutableStateFlow(false)
+    val isRide  = _isRide .asStateFlow()
+
+    @SuppressLint("StaticFieldLeak")
+    var localContext: Context? = null
 
     init {
         initUserMode(savedStateHandle)
@@ -425,6 +434,13 @@ class HomeViewModel @Inject constructor(
             is HomeEvent.InitUserMode -> {
 
             }
+            is HomeEvent.StartRide -> {
+                _isRide.value = true
+            }
+            is HomeEvent.StopRide -> {
+                _isRide.value = false
+            }
+
             else -> Unit
         }
     }
@@ -484,10 +500,20 @@ class HomeViewModel @Inject constructor(
     }
 
     fun launchLocationService(context: Context, action: String) {
+        localContext = context
         Intent(context, LocationService::class.java).also {
             it.action = action
             context.startService(it)
         }
+    }
+
+    override fun onCleared() {
+        super.onCleared()
+        Intent(localContext, LocationService::class.java).also {
+            it.action = ACTION_STOP_SERVICE
+            localContext?.stopService(it)
+        }
+        localContext = null
     }
 }
 
