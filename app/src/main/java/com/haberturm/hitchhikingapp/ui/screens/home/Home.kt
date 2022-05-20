@@ -31,6 +31,7 @@ import com.haberturm.hitchhikingapp.ui.nav.NavConst
 import com.haberturm.hitchhikingapp.ui.nav.getOrThrow
 import com.haberturm.hitchhikingapp.ui.screens.profile.ProfileRoute
 import com.haberturm.hitchhikingapp.ui.util.Constants
+import com.haberturm.hitchhikingapp.ui.util.Constants.ACTION_START_OR_RESUME_SERVICE
 import com.haberturm.hitchhikingapp.ui.views.BottomNavBar
 import com.haberturm.hitchhikingapp.ui.views.Items
 import com.haberturm.hitchhikingapp.ui.views.SelectModeDialog
@@ -72,6 +73,7 @@ object HomeRoute : NavRoute<HomeViewModel> {
 private fun Home(
     viewModel: HomeViewModel
 ) {
+    val context = LocalContext.current
     val userMode = viewModel.currentUserMode.collectAsState().value
     if (viewModel.currentUserMode.collectAsState().value is Constants.UserMode.Undefined) {
         SelectModeDialog(
@@ -87,6 +89,7 @@ private fun Home(
             val observer = LifecycleEventObserver { _, event ->
                 if (event == Lifecycle.Event.ON_START) {
                     permissions.launchMultiplePermissionRequest()
+
                 }
             }
             lifecycleOwner.lifecycle.addObserver(observer)
@@ -142,14 +145,21 @@ private fun Home(
                 Manifest.permission.ACCESS_FINE_LOCATION -> {
                     when {
                         perm.hasPermission -> {
+                            viewModel.launchLocationService(context, ACTION_START_OR_RESUME_SERVICE)
                             Log.i("PERM_DEBUG", "has permission")
                             permissionStatus = PermissionStatus.PermissionAccepted
-                            viewModel.getUserLocation(LocalContext.current)
-                            Log.i("PERM_DEBUG", "${viewModel.userLocationStatus.collectAsState().value.isLocationReady}")
-                            if (viewModel.userLocationStatus.collectAsState().value.isLocationReady) {
-                                Log.i("PERM_DEBUG", "location ready")
+                            //viewModel.getUserLocation(LocalContext.current)
+                            Log.i(
+                                "PERM_DEBUG",
+                                "${viewModel.userLocationStatus.collectAsState().value.isLocationReady}"
+                            )
 
-                                val userLocation = viewModel.location.collectAsState().value
+                            Log.i("PERM_DEBUG", "location ready")
+
+                            val userLocation = viewModel.location.collectAsState().value
+                            Log.i("PERM_DEBUG", "${viewModel.location.collectAsState().value}")
+                            if (userLocation != null) {
+                                viewModel.onEvent(HomeEvent.LocationReady)
                                 GoogleMapView(
                                     userLocation.latitude,
                                     userLocation.longitude,
@@ -160,7 +170,10 @@ private fun Home(
                                     viewModel,
                                     LocalContext.current
                                 )
+
                             }
+
+
 
                             if (!isMapAndLocLoaded) {
                                 androidx.compose.animation.AnimatedVisibility(
@@ -224,10 +237,16 @@ private fun Home(
             viewModel.onEvent(
                 HomeEvent.NavigateTo(
                     ProfileRoute.get(
-                        when(userMode){
-                            is Constants.UserMode.Companion -> { Constants.NavArgConst.COMPANION.arg }
-                            is Constants.UserMode.Driver -> {Constants.NavArgConst.DRIVER.arg}
-                            else -> {""} //impossible, i hope ;)
+                        when (userMode) {
+                            is Constants.UserMode.Companion -> {
+                                Constants.NavArgConst.COMPANION.arg
+                            }
+                            is Constants.UserMode.Driver -> {
+                                Constants.NavArgConst.DRIVER.arg
+                            }
+                            else -> {
+                                ""
+                            } //impossible, i hope ;)
                         }
                     )
                 )

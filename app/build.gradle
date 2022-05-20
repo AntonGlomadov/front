@@ -104,6 +104,8 @@ dependencies {
     implementation "com.google.accompanist:accompanist-insets:0.24.6-alpha"
     implementation "com.google.accompanist:accompanist-insets-ui:0.24.6-alpha"
 
+    implementation "androidx.lifecycle:lifecycle-service:2.2.0"
+
 }
 
 sqldelight {

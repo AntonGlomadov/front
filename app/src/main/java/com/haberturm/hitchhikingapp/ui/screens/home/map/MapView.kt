@@ -84,13 +84,6 @@ fun GoogleMapView(
         viewModel.onEvent(HomeEvent.ColorModeChanged(isDark))
     })
 
-//    LaunchedEffect(key1 = true, block = {
-//        viewModel.uiEvent.collect { event ->
-//            if(event is HomeEvent.ChangeUserMode){
-//                moveCamera(location,cameraPositionState, this, false)
-//            }
-//        }
-//    })
     val error = remember {
         mutableStateOf("")
     }

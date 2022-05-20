@@ -193,32 +193,40 @@ class RegViewModel @Inject constructor(
                             emailFieldState.value != Util.TextFieldState.Success ||
                             nameFieldState.value != Util.TextFieldState.Success)
                 ) {
-                    viewModelScope.launch {
-                        withContext(Dispatchers.IO) {
-                            try {
-                                val a = repository.signUp(
-                                    SignUpRequest(
-                                        name = name.value,
-                                        surname = surname.value,
-                                        email = email.value,
-                                        password = password.value,
-                                        birth = birth.value,
-                                        phoneNumber = phoneNumber.value,
-                                    )
-                                )
-
-                                a.catch { e ->
-                                    throw (e)
-                                }
-                                    .collect {
-                                        Log.i("REG", it)
-                                        navigateToRoute(HomeRoute.route)
+                    try {
+                        repository.signUp(
+                            SignUpRequest(
+                                name = name.value,
+                                surname = surname.value,
+                                email = email.value,
+                                password = password.value,
+                                birth = birth.value,
+                                phoneNumber = phoneNumber.value,
+                            )
+                        )
+                            .onEach {
+                                when (it.code()) {
+                                    201 -> {
+                                        //TODO success
+                                        repository.checkPasswordInDB(
+                                            number = phoneNumber.value,
+                                            password = password.value
+                                        )
+                                            .onEach { token ->
+                                                if (token.isSuccessful){
+                                                    Log.i("TOKEN", "${token.body()}")
+                                                }
+                                            }
+                                            .launchIn(viewModelScope)
                                     }
-                            } catch (e: Exception) {
-                                Log.i("REGERR", e.toString())
-                                sendUiEvent(RegEvent.Error("Ошибка"))
+                                    409 -> {
+                                        sendUiEvent(RegEvent.Error("Пользавтатель с таким номером телефона или e-mail уже зарегистрирован"))
+                                    }
+                                }
                             }
-                        }
+                            .launchIn(viewModelScope)
+                    } catch (e: Exception) {
+
                     }
                 }
             }
