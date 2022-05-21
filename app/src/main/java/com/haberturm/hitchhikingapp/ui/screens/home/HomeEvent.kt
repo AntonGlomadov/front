@@ -41,8 +41,8 @@ sealed class HomeEvent {
     object SendAdditionalInfo : HomeEvent()
     object OnDismissAdditionalInfo : HomeEvent()
 
-
-
+    object StartRide : HomeEvent()
+    object StopRide : HomeEvent()
 }
 
 const val A_MARKER_KEY = "A_MARKER"
