@@ -11,6 +11,7 @@ import com.haberturm.hitchhikingapp.ui.screens.auth.password.PasswordRoute
 import com.haberturm.hitchhikingapp.ui.screens.home.HomeRoute
 import com.haberturm.hitchhikingapp.ui.searchDirection.SearchDirectionRoute
 import com.haberturm.hitchhikingapp.ui.screens.auth.reg.RegRoute
+import com.haberturm.hitchhikingapp.ui.screens.message.MessageRoute
 import com.haberturm.hitchhikingapp.ui.screens.profile.ProfileRoute
 
 @Composable
@@ -26,5 +27,6 @@ fun ScreenHolder(navHostController: NavHostController, paddingValues: PaddingVal
         PasswordRoute.composable(this, navHostController)
         RegRoute.composable(this, navHostController)
         ProfileRoute.composable(this, navHostController)
+        MessageRoute.composable(this, navHostController)
     }
 }

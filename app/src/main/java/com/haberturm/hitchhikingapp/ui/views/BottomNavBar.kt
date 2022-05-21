@@ -26,6 +26,7 @@ enum class Items{
 fun BottomNavBar(
     navigateToMap: () -> Unit,
     navigateToProfile: () -> Unit,
+    navigateToMessage: () -> Unit,
     currentItem: Items
 ){
     Column(
@@ -73,7 +74,7 @@ fun BottomNavBar(
                 }
             }
 
-            IconButton(onClick = { /*TODO*/ }) {
+            IconButton(onClick = { navigateToMessage() }) {
                 Column(
                     horizontalAlignment = Alignment.CenterHorizontally
                 ) {
@@ -132,5 +133,5 @@ fun BottomNavBar(
 @Composable
 @Preview
 fun BottomNavBarPrev(){
-    BottomNavBar({},{}, currentItem = Items.MAP)
+    BottomNavBar({},{}, {},currentItem = Items.MAP)
 }
