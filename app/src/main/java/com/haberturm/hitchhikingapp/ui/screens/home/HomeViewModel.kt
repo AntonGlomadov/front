@@ -428,8 +428,13 @@ class HomeViewModel @Inject constructor(
                 _shouldShowDirection.value = false
             }
             is HomeEvent.NavigateTo -> {
-                viewModelScope.cancel()
-                routeNavigator.navigateToRoute(event.route)
+                if(
+                    currentUserMode.value == Constants.UserMode.Companion ||
+                    currentUserMode.value == Constants.UserMode.Companion
+                ){
+                    viewModelScope.cancel()
+                    routeNavigator.navigateToRoute(event.route)
+                }
             }
             is HomeEvent.InitUserMode -> {
 
