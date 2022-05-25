@@ -1,9 +1,12 @@
 package com.haberturm.hitchhikingapp.ui.screens.message
 
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.SavedStateHandle
 import androidx.navigation.NamedNavArgument
@@ -16,6 +19,7 @@ import com.haberturm.hitchhikingapp.ui.screens.profile.ProfileRoute
 import com.haberturm.hitchhikingapp.ui.util.Constants
 import com.haberturm.hitchhikingapp.ui.views.BottomNavBar
 import com.haberturm.hitchhikingapp.ui.views.Items
+import com.haberturm.hitchhikingapp.ui.views.MessageItem
 
 const val MODE = "MODE"
 object MessageRoute : NavRoute<MessageViewModel> {
@@ -41,7 +45,11 @@ object MessageRoute : NavRoute<MessageViewModel> {
 private fun Message(
     viewModel: MessageViewModel
 ){
-    Column(Modifier.fillMaxSize()) {
+    Column(
+        modifier = Modifier.fillMaxSize().padding(top = 8.dp),
+        verticalArrangement = Arrangement.SpaceBetween
+    ) {
+        MessageItem()
         BottomNavBar(
             navigateToMap = {
                 viewModel.onEvent(

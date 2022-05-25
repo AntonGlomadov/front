@@ -14,12 +14,6 @@ interface RouteNavigator {
 }
 
 class MyRouteNavigator : RouteNavigator {
-
-    /**
-     * Note that I'm using a single state here, not a list of states. As a result, if you quickly
-     * update the state multiple times, the view will only receive and handle the latest state,
-     * which is fine for my use case.
-     */
     override val navigationState: MutableStateFlow<NavigationState> =
         MutableStateFlow(NavigationState.Idle)
 

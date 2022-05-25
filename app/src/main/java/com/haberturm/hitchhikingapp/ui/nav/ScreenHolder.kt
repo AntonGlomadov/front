@@ -9,7 +9,6 @@ import androidx.navigation.compose.NavHost
 import com.haberturm.hitchhikingapp.ui.screens.auth.login.LoginRoute
 import com.haberturm.hitchhikingapp.ui.screens.auth.password.PasswordRoute
 import com.haberturm.hitchhikingapp.ui.screens.home.HomeRoute
-import com.haberturm.hitchhikingapp.ui.searchDirection.SearchDirectionRoute
 import com.haberturm.hitchhikingapp.ui.screens.auth.reg.RegRoute
 import com.haberturm.hitchhikingapp.ui.screens.message.MessageRoute
 import com.haberturm.hitchhikingapp.ui.screens.profile.ProfileRoute
@@ -18,12 +17,11 @@ import com.haberturm.hitchhikingapp.ui.screens.profile.ProfileRoute
 fun ScreenHolder(navHostController: NavHostController, paddingValues: PaddingValues) {
     NavHost(
         navController = navHostController,
-        startDestination = HomeRoute.route,
+        startDestination = LoginRoute.route,
         modifier = Modifier.padding(paddingValues)
     ) {
         LoginRoute.composable(this, navHostController)
         HomeRoute.composable(this, navHostController)
-        SearchDirectionRoute.composable(this, navHostController)
         PasswordRoute.composable(this, navHostController)
         RegRoute.composable(this, navHostController)
         ProfileRoute.composable(this, navHostController)
