@@ -2,7 +2,6 @@ package com.haberturm.hitchhikingapp.data.network.backend.auth
 
 import com.google.gson.GsonBuilder
 import com.haberturm.hitchhikingapp.data.network.AllApi
-import com.haberturm.hitchhikingapp.data.network.backend.companion.CompanionApi
 import okhttp3.OkHttpClient
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
@@ -35,7 +34,7 @@ object AuthRetrofit {
     val authRetrofit: AuthApi by lazy {
         Retrofit.Builder()
             .addConverterFactory(GsonConverterFactory.create(gson))
-            .baseUrl(AllApi.BASE_URL_SIGNUP)
+            .baseUrl(AllApi.BASE_URL_AUTH)
             .client(okHttpClient)
             .build().create(AuthApi::class.java)
     }

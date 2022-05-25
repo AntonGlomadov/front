@@ -7,7 +7,7 @@ import kotlinx.coroutines.flow.Flow
 import retrofit2.Response
 
 interface AuthRepository {
-    fun checkNumberInDB(number:String): Boolean
+    fun checkNumberInDB(number:String): Flow<Response<Unit>>
     fun checkPasswordInDB(number: String, password:String): Flow<Response<AccessToken>>
     fun signUp(
         signUpRequest: SignUpRequest

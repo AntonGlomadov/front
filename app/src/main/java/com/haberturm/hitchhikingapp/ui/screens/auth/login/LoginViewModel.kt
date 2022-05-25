@@ -10,10 +10,7 @@ import com.haberturm.hitchhikingapp.ui.nav.RouteNavigator
 import com.haberturm.hitchhikingapp.ui.util.Util
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.delay
-import kotlinx.coroutines.flow.MutableSharedFlow
-import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asSharedFlow
-import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -48,15 +45,28 @@ class LoginViewModel @Inject constructor(
             is LoginEvent.EnterNumber -> {
                 _phoneFieldState.value = Util.checkNumber(phoneNumber.value)
                 if(phoneFieldState.value is Util.TextFieldState.Success){
-                    if(repository.checkNumberInDB(phoneNumber.value)){
-                        Log.i(TAG, "to password")
-                        navigateToRoute(PasswordRoute.get(phoneNumber.value))
-                    }else{
-                        viewModelScope.launch {
-                            delay(250)  // for fix strange padding bug
-                            navigateToRoute(RegRoute.get(phoneNumber.value))
+                    repository.checkNumberInDB(phoneNumber.value)
+                        .onEach {
+                            when(it.code()){
+                                200, 403 -> {
+                                    navigateToRoute(PasswordRoute.get(phoneNumber.value))
+                                }
+                                404 -> {
+                                    delay(200) // for fix strange padding bug
+                                    navigateToRoute(RegRoute.get(phoneNumber.value))
+                                }
+                            }
                         }
-                    }
+                        .launchIn(viewModelScope)
+//                    if(repository.checkNumberInDB(phoneNumber.value)){
+//                        Log.i(TAG, "to password")
+//                        navigateToRoute(PasswordRoute.get(phoneNumber.value))
+//                    }else{
+//                        viewModelScope.launch {
+//                            delay(250)  // for fix strange padding bug
+//                            navigateToRoute(RegRoute.get(phoneNumber.value))
+//                        }
+//                    }
                 }
             }
         }
