@@ -12,28 +12,23 @@ import androidx.navigation.NavHostController
 import androidx.navigation.compose.composable
 
 interface NavRoute<T : RouteNavigator> {
-
     val route: String
-
     /**
      * Returns the screen's content.
      */
     @Composable
     fun Content(viewModel: T)
-
     /**
      * Returns the screen's ViewModel. Needs to be overridden so that Hilt can generate code for the factory for the ViewModel class.
      */
     @Composable
     fun viewModel(): T
-
     /**
      * Override when this page uses arguments.
      *
      * We do it here and not in the [NavigationComponent to keep it centralized]
      */
     fun getArguments(): List<NamedNavArgument> = listOf()
-
     /**
      * Generates the composable for this route.
      */
@@ -53,7 +48,6 @@ interface NavRoute<T : RouteNavigator> {
             Content(viewModel)
         }
     }
-
     /**
      * Navigates to viewState.
      */

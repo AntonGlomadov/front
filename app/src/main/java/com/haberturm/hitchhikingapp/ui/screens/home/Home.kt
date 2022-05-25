@@ -29,6 +29,8 @@ import com.haberturm.hitchhikingapp.ui.views.ErrorAlertDialog
 import com.haberturm.hitchhikingapp.ui.screens.home.map.*
 import com.haberturm.hitchhikingapp.ui.nav.NavConst
 import com.haberturm.hitchhikingapp.ui.nav.getOrThrow
+import com.haberturm.hitchhikingapp.ui.screens.message.MessageRoute
+import com.haberturm.hitchhikingapp.ui.screens.profile.ProfileEvent
 import com.haberturm.hitchhikingapp.ui.screens.profile.ProfileRoute
 import com.haberturm.hitchhikingapp.ui.util.Constants
 import com.haberturm.hitchhikingapp.ui.util.Constants.ACTION_START_OR_RESUME_SERVICE
@@ -253,6 +255,25 @@ private fun Home(
             )
         },
         navigateToMap = {},
+        navigateToMessage = {
+            viewModel.onEvent(
+                HomeEvent.NavigateTo(
+                    MessageRoute.get(
+                        when (userMode) {
+                            is Constants.UserMode.Companion -> {
+                                Constants.NavArgConst.COMPANION.arg
+                            }
+                            is Constants.UserMode.Driver -> {
+                                Constants.NavArgConst.DRIVER.arg
+                            }
+                            else -> {
+                                ""
+                            } //impossible, i hope ;)
+                        }
+                    )
+                )
+            )
+        },
         currentItem = Items.MAP
     )
 }

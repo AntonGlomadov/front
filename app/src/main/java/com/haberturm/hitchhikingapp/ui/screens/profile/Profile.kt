@@ -14,6 +14,7 @@ import androidx.navigation.navArgument
 import com.haberturm.hitchhikingapp.ui.nav.NavRoute
 import com.haberturm.hitchhikingapp.ui.nav.getOrThrow
 import com.haberturm.hitchhikingapp.ui.screens.home.HomeRoute
+import com.haberturm.hitchhikingapp.ui.screens.message.MessageRoute
 import com.haberturm.hitchhikingapp.ui.util.Constants
 import com.haberturm.hitchhikingapp.ui.views.*
 
@@ -83,17 +84,42 @@ private fun Profile(
                 viewModel.onEvent(
                     ProfileEvent.NavigateTo(
                         route = HomeRoute.get(
-                            when(userMode){
-                                is Constants.UserMode.Companion -> { Constants.NavArgConst.COMPANION.arg }
-                                is Constants.UserMode.Driver -> {Constants.NavArgConst.DRIVER.arg}
-                                else -> {""} //impossible, i hope ;)
+                            when (userMode) {
+                                is Constants.UserMode.Companion -> {
+                                    Constants.NavArgConst.COMPANION.arg
+                                }
+                                is Constants.UserMode.Driver -> {
+                                    Constants.NavArgConst.DRIVER.arg
+                                }
+                                else -> {
+                                    ""
+                                } //impossible, i hope ;)
                             }
                         )
                     )
                 )
             },
             navigateToProfile = {},
-            currentItem = Items.ACCOUNT
+            navigateToMessage = {
+                viewModel.onEvent(
+                    ProfileEvent.NavigateTo(
+                        route = MessageRoute.get(
+                            when (userMode) {
+                                is Constants.UserMode.Companion -> {
+                                    Constants.NavArgConst.COMPANION.arg
+                                }
+                                is Constants.UserMode.Driver -> {
+                                    Constants.NavArgConst.DRIVER.arg
+                                }
+                                else -> {
+                                    ""
+                                } //impossible, i hope ;)
+                            }
+                        )
+                    )
+                )
+            },
+            currentItem = Items.ACCOUNT,
         )
     }
 }

@@ -23,7 +23,6 @@ import com.haberturm.hitchhikingapp.data.network.backend.driver.pojo.DriveCreate
 import com.haberturm.hitchhikingapp.data.repositories.home.HomeRepository
 import com.haberturm.hitchhikingapp.data.repositories.home.HomeRepositoryEvent
 import com.haberturm.hitchhikingapp.ui.nav.RouteNavigator
-import com.haberturm.hitchhikingapp.ui.searchDirection.SearchDirectionRoute
 import com.haberturm.hitchhikingapp.ui.util.Constants
 import com.haberturm.hitchhikingapp.ui.util.Constants.ACTION_STOP_SERVICE
 import com.haberturm.hitchhikingapp.ui.util.Util
@@ -149,14 +148,14 @@ class HomeViewModel @Inject constructor(
                 )
             }
             is HomeEvent.NavigateToSearchDirection -> {
-                navigateToRoute(
-                    SearchDirectionRoute.get(
-                        event.startLocation.latitude.toString(),
-                        event.startLocation.longitude.toString(),
-                        event.endLocation.latitude.toString(),
-                        event.endLocation.longitude.toString()
-                    )
-                )
+//                navigateToRoute(
+//                    SearchDirectionRoute.get(
+//                        event.startLocation.latitude.toString(),
+//                        event.startLocation.longitude.toString(),
+//                        event.endLocation.latitude.toString(),
+//                        event.endLocation.longitude.toString()
+//                    )
+//                )
             }
             is HomeEvent.OnMyLocationClicked -> {
                 //getUserLocation(event.context)
@@ -428,8 +427,13 @@ class HomeViewModel @Inject constructor(
                 _shouldShowDirection.value = false
             }
             is HomeEvent.NavigateTo -> {
-                viewModelScope.cancel()
-                routeNavigator.navigateToRoute(event.route)
+                if(
+                    currentUserMode.value is Constants.UserMode.Companion ||
+                    currentUserMode.value is Constants.UserMode.Driver
+                ){
+                    viewModelScope.cancel()
+                    routeNavigator.navigateToRoute(event.route)
+                }
             }
             is HomeEvent.InitUserMode -> {
 
