@@ -4,6 +4,7 @@ import com.haberturm.hitchhikingapp.data.network.AllApi
 import com.haberturm.hitchhikingapp.data.network.backend.auth.pojo.AccessToken
 import com.haberturm.hitchhikingapp.data.network.backend.auth.pojo.CheckRequest
 import com.haberturm.hitchhikingapp.data.network.backend.auth.pojo.SignUpRequest
+import com.haberturm.hitchhikingapp.data.network.backend.auth.pojo.UpdateInfoRequest
 import retrofit2.Response
 import retrofit2.http.*
 
@@ -27,6 +28,12 @@ interface AuthApi {
     @POST(AllApi.CHECK)
     suspend fun checkNumber(
         @Body number: CheckRequest
+    ): Response<Unit>
+
+    @Headers("Content-Type: application/json")
+    @POST(AllApi.UPDATE_INFO )
+    suspend fun updateDriverInfo(
+        @Body infoForUpdate: UpdateInfoRequest
     ): Response<Unit>
 
 }

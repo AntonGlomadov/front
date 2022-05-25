@@ -29,6 +29,9 @@ object AllApi {
     private const val SIGNUP_PATH = "registration/"
     const val SIGNUP = BASE_URL_AUTH + SIGNUP_PATH
 
+    private const val UPDATE_PATH = "update/"
+    const val UPDATE_INFO = BASE_URL_AUTH + SIGNUP_PATH + UPDATE_PATH
+
     private const val CHECK_PATH = "check/"
     const val CHECK = BASE_URL_AUTH + CHECK_PATH
 
