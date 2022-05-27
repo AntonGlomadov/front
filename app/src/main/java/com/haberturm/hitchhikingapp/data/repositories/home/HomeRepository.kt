@@ -1,6 +1,7 @@
 package com.haberturm.hitchhikingapp.data.repositories.home
 
 import android.content.Context
+import com.haberturm.hitchhikingapp.data.network.backend.auth.pojo.AccessToken
 import com.haberturm.hitchhikingapp.data.network.backend.companion.pojo.companion.request.CompanionFindRequestData
 import com.haberturm.hitchhikingapp.data.network.backend.companion.pojo.companion.response.CompanionFindResponseData
 import com.haberturm.hitchhikingapp.data.network.backend.driver.pojo.DriveCreateRequestData
@@ -12,7 +13,8 @@ import retrofit2.Response
 import user.userdb.UserEntity
 
 interface HomeRepository {
-    suspend fun insertUser(id: Long?, latitude: Double, longitude: Double)
+    suspend fun insertUser(number: String, password: String)
+    suspend fun getUserData(): UserEntity?
     val homeRepositoryEvent: Flow<HomeRepositoryEvent>
     fun getGeocodeLocation(address: String): Flow<GeocodeLocationResponse>
     fun getDirection(destination: String, origin: String): Flow<Direction>
@@ -20,8 +22,9 @@ interface HomeRepository {
     fun postCreateDrive(data: DriveCreateRequestData): Flow<String>
     fun checkIfDriverExist(phoneNumber: String): Flow<Response<Unit>>
     fun sendAdditionalInfo(
+        phoneNumber: String,
         carNumber: String,
         carInfo: String,
-        carColor: String
-    )
+        carColor: String,
+    ): Flow<Response<Unit>>
 }

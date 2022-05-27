@@ -7,7 +7,9 @@ import com.haberturm.hitchhikingapp.data.network.googleApi.pojo.geocode.GeocodeL
 import com.google.android.gms.location.LocationServices
 import com.haberturm.hitchhikingapp.data.database.UserDataSource
 import com.haberturm.hitchhikingapp.data.network.backend.auth.AuthRetrofit
+import com.haberturm.hitchhikingapp.data.network.backend.auth.pojo.AccessToken
 import com.haberturm.hitchhikingapp.data.network.backend.auth.pojo.CheckRequest
+import com.haberturm.hitchhikingapp.data.network.backend.auth.pojo.UpdateInfoRequest
 import com.haberturm.hitchhikingapp.data.network.backend.companion.CompanionRetrofit
 import com.haberturm.hitchhikingapp.data.network.backend.companion.pojo.companion.request.CompanionFindRequestData
 import com.haberturm.hitchhikingapp.data.network.backend.companion.pojo.companion.response.CompanionFindResponseData
@@ -68,13 +70,20 @@ class HomeRepositoryImpl(
     }.flowOn(Dispatchers.IO)
 
     override fun sendAdditionalInfo(
+        phoneNumber: String,
         carNumber: String,
         carInfo: String,
-        carColor: String
-    ) {
-        TODO("Not yet implemented")
-    }
-
+        carColor: String,
+    ) : Flow<Response<Unit>> = flow {
+        val r = AuthRetrofit.authRetrofit.updateDriverInfo(
+            UpdateInfoRequest(
+                phone = phoneNumber,
+                carNumber = carNumber,
+                carInfo = "$carInfo; Цвет: $carColor"
+            )
+        )
+        emit(r)
+    }.flowOn(Dispatchers.IO)
 
 //    @SuppressLint("MissingPermission")
 //    override fun getUserLocationWithApi(context: Context, coroutineScope: CoroutineScope): Boolean {
@@ -104,8 +113,11 @@ class HomeRepositoryImpl(
 //        return userDataSource.getUserLocation()
 //    }
 
-    override suspend fun insertUser(id: Long?, latitude: Double, longitude: Double) {
-        userDataSource.insertUser(id, latitude, longitude)
-        _homeRepositoryEvent.send(HomeRepositoryEvent.UserLocationStatus(isDone = true))
+    override suspend fun insertUser(number: String, password: String) {
+        userDataSource.insertUser(number, password)
+    }
+
+    override suspend fun getUserData(): UserEntity? {
+        return userDataSource.getUserData()
     }
 }

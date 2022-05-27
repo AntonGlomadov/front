@@ -127,13 +127,19 @@ class HomeViewModel @Inject constructor(
     private val _isRide = MutableStateFlow(false)
     val isRide = _isRide.asStateFlow()
 
-    private val number: String = "+79632909012"
+    private var number: String? = null
 
     @SuppressLint("StaticFieldLeak")
     var localContext: Context? = null
 
+    private val jwtToken: AccessToken? = ModelPreferencesManager.get<AccessToken>(ACCESS_TOKEN)
+
     init {
-        Log.i("TOKEN-HVM", ModelPreferencesManager.get<AccessToken>(ACCESS_TOKEN).toString())
+        viewModelScope.launch {
+            withContext(Dispatchers.IO){
+                number = repository.getUserData()?.number
+            }
+        }
         initUserMode(savedStateHandle)
     }
 
@@ -193,7 +199,6 @@ class HomeViewModel @Inject constructor(
 
             is HomeEvent.GetGeocodeLocation -> {
                 geocodeApiResponse.value = ApiState.Loading
-                Log.i("TESTAPI", "request clicked")
                 viewModelScope.launch {
                     repository.getGeocodeLocation(event.address)
                         .catch { e ->
@@ -210,7 +215,6 @@ class HomeViewModel @Inject constructor(
                                     animation = true
                                 )
                             )
-                            Log.i("testapi", currentMarkerLocation.value.toString())
                         }
                 }
             }
@@ -362,30 +366,34 @@ class HomeViewModel @Inject constructor(
 
             is HomeEvent.ChangeUserMode -> {
                 if (location.value != null) {
+                    Log.i("CHECK-DRIVER", currentUserMode.value.toString())
                     if (event.mode == Constants.UserMode.Driver) {
-                        repository.checkIfDriverExist(number)
-                            .onEach {
-                                when (it.code()) {
-                                    200 -> {
-                                        _showAdditionalRegistration.value = false
-                                        _currentUserMode.value = event.mode
-                                        sendUiEvent(
-                                            HomeEvent.RelocateMarker(
-                                                location = LatLng(
-                                                    location.value!!.latitude,
-                                                    location.value!!.longitude
-                                                ),
-                                                animation = false
+                        number?.let {
+                            repository.checkIfDriverExist(it)
+                                .onEach {
+                                    Log.i("CHECK-DRIVER", it.code().toString())
+                                    when (it.code()) {
+                                        200 -> {
+                                            _showAdditionalRegistration.value = false
+                                            _currentUserMode.value = event.mode
+                                            sendUiEvent(
+                                                HomeEvent.RelocateMarker(
+                                                    location = LatLng(
+                                                        location.value!!.latitude,
+                                                        location.value!!.longitude
+                                                    ),
+                                                    animation = false
+                                                )
                                             )
-                                        )
-                                    }
-                                    403 -> {
-                                        _showAdditionalRegistration.value = true
+                                        }
+                                        403 -> {
+                                            _showAdditionalRegistration.value = true
 
+                                        }
                                     }
                                 }
-                            }
-                            .launchIn(viewModelScope)
+                                .launchIn(viewModelScope)
+                        }
                     } else {
                         _currentUserMode.value = event.mode
                         sendUiEvent(
@@ -439,9 +447,29 @@ class HomeViewModel @Inject constructor(
                 _carColorTextValue.value = event.textValue
             }
             is HomeEvent.SendAdditionalInfo -> {
-                //TODO update registration via repository.sendAdditionalInfo
+                number?.let {
+                    repository.sendAdditionalInfo(
+                        phoneNumber = it,
+                        carNumber = carNumberTextValue.value,
+                        carInfo = carInfoTextValue.value,
+                        carColor = carColorTextValue.value,
 
-                onEvent(HomeEvent.ChangeUserMode(mode = Constants.UserMode.Driver))
+                        )
+                        .onEach { response ->
+                            when (response.code()) {
+                                200, 201 -> {
+                                    onEvent(HomeEvent.ChangeUserMode(mode = Constants.UserMode.Driver))
+                                }
+                                else -> {
+                                    Log.i("EXCEPTION-SEND-ADDINFO-VM", response.errorBody().toString())
+                                    //todo handle error
+                                }
+                            }
+                        }
+                        .launchIn(viewModelScope)
+                }
+
+
             }
             is HomeEvent.OnDismissAdditionalInfo -> {
                 _showAdditionalRegistration.value = false

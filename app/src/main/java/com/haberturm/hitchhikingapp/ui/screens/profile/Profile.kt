@@ -13,6 +13,7 @@ import androidx.navigation.NavType
 import androidx.navigation.navArgument
 import com.haberturm.hitchhikingapp.ui.nav.NavRoute
 import com.haberturm.hitchhikingapp.ui.nav.getOrThrow
+import com.haberturm.hitchhikingapp.ui.screens.home.HomeEvent
 import com.haberturm.hitchhikingapp.ui.screens.home.HomeRoute
 import com.haberturm.hitchhikingapp.ui.screens.message.MessageRoute
 import com.haberturm.hitchhikingapp.ui.util.Constants
@@ -44,6 +45,26 @@ private fun Profile(
     viewModel: ProfileViewModel
 ) {
     Log.i("MYSTATE", "${viewModel.navigationState.collectAsState().value}")
+    val showAdditionalRegistration = viewModel.showAdditionalRegistration.collectAsState().value
+    if (showAdditionalRegistration) {
+        AdditionalInfDialog(
+            carNumberTextValue = viewModel.carNumberTextValue.collectAsState().value,
+            carNumberOnValueChange = fun(valueText: String) {
+                viewModel.onEvent(ProfileEvent.UpdateCarNumberTextValue(valueText))
+            },
+            carInfoTextValue = viewModel.carInfoTextValue.collectAsState().value,
+            carInfoOnValueChange =fun(valueText: String) {
+                viewModel.onEvent(ProfileEvent.UpdateCarInfoTextValue(valueText))
+            },
+            carColorTextValue = viewModel.carColorTextValue.collectAsState().value,
+            carColorOnValueChange = fun(valueText: String) {
+                viewModel.onEvent(ProfileEvent.UpdateCarColorTextValue(valueText))
+            },
+            sendAdditionalInfo = {viewModel.onEvent(ProfileEvent.SendAdditionalInfo)},
+            onDismiss = {viewModel.onEvent(ProfileEvent.OnDismissAdditionalInfo)}
+        )
+    }
+
     Column(
         Modifier
             .fillMaxSize(),

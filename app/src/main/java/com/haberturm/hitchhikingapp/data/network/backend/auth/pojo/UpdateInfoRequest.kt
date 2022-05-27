@@ -4,8 +4,7 @@ import com.google.gson.annotations.SerializedName
 
 
 data class UpdateInfoRequest (
-    @SerializedName("phone"     ) var phone     : String? = null,
-    @SerializedName("carNumber" ) var carNumber : String? = null,
-    @SerializedName("carInfo"   ) var carInfo   : String? = null
-
+    var phone     : String,
+    var carNumber : String,
+    var carInfo   : String
 )

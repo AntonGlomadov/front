@@ -6,8 +6,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.haberturm.hitchhikingapp.data.network.backend.auth.pojo.SignUpRequest
 import com.haberturm.hitchhikingapp.data.repositories.auth.AuthRepository
+import com.haberturm.hitchhikingapp.data.repositories.home.HomeRepository
 import com.haberturm.hitchhikingapp.ui.screens.home.HomeRoute
 import com.haberturm.hitchhikingapp.ui.nav.RouteNavigator
+import com.haberturm.hitchhikingapp.ui.util.Constants
+import com.haberturm.hitchhikingapp.ui.util.ModelPreferencesManager
 import com.haberturm.hitchhikingapp.ui.util.Util
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
@@ -21,7 +24,8 @@ import javax.inject.Inject
 class RegViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val routeNavigator: RouteNavigator,
-    private val repository: AuthRepository
+    private val repository: AuthRepository,
+    private val homeRep: HomeRepository
 ) : ViewModel(), RouteNavigator by routeNavigator {
 
     private val _uiEvent = Channel<RegEvent>()
@@ -207,14 +211,18 @@ class RegViewModel @Inject constructor(
                             .onEach {
                                 when (it.code()) {
                                     201 -> {
-                                        //TODO success
                                         repository.checkPasswordInDB(
                                             number = phoneNumber.value,
                                             password = password.value
                                         )
                                             .onEach { token ->
                                                 if (token.isSuccessful){
-                                                    Log.i("TOKEN", "${token.body()}")
+                                                    homeRep.insertUser(phoneNumber.value,password.value)
+                                                    ModelPreferencesManager.put(token.body(), Constants.ACCESS_TOKEN)
+                                                    navigateToRoute(HomeRoute.route)
+
+                                                }else{
+                                                    //todo handle error
                                                 }
                                             }
                                             .launchIn(viewModelScope)
@@ -226,7 +234,7 @@ class RegViewModel @Inject constructor(
                             }
                             .launchIn(viewModelScope)
                     } catch (e: Exception) {
-
+                        //todo
                     }
                 }
             }

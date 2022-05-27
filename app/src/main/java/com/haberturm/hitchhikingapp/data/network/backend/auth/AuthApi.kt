@@ -31,8 +31,9 @@ interface AuthApi {
     ): Response<Unit>
 
     @Headers("Content-Type: application/json")
-    @POST(AllApi.UPDATE_INFO )
+    @POST(AllApi.UPDT )
     suspend fun updateDriverInfo(
+        //@Header("Authorization") jwtToken: AccessToken,
         @Body infoForUpdate: UpdateInfoRequest
     ): Response<Unit>
 

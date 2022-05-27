@@ -9,6 +9,7 @@ import android.util.Log
 import androidx.core.content.ContextCompat
 import androidx.core.graphics.BlendModeColorFilterCompat
 import androidx.core.graphics.BlendModeCompat
+import androidx.lifecycle.viewModelScope
 import com.google.android.gms.maps.CameraUpdateFactory
 import com.google.android.gms.maps.model.BitmapDescriptor
 import com.google.android.gms.maps.model.BitmapDescriptorFactory
@@ -18,12 +19,16 @@ import com.google.android.gms.maps.model.LatLngBounds
 import com.google.maps.android.compose.CameraPositionState
 import com.haberturm.hitchhikingapp.R
 import com.haberturm.hitchhikingapp.data.network.googleApi.pojo.reverseGeocode.ReverseGeocodeResponse
+import com.haberturm.hitchhikingapp.data.repositories.auth.AuthRepository
 import com.haberturm.hitchhikingapp.ui.screens.auth.login.PhoneErrors
 import com.haberturm.hitchhikingapp.ui.screens.auth.reg.RegErrors
 import com.haberturm.hitchhikingapp.ui.model.GeocodeUiModel
+import com.haberturm.hitchhikingapp.ui.screens.home.HomeRoute
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.catch
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
 
 object Util {
@@ -232,7 +237,26 @@ object Util {
         object None : TextFieldState()
     }
 
-    fun <T> Flow<T>.handleErrors(): Flow<T> =
-        catch { e -> Log.i("TOKEN", "$e") }
+    fun login(
+        repository: AuthRepository,
+        number: String,
+        password: String,
+        action: () -> Unit,
+        coroutineScope: CoroutineScope
+    ){
+        repository.checkPasswordInDB(
+            number = number,
+            password = password
+        )
+            .onEach { token ->
+                if (token.isSuccessful){
+                    ModelPreferencesManager.put(token.body(), Constants.ACCESS_TOKEN)
+                    action()
+                }
+            }
+            .launchIn(coroutineScope)
+    }
+
+
 }
 
