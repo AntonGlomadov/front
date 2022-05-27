@@ -20,14 +20,22 @@ object AllApi {
     const val DRIVE_CREATE = DRIVER_PATH
 
     //auth
-    private const val BASE_URL_AUTH = "http://185.93.111.89:32602/auth/realms/companion/protocol/openid-connect/"
+    private const val BASE_KEYCLOAK_URL_AUTH = "http://185.93.111.89:32602/auth/realms/companion/protocol/openid-connect/"
     private const val TOKEN_PATH = "token/"
-    const val GET_TOKEN = BASE_URL_AUTH + TOKEN_PATH
+    const val GET_TOKEN = BASE_KEYCLOAK_URL_AUTH + TOKEN_PATH
 
-    const val BASE_URL_SIGNUP = "http://185.93.111.89:30225/"
+    const val BASE_URL_AUTH = "http://185.93.111.89:30225/"
+
     private const val SIGNUP_PATH = "registration/"
-    const val SIGNUP = BASE_URL_SIGNUP + SIGNUP_PATH
+    const val SIGNUP = BASE_URL_AUTH + SIGNUP_PATH
 
+    private const val UPDATE_PATH = "update"
+    const val UPDATE_INFO = BASE_URL_AUTH + SIGNUP_PATH + UPDATE_PATH
+
+    private const val CHECK_PATH = "check/"
+    const val CHECK = BASE_URL_AUTH + CHECK_PATH
+
+    const val UPDT = "http://185.93.111.89:30225/registration/update"
 
 
 }

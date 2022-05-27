@@ -5,10 +5,12 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.haberturm.hitchhikingapp.data.repositories.auth.AuthRepository
+import com.haberturm.hitchhikingapp.data.repositories.home.HomeRepository
 import com.haberturm.hitchhikingapp.ui.screens.home.HomeRoute
 import com.haberturm.hitchhikingapp.ui.nav.RouteNavigator
+import com.haberturm.hitchhikingapp.ui.util.Constants
+import com.haberturm.hitchhikingapp.ui.util.ModelPreferencesManager
 import com.haberturm.hitchhikingapp.ui.util.Util
-import com.haberturm.hitchhikingapp.ui.util.Util.handleErrors
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
@@ -18,7 +20,8 @@ import javax.inject.Inject
 class PasswordViewModel @Inject constructor(
     savedStateHandle: SavedStateHandle,
     private val routeNavigator: RouteNavigator,
-    private val repository: AuthRepository
+    private val repository: AuthRepository,
+    private val homeRep: HomeRepository
 ) : ViewModel(), RouteNavigator by routeNavigator {
 
     private val _passwordFieldFocusState =
@@ -61,15 +64,18 @@ class PasswordViewModel @Inject constructor(
                             password = password.value
                         )
                         .onEach { response ->
-                            Log.i("TOKEN", "$response")
-                            if (response.isSuccessful){
-                                //_passwordFieldState.value = Util.TextFieldState.Success
-                            }else{
-                                val errorMsg = response.errorBody()
-                                val code = response.code()
-                                response.errorBody()?.close()
-                                if(code == 401){
+                            when(response.code()){
+                                200 -> {
+                                    ModelPreferencesManager.put(response.body(), Constants.ACCESS_TOKEN)
+                                    homeRep.insertUser(number,password.value)
+                                    _passwordFieldState.value = Util.TextFieldState.Success
+                                    navigateToRoute(HomeRoute.route)
+                                }
+                                401 -> {
                                     _passwordFieldState.value = Util.TextFieldState.Failure("Неверный пароль!")
+                                }
+                                else -> {
+                                    //todo handle error
                                 }
                             }
                         }
@@ -77,14 +83,9 @@ class PasswordViewModel @Inject constructor(
                 } catch (e: Exception) {
                     Log.i("TOKEN", "$e")
                 }
-                //_passwordFieldState.value = repository.checkPasswordInDB(password.value)
-                if (passwordFieldState.value is Util.TextFieldState.Success) {
-                    navigateToRoute(HomeRoute.route)
-                }
+
             }
-
         }
-
     }
 
 

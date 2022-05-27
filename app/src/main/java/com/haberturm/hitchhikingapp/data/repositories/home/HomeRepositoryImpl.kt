@@ -6,6 +6,10 @@ import android.util.Log
 import com.haberturm.hitchhikingapp.data.network.googleApi.pojo.geocode.GeocodeLocationResponse
 import com.google.android.gms.location.LocationServices
 import com.haberturm.hitchhikingapp.data.database.UserDataSource
+import com.haberturm.hitchhikingapp.data.network.backend.auth.AuthRetrofit
+import com.haberturm.hitchhikingapp.data.network.backend.auth.pojo.AccessToken
+import com.haberturm.hitchhikingapp.data.network.backend.auth.pojo.CheckRequest
+import com.haberturm.hitchhikingapp.data.network.backend.auth.pojo.UpdateInfoRequest
 import com.haberturm.hitchhikingapp.data.network.backend.companion.CompanionRetrofit
 import com.haberturm.hitchhikingapp.data.network.backend.companion.pojo.companion.request.CompanionFindRequestData
 import com.haberturm.hitchhikingapp.data.network.backend.companion.pojo.companion.response.CompanionFindResponseData
@@ -19,6 +23,7 @@ import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
+import retrofit2.Response
 import user.userdb.UserEntity
 
 class HomeRepositoryImpl(
@@ -57,50 +62,62 @@ class HomeRepositoryImpl(
         return flow { DriverRetrofit.driverRetrofit.postCreateDrive(data) }
     }
 
-    override fun checkIfDriverExist(phoneNumber: String): Boolean {
-        return false
-    }
+    override fun checkIfDriverExist(phoneNumber: String): Flow<Response<Unit>> = flow {
+        val r = AuthRetrofit.authRetrofit.checkNumber(
+            CheckRequest(phoneNumber)
+        )
+        emit(r)
+    }.flowOn(Dispatchers.IO)
 
     override fun sendAdditionalInfo(
         phoneNumber: String,
         carNumber: String,
         carInfo: String,
-        carColor: String
-    ) {
-        TODO("Not yet implemented")
+        carColor: String,
+    ) : Flow<Response<Unit>> = flow {
+        val r = AuthRetrofit.authRetrofit.updateDriverInfo(
+            UpdateInfoRequest(
+                phone = phoneNumber,
+                carNumber = carNumber,
+                carInfo = "$carInfo; Цвет: $carColor"
+            )
+        )
+        emit(r)
+    }.flowOn(Dispatchers.IO)
+
+//    @SuppressLint("MissingPermission")
+//    override fun getUserLocationWithApi(context: Context, coroutineScope: CoroutineScope): Boolean {
+//        val fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
+//        val locationResult = fusedLocationProviderClient.lastLocation
+//        coroutineScope.launch {_homeRepositoryEvent.send(HomeRepositoryEvent.UserLocationStatus(isDone = false))  }
+//        locationResult.addOnCompleteListener { task ->
+//            if (task.isSuccessful) {
+//                val lastKnownLocation =
+//                    task.result //TODO handle case when lastKnownLocation is null
+//                coroutineScope.launch {
+//                    async {
+//                        insertUser(0, lastKnownLocation.latitude, lastKnownLocation.longitude)
+//                    }.await()
+//                }
+//            } else {
+//
+//                Log.i("EXCEPTION-inGetUserLocation_rep", "${task.exception}")
+//                //TODO handle err
+//            }
+//        }
+//        return true
+//    }
+
+//    //TODO mb make following function private
+//    override fun getUserLocation(): Flow<UserEntity> {
+//        return userDataSource.getUserLocation()
+//    }
+
+    override suspend fun insertUser(number: String, password: String) {
+        userDataSource.insertUser(number, password)
     }
 
-
-    @SuppressLint("MissingPermission")
-    override fun getUserLocationWithApi(context: Context, coroutineScope: CoroutineScope): Boolean {
-        val fusedLocationProviderClient = LocationServices.getFusedLocationProviderClient(context)
-        val locationResult = fusedLocationProviderClient.lastLocation
-        coroutineScope.launch {_homeRepositoryEvent.send(HomeRepositoryEvent.UserLocationStatus(isDone = false))  }
-        locationResult.addOnCompleteListener { task ->
-            if (task.isSuccessful) {
-                val lastKnownLocation =
-                    task.result //TODO handle case when lastKnownLocation is null
-                coroutineScope.launch {
-                    async {
-                        insertUser(0, lastKnownLocation.latitude, lastKnownLocation.longitude)
-                    }.await()
-                }
-            } else {
-
-                Log.i("EXCEPTION-inGetUserLocation_rep", "${task.exception}")
-                //TODO handle err
-            }
-        }
-        return true
-    }
-
-    //TODO mb make following function private
-    override fun getUserLocation(): Flow<UserEntity> {
-        return userDataSource.getUserLocation()
-    }
-
-    override suspend fun insertUser(id: Long?, latitude: Double, longitude: Double) {
-        userDataSource.insertUser(id, latitude, longitude)
-        _homeRepositoryEvent.send(HomeRepositoryEvent.UserLocationStatus(isDone = true))
+    override suspend fun getUserData(): UserEntity? {
+        return userDataSource.getUserData()
     }
 }

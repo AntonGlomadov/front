@@ -13,14 +13,13 @@ class UserDataSourceImpl(
     db: UserDatabase
 ) : UserDataSource {
     private val queries: UserEntityQueries = db.userEntityQueries
-    override fun getUserLocation(): Flow<UserEntity> {
-        return queries.getUserLocation().asFlow().mapToOne()
-
+    override suspend fun getUserData(): UserEntity? {
+        return queries.getUserData().executeAsOneOrNull()
     }
 
-    override suspend fun insertUser(id: Long?, latitude: Double, longitude: Double) {
+    override suspend fun insertUser(number: String, password:String) {
         withContext(Dispatchers.IO) {
-            queries.insertUser(id, latitude, longitude)
+            queries.insertUser(number, password)
         }
     }
 }

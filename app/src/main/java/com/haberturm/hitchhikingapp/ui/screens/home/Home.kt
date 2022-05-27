@@ -77,12 +77,7 @@ private fun Home(
 ) {
     val context = LocalContext.current
     val userMode = viewModel.currentUserMode.collectAsState().value
-    if (viewModel.currentUserMode.collectAsState().value is Constants.UserMode.Undefined) {
-        SelectModeDialog(
-            changeUserModeToCompanion = { viewModel.onEvent(HomeEvent.ChangeUserMode(Constants.UserMode.Companion)) },
-            changeUserModeToDriver = { viewModel.onEvent(HomeEvent.ChangeUserMode(Constants.UserMode.Driver)) },
-        )
-    }
+
     val permissions = GetPermissions()
     val lifecycleOwner = LocalLifecycleOwner.current
     DisposableEffect(
@@ -101,7 +96,7 @@ private fun Home(
             }
         }
     )
-    Log.i("DEBUG_LOAD", "${viewModel.userLocationStatus.collectAsState().value}")
+
     var isMapAndLocLoaded by remember { mutableStateOf(false) }
     var isLocReady by remember { mutableStateOf(false) }
     LaunchedEffect(key1 = true) {
@@ -148,19 +143,15 @@ private fun Home(
                     when {
                         perm.hasPermission -> {
                             viewModel.launchLocationService(context, ACTION_START_OR_RESUME_SERVICE)
-                            Log.i("PERM_DEBUG", "has permission")
                             permissionStatus = PermissionStatus.PermissionAccepted
-                            //viewModel.getUserLocation(LocalContext.current)
-                            Log.i(
-                                "PERM_DEBUG",
-                                "${viewModel.userLocationStatus.collectAsState().value.isLocationReady}"
-                            )
-
-                            Log.i("PERM_DEBUG", "location ready")
-
                             val userLocation = viewModel.location.collectAsState().value
-                            Log.i("PERM_DEBUG", "${viewModel.location.collectAsState().value}")
                             if (userLocation != null) {
+                                if (viewModel.currentUserMode.collectAsState().value is Constants.UserMode.Undefined) {
+                                    SelectModeDialog(
+                                        changeUserModeToCompanion = { viewModel.onEvent(HomeEvent.ChangeUserMode(Constants.UserMode.Companion)) },
+                                        changeUserModeToDriver = { viewModel.onEvent(HomeEvent.ChangeUserMode(Constants.UserMode.Driver)) },
+                                    )
+                                }
                                 viewModel.onEvent(HomeEvent.LocationReady)
                                 GoogleMapView(
                                     userLocation.latitude,

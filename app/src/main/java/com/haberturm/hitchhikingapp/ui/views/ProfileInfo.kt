@@ -39,11 +39,7 @@ fun ProfileInfoItem(
                 ,
                 backgroundColor = Color.LightGray
             ) {
-                Image(
-                    painter = painterResource(id = R.drawable.avatar),
-                    contentDescription = "men",
-                    contentScale = ContentScale.FillBounds
-                )
+
             }
             Column(
                 modifier = Modifier

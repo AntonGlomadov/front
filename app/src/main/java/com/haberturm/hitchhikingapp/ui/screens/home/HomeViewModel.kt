@@ -14,6 +14,7 @@ import com.haberturm.hitchhikingapp.LocationService
 import com.haberturm.hitchhikingapp.LocationService.Companion.locationInService
 import com.haberturm.hitchhikingapp.R
 import com.haberturm.hitchhikingapp.data.network.ApiState
+import com.haberturm.hitchhikingapp.data.network.backend.auth.pojo.AccessToken
 import com.haberturm.hitchhikingapp.data.network.backend.companion.pojo.companion.request.CompanionFindRequestData
 import com.haberturm.hitchhikingapp.data.network.backend.companion.pojo.companion.request.EndPoint
 import com.haberturm.hitchhikingapp.data.network.backend.companion.pojo.companion.request.Route
@@ -24,7 +25,9 @@ import com.haberturm.hitchhikingapp.data.repositories.home.HomeRepository
 import com.haberturm.hitchhikingapp.data.repositories.home.HomeRepositoryEvent
 import com.haberturm.hitchhikingapp.ui.nav.RouteNavigator
 import com.haberturm.hitchhikingapp.ui.util.Constants
+import com.haberturm.hitchhikingapp.ui.util.Constants.ACCESS_TOKEN
 import com.haberturm.hitchhikingapp.ui.util.Constants.ACTION_STOP_SERVICE
+import com.haberturm.hitchhikingapp.ui.util.ModelPreferencesManager
 import com.haberturm.hitchhikingapp.ui.util.Util
 import com.haberturm.hitchhikingapp.ui.util.Util.isInRadius
 import com.haberturm.hitchhikingapp.ui.util.Util.toUiModel
@@ -121,14 +124,22 @@ class HomeViewModel @Inject constructor(
     val carColorTextValue = _carColorTextValue.asStateFlow()
 
 
-
     private val _isRide = MutableStateFlow(false)
-    val isRide  = _isRide .asStateFlow()
+    val isRide = _isRide.asStateFlow()
+
+    private var number: String? = null
 
     @SuppressLint("StaticFieldLeak")
     var localContext: Context? = null
 
+    private val jwtToken: AccessToken? = ModelPreferencesManager.get<AccessToken>(ACCESS_TOKEN)
+
     init {
+        viewModelScope.launch {
+            withContext(Dispatchers.IO){
+                number = repository.getUserData()?.number
+            }
+        }
         initUserMode(savedStateHandle)
     }
 
@@ -188,7 +199,6 @@ class HomeViewModel @Inject constructor(
 
             is HomeEvent.GetGeocodeLocation -> {
                 geocodeApiResponse.value = ApiState.Loading
-                Log.i("TESTAPI", "request clicked")
                 viewModelScope.launch {
                     repository.getGeocodeLocation(event.address)
                         .catch { e ->
@@ -205,7 +215,6 @@ class HomeViewModel @Inject constructor(
                                     animation = true
                                 )
                             )
-                            Log.i("testapi", currentMarkerLocation.value.toString())
                         }
                 }
             }
@@ -357,51 +366,75 @@ class HomeViewModel @Inject constructor(
 
             is HomeEvent.ChangeUserMode -> {
                 if (location.value != null) {
-                    _currentUserMode.value = event.mode
-                    sendUiEvent(
-                        HomeEvent.RelocateMarker(
-                            location = LatLng(
-                                location.value!!.latitude,
-                                location.value!!.longitude
-                            ),
-                            animation = false
-                        )
-                    )
-                    viewModelScope.launch {
-                        _showAdditionalRegistration.value =
-                            repository.checkIfDriverExist("ddd") //TODO uncomment,
-                        delay(10)
-                        if (currentUserMode.value is Constants.UserMode.Driver) {
-                            if (!showAdditionalRegistration.value) {
-                                _markerPicked.value = MarkerPicked.MarkerBPicked
-                                _aMarkerLocation.value =
-                                    LatLng(location.value!!.latitude, location.value!!.longitude)
-                                _markerPlacedState.value = MarkerPlacedState(
-                                    aPlaced = true,
-                                    bPlaced = false
-                                )
-                                emitMarkerEvent(HomeEvent.MarkerPlaced(A_MARKER_KEY))
-                                if (isDark.value) {
-                                    _currentMarkerRes.value = Util.bMarkerDark
-                                } else {
-                                    _currentMarkerRes.value = Util.bMarkerLight
+                    Log.i("CHECK-DRIVER", currentUserMode.value.toString())
+                    if (event.mode == Constants.UserMode.Driver) {
+                        number?.let {
+                            repository.checkIfDriverExist(it)
+                                .onEach {
+                                    Log.i("CHECK-DRIVER", it.code().toString())
+                                    when (it.code()) {
+                                        200 -> {
+                                            _showAdditionalRegistration.value = false
+                                            _currentUserMode.value = event.mode
+                                            sendUiEvent(
+                                                HomeEvent.RelocateMarker(
+                                                    location = LatLng(
+                                                        location.value!!.latitude,
+                                                        location.value!!.longitude
+                                                    ),
+                                                    animation = false
+                                                )
+                                            )
+                                        }
+                                        403 -> {
+                                            _showAdditionalRegistration.value = true
+
+                                        }
+                                    }
                                 }
-                            } else {
-                                _showAdditionalRegistration.value = true
-                            }
-                        } else {
-                            _markerPicked.value = MarkerPicked.MarkerAPicked
-                            _markerPlacedState.value = MarkerPlacedState(
-                                aPlaced = false,
-                                bPlaced = false
+                                .launchIn(viewModelScope)
+                        }
+                    } else {
+                        _currentUserMode.value = event.mode
+                        sendUiEvent(
+                            HomeEvent.RelocateMarker(
+                                location = LatLng(
+                                    location.value!!.latitude,
+                                    location.value!!.longitude
+                                ),
+                                animation = false
                             )
-                            if (isDark.value) {
-                                _currentMarkerRes.value = Util.aMarkerDark
-                            } else {
-                                _currentMarkerRes.value = Util.aMarkerLight
-                            }
+                        )
+                    }
+
+                    if (currentUserMode.value is Constants.UserMode.Driver && !showAdditionalRegistration.value) {
+                        _markerPicked.value = MarkerPicked.MarkerBPicked
+                        _aMarkerLocation.value =
+                            LatLng(location.value!!.latitude, location.value!!.longitude)
+                        _markerPlacedState.value = MarkerPlacedState(
+                            aPlaced = true,
+                            bPlaced = false
+                        )
+                        emitMarkerEvent(HomeEvent.MarkerPlaced(A_MARKER_KEY))
+                        if (isDark.value) {
+                            _currentMarkerRes.value = Util.bMarkerDark
+                        } else {
+                            _currentMarkerRes.value = Util.bMarkerLight
+                        }
+
+                    } else {
+                        _markerPicked.value = MarkerPicked.MarkerAPicked
+                        _markerPlacedState.value = MarkerPlacedState(
+                            aPlaced = false,
+                            bPlaced = false
+                        )
+                        if (isDark.value) {
+                            _currentMarkerRes.value = Util.aMarkerDark
+                        } else {
+                            _currentMarkerRes.value = Util.aMarkerLight
                         }
                     }
+
                 }
             }
             is HomeEvent.UpdateCarNumberTextValue -> {
@@ -414,9 +447,29 @@ class HomeViewModel @Inject constructor(
                 _carColorTextValue.value = event.textValue
             }
             is HomeEvent.SendAdditionalInfo -> {
-                //TODO update registration via repository.sendAdditionalInfo
-                _showAdditionalRegistration.value = false
-                onEvent(HomeEvent.ChangeUserMode(mode = Constants.UserMode.Driver))
+                number?.let {
+                    repository.sendAdditionalInfo(
+                        phoneNumber = it,
+                        carNumber = carNumberTextValue.value,
+                        carInfo = carInfoTextValue.value,
+                        carColor = carColorTextValue.value,
+
+                        )
+                        .onEach { response ->
+                            when (response.code()) {
+                                200, 201 -> {
+                                    onEvent(HomeEvent.ChangeUserMode(mode = Constants.UserMode.Driver))
+                                }
+                                else -> {
+                                    Log.i("EXCEPTION-SEND-ADDINFO-VM", response.errorBody().toString())
+                                    //todo handle error
+                                }
+                            }
+                        }
+                        .launchIn(viewModelScope)
+                }
+
+
             }
             is HomeEvent.OnDismissAdditionalInfo -> {
                 _showAdditionalRegistration.value = false
@@ -427,10 +480,10 @@ class HomeViewModel @Inject constructor(
                 _shouldShowDirection.value = false
             }
             is HomeEvent.NavigateTo -> {
-                if(
+                if (
                     currentUserMode.value is Constants.UserMode.Companion ||
                     currentUserMode.value is Constants.UserMode.Driver
-                ){
+                ) {
                     viewModelScope.cancel()
                     routeNavigator.navigateToRoute(event.route)
                 }

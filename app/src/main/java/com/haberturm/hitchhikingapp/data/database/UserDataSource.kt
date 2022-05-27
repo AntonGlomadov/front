@@ -4,7 +4,7 @@ import kotlinx.coroutines.flow.Flow
 import user.userdb.UserEntity
 
 interface UserDataSource {
-    fun getUserLocation(): Flow<UserEntity>
-    suspend fun insertUser(id: Long?, latitude: Double, longitude: Double)
+    suspend fun getUserData(): UserEntity?
+    suspend fun insertUser(number: String, password: String)
 
 }
